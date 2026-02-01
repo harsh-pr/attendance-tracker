@@ -1,0 +1,60 @@
+@import "tailwindcss";
+
+/* 👇 THIS LINE IS THE KEY */
+@config "../tailwind.config.js";
+
+@keyframes statusPop {
+  0% {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Theme ripple animation */
+@keyframes themeRipple {
+  0% {
+    clip-path: circle(0% at 95% 5%);
+  }
+  100% {
+    clip-path: circle(150% at 95% 5%);
+  }
+}
+
+@keyframes themeRipple {
+  0% {
+    clip-path: circle(0% at 95% 5%);
+  }
+  100% {
+    clip-path: circle(150% at 95% 5%);
+  }
+}
+
+@keyframes fadeUp {
+  0% {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+button {
+  cursor: pointer;
+}
+
+@keyframes modalIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}

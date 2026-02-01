@@ -1,82 +1,55 @@
-// ---- DEFAULT SEMESTERS (INITIAL DATA ONLY) ----
+// src/store/attendanceStore.js
+import { getLecturesForDate } from "../utils/timetableUtils";
 
 export function getTodayDate() {
   return new Date().toISOString().split("T")[0];
 }
 
-export const semesters = [
-  {
-    id: "sem1",
-    name: "Semester 1",
-    subjects: [
-      { id: "math", name: "Engineering Mathematics", type: "theory" },
-      { id: "phy", name: "Applied Physics", type: "theory" },
-      { id: "chem", name: "Elective Chemistry", type: "theory" },
-      { id: "chem_lab", name: "Elective Chemistry (Lab)", type: "lab" },
-    ],
-
-    timetable: {
-      monday: [
-        { subjectId: "math" },
-        { subjectId: "phy" },
-        { subjectId: "chem" },
-      ],
-      tuesday: [
-        { subjectId: "math" },
-        { subjectId: "chem_lab" },
-      ],
-      wednesday: [
-        { subjectId: "phy" },
-        { subjectId: "chem" },
-      ],
-      thursday: [
-        { subjectId: "math" },
-        { subjectId: "phy" },
-      ],
-      friday: [
-        { subjectId: "chem" },
-        { subjectId: "chem_lab" },
-      ],
-    },
-
-    attendanceData: [],
-  },
-];
-
-import { getLecturesForDate } from "../utils/timetableUtils";
-
+/**
+ * Ensures a date entry exists and returns it
+ */
 export function ensureDayExists(semester, date) {
-  const exists = semester.attendanceData.find(
-    (d) => d.date === date
-  );
+  let day = semester.attendanceData.find(d => d.date === date);
 
-  if (exists) return exists;
+  if (!day) {
+    const lecturesFromTT = getLecturesForDate(date);
 
-  const lecturesFromTimetable = getLecturesForDate(date);
+    if (lecturesFromTT.length === 0) return null;
 
-  const newDay = {
-    date,
-    lectures: lecturesFromTimetable.map((l) => ({
-      subjectId: l.subjectId,
-      status: null,
-    })),
-  };
+    day = {
+      date,
+      lectures: lecturesFromTT.map(l => ({
+        subjectId: l.subjectId,
+        status: "present", // default
+        type: l.type,      // theory / lab
+      })),
+    };
 
-  semester.attendanceData.push(newDay);
-  return newDay;
+    semester.attendanceData.push(day);
+  }
+
+  return day;
 }
 
+/**
+ * Mark attendance for a subject
+ */
+export function markTodayAttendance(
+  semester,
+  subjectId,
+  status,
+  dateOverride
+) {
+  const date = dateOverride || getTodayDate();
+  const day = ensureDayExists(semester, date);
 
-export function markTodayAttendance(semester, subjectId, status) {
-  const today = getTodayDate();
-  const day = ensureDayExists(semester, today);
+  if (!day) return;
 
   const lecture = day.lectures.find(
-    (l) => l.subjectId === subjectId
+    l => l.subjectId === subjectId
   );
 
   if (lecture) {
     lecture.status = status;
   }
 }
-

@@ -1,29 +1,29 @@
 // src/data/timetable.js
-
 export const WEEKLY_TIMETABLE = {
   monday: [
-    {
-      subjectId: "python",
-      type: "theory",
-      start: "09:00",
-      end: "10:00",
-    },
-    {
-      subjectId: "eg",
-      type: "theory",
-      start: "10:00",
-      end: "11:00",
-    },
+    { subjectId: "python", type: "theory" },
+    { subjectId: "eg", type: "theory" },
+    { subjectId: "iks_lab", type: "lab" },
+    { subjectId: "maths_tut", type: "lab" },
   ],
 
   tuesday: [
-    {
-      subjectId: "ds",
-      type: "theory",
-      start: "11:20",
-      end: "12:20",
-    },
+    { subjectId: "ds", type: "theory" },
+    { subjectId: "phy_lab", type: "lab" },
   ],
 
-  // add rest later
+  wednesday: [
+    { subjectId: "chem", type: "theory" },
+    { subjectId: "eg_lab", type: "lab" },
+  ],
+
+  thursday: [
+    { subjectId: "phy", type: "theory" },
+    { subjectId: "maths", type: "theory" },
+  ],
+
+  friday: [
+    { subjectId: "iks", type: "theory" },
+    { subjectId: "python_lab", type: "lab" },
+  ],
 };

@@ -1,42 +1,29 @@
 // src/data/timetable.js
+
 export const WEEKLY_TIMETABLE = {
-  Monday: [
-    { subjectId: "python", type: "lab" },
-    { subjectId: "eg", type: "theory" },
-    { subjectId: "iks", type: "lab" },
-    { subjectId: "ds", type: "theory" },
-    { subjectId: "am_tut", type: "lab" },
+  monday: [
+    {
+      subjectId: "python",
+      type: "theory",
+      start: "09:00",
+      end: "10:00",
+    },
+    {
+      subjectId: "eg",
+      type: "theory",
+      start: "10:00",
+      end: "11:00",
+    },
   ],
 
-  Tuesday: [
-    { subjectId: "ds", type: "theory" },
-    { subjectId: "phy_lab", type: "lab" },
-    { subjectId: "chem", type: "theory" },
-    { subjectId: "python", type: "theory" },
-    { subjectId: "iks", type: "theory" },
+  tuesday: [
+    {
+      subjectId: "ds",
+      type: "theory",
+      start: "11:20",
+      end: "12:20",
+    },
   ],
 
-  Wednesday: [
-    { subjectId: "chem", type: "theory" },
-    { subjectId: "eg", type: "theory" },
-    { subjectId: "am", type: "theory" },
-    { subjectId: "chem_lab", type: "lab" },
-    { subjectId: "ds_lab", type: "lab" },
-  ],
-
-  Thursday: [
-    { subjectId: "eg_lab", type: "lab" },
-    { subjectId: "phy", type: "theory" },
-    { subjectId: "am", type: "theory" },
-    { subjectId: "sscs", type: "theory" },
-  ],
-
-  Friday: [
-    { subjectId: "iks", type: "theory" },
-    { subjectId: "phy", type: "theory" },
-    { subjectId: "python_lab", type: "lab" },
-    { subjectId: "eg", type: "theory" },
-    { subjectId: "workshop", type: "lab" },
-  ],
+  // add rest later
 };
-

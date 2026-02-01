@@ -1,5 +1,9 @@
 // ---- DEFAULT SEMESTERS (INITIAL DATA ONLY) ----
 
+export function getTodayDate() {
+  return new Date().toISOString().split("T")[0];
+}
+
 export const semesters = [
   {
     id: "sem1",
@@ -39,27 +43,40 @@ export const semesters = [
   },
 ];
 
-export function upsertAttendanceForDate(
-  semester,
-  date,
-  lectures
-) {
-  const index = semester.attendanceData.findIndex(
+import { getLecturesForDate } from "../utils/timetableUtils";
+
+export function ensureDayExists(semester, date) {
+  const exists = semester.attendanceData.find(
     (d) => d.date === date
   );
 
-  if (index !== -1) {
-    semester.attendanceData[index].lectures = lectures;
-  } else {
-    semester.attendanceData.push({
-      date,
-      lectures,
-    });
+  if (exists) return exists;
+
+  const lecturesFromTimetable = getLecturesForDate(date);
+
+  const newDay = {
+    date,
+    lectures: lecturesFromTimetable.map((l) => ({
+      subjectId: l.subjectId,
+      status: null,
+    })),
+  };
+
+  semester.attendanceData.push(newDay);
+  return newDay;
+}
+
+
+export function markTodayAttendance(semester, subjectId, status) {
+  const today = getTodayDate();
+  const day = ensureDayExists(semester, today);
+
+  const lecture = day.lectures.find(
+    (l) => l.subjectId === subjectId
+  );
+
+  if (lecture) {
+    lecture.status = status;
   }
 }
 
-
-// Utility
-export function getTodayDate() {
-  return new Date().toISOString().split("T")[0];
-}

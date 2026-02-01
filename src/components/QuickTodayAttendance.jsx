@@ -1,6 +1,7 @@
 import Modal from "./Modal";
 import { useSemester } from "../context/SemesterContext";
 import { getTodayDate } from "../store/attendanceStore";
+import { ensureDayExists } from "../store/attendanceStore";
 
 const ACTIONS = ["present", "absent", "free", "cancelled"];
 
@@ -8,10 +9,10 @@ export default function QuickTodayAttendance({ open, onClose }) {
   const { currentSemester, markTodayAttendance } = useSemester();
   const today = getTodayDate();
 
-  const todayData =
-    currentSemester.attendanceData.find(
-      (d) => d.date === today
-    );
+  const todayData = ensureDayExists(
+    currentSemester,
+    today
+  );
 
   if (!todayData) {
     return (
@@ -22,7 +23,6 @@ export default function QuickTodayAttendance({ open, onClose }) {
       </Modal>
     );
   }
-
 
   function getStatus(subjectId) {
     return todayData.lectures.find(

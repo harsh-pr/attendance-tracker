@@ -1,27 +1,24 @@
-export function getDayKey(dateStr) {
+// src/utils/timetableUtils.js
+import { WEEKLY_TIMETABLE } from "../data/timetable";
+
+export function getDayKeyFromDate(dateStr) {
   const day = new Date(dateStr).getDay();
-  return [
-    "sunday",
-    "monday",
-    "tuesday",
-    "wednesday",
-    "thursday",
-    "friday",
-    "saturday",
-  ][day];
+
+  // JS: 0 = Sunday
+  const map = {
+    1: "monday",
+    2: "tuesday",
+    3: "wednesday",
+    4: "thursday",
+    5: "friday",
+  };
+
+  return map[day] || null;
 }
 
-export function generateLecturesForDate(
-  semester,
-  date
-) {
-  const dayKey = getDayKey(date);
-  const timetable = semester.timetable?.[dayKey];
+export function getLecturesForDate(dateStr) {
+  const dayKey = getDayKeyFromDate(dateStr);
+  if (!dayKey) return [];
 
-  if (!timetable) return [];
-
-  return timetable.map((slot) => ({
-    subjectId: slot.subjectId,
-    status: "absent", // default
-  }));
+  return WEEKLY_TIMETABLE[dayKey] || [];
 }

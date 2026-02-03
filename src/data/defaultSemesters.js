@@ -23,6 +23,7 @@ export const DEFAULT_SEMESTERS = [
       { id: "workshop", name: "Engineering Workshop", type: "lab" },
     ],
     attendanceData: [],
+    reminders: [],
   },
 ];
 

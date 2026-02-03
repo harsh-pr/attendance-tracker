@@ -14,11 +14,17 @@ export default function Home() {
     currentSemester,
     setCurrentSemesterId,
     semesters,
+    markDayStatus,
   } = useSemester();
 
   const [quickOpen, setQuickOpen] = useState(false);
   const [overallOpen, setOverallOpen] = useState(false);
   const [allLogsOpen, setAllLogsOpen] = useState(false);
+  const [dayActionOpen, setDayActionOpen] = useState(false);
+  const [dayActionForm, setDayActionForm] = useState({
+    date: getTodayDate(),
+    status: "absent",
+  });
 
   const { theory, lab, overall } =
     calculateOverallAttendance(currentSemester);
@@ -351,7 +357,7 @@ export default function Home() {
                 <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                   {day.lectures.length === 0 ? (
                     <span className="text-gray-500 dark:text-gray-400">
-                      Holiday / No lectures
+                      Holiday
                     </span>
                   ) : (
                     day.lectures.map((lecture, index) => {

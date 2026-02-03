@@ -623,8 +623,39 @@
               "type": "theory"
             }
           ]
+        },
+        {
+          "date": "2026-2-2",
+          "lectures": [
+            {
+              "subjectId": "python",
+              "type": "theory",
+              "status": "absent"
+            },
+            {
+              "subjectId": "eg",
+              "type": "theory",
+              "status": "absent"
+            },
+            {
+              "subjectId": "iks",
+              "type": "theory",
+              "status": "absent"
+            },
+            {
+              "subjectId": "ds",
+              "type": "theory",
+              "status": "absent"
+            },
+            {
+              "subjectId": "math_tut",
+              "type": "lab",
+              "status": "absent"
+            }
+          ]
         }
-      ]
+      ],
+      "reminders": []
     }
   ]
 }

@@ -1,4 +1,3 @@
-// src/context/SemesterContext.jsx
 /* eslint-disable react-refresh/only-export-components */
 import { createContext, useContext, useEffect, useState } from "react";
 import {
@@ -6,7 +5,7 @@ import {
   DEFAULT_SEMESTER_ID,
 } from "../data/defaultSemesters";
 import { getLecturesForDate } from "../utils/timetableUtils";
-import { getTodayDate } from "../store/attendanceStore";
+import { getTodayDate, ensureDayExists } from "../store/attendanceStore";
 
 const SemesterContext = createContext();
 
@@ -68,45 +67,75 @@ export function SemesterProvider({ children }) {
     DEFAULT_SEMESTERS[0];
 
   /* ===== ENSURE DAY ENTRY FROM TIMETABLE ===== */
-  function ensureDayEntry(date) {
+  function normalizeDateString(dateString) {
+    const parsed = new Date(dateString);
+    if (Number.isNaN(parsed.getTime())) {
+      return dateString;
+    }
+    return `${parsed.getFullYear()}-${parsed.getMonth() + 1}-${parsed.getDate()}`;
+  }
+
+  function markDayStatus(date, status) {
+    const targetDate = normalizeDateString(date);
     setSemesters((prev) =>
       prev.map((sem) => {
         if (sem.id !== currentSemesterId) return sem;
+        const schedule = getLecturesForDate(targetDate, currentSemesterId);
+        let lectures = [];
 
-        // already exists
-        if (sem.attendanceData.some((d) => d.date === date)) {
-          return sem;
+        if (status === "holiday") {
+          lectures = [];
+        } else if (schedule.length) {
+          lectures = schedule.map((lecture) => ({
+            subjectId: lecture.subjectId,
+            type: lecture.type,
+            status,
+          }));
         }
 
-        const daySchedule = getLecturesForDate(
-          date,
-          currentSemesterId
+        const existingDay = sem.attendanceData.find(
+          (day) => day.date === targetDate
         );
 
-        if (daySchedule.length === 0) return sem;
-
-        const lectures = daySchedule.map((item) => ({
-          subjectId: item.subjectId,
-          type: item.type,
-          status: null,
-        }));
+        if (existingDay) {
+          return {
+            ...sem,
+            attendanceData: sem.attendanceData.map((day) =>
+              day.date === targetDate ? { ...day, lectures } : day
+            ),
+          };
+        }
 
         return {
           ...sem,
           attendanceData: [
             ...sem.attendanceData,
-            { date, lectures },
+            { date: targetDate, lectures },
           ],
         };
       })
     );
   }
 
-  /* ===== MARK ATTENDANCE ===== */
-  function markTodayAttendance(subjectId, status, date) {
+  function addReminder(reminder) {
+    setSemesters((prev) =>
+      prev.map((sem) => {
+        if (sem.id !== currentSemesterId) return sem;
+        const reminders = Array.isArray(sem.reminders)
+          ? sem.reminders
+          : [];
+        return {
+          ...sem,
+          reminders: [...reminders, reminder],
+        };
+      })
+    );
+  }
+
+  function markFullDayAttendance(status, date) {
     const targetDate = date || getTodayDate();
 
-    ensureDayEntry(targetDate);
+    ensureDayExists(currentSemester, targetDate, currentSemesterId);
 
     setSemesters((prev) =>
       prev.map((sem) => {
@@ -114,18 +143,45 @@ export function SemesterProvider({ children }) {
 
         return {
           ...sem,
-          attendanceData: sem.attendanceData.map((day) => {
-            if (day.date !== targetDate) return day;
+          attendanceData: sem.attendanceData.map((day) =>
+            day.date === targetDate
+              ? {
+                  ...day,
+                  lectures: day.lectures.map((lec) => ({
+                    ...lec,
+                    status,
+                  })),
+                }
+              : day
+          ),
+        };
+      })
+    );
+  }
 
-            return {
-              ...day,
-              lectures: day.lectures.map((lec) =>
-                lec.subjectId === subjectId
-                  ? { ...lec, status }
-                  : lec
-              ),
-            };
-          }),
+  /** NEW: markTodayAttendance for a single subject */
+  function markTodayAttendance(subjectId, status) {
+    const today = getTodayDate();
+    ensureDayExists(currentSemester, today, currentSemesterId);
+
+    setSemesters((prev) =>
+      prev.map((sem) => {
+        if (sem.id !== currentSemesterId) return sem;
+
+        return {
+          ...sem,
+          attendanceData: sem.attendanceData.map((day) =>
+            day.date === today
+              ? {
+                  ...day,
+                  lectures: day.lectures.map((lec) =>
+                    lec.subjectId === subjectId
+                      ? { ...lec, status }
+                      : lec
+                  ),
+                }
+              : day
+          ),
         };
       })
     );
@@ -137,8 +193,11 @@ export function SemesterProvider({ children }) {
         semesters,
         currentSemester,
         currentSemesterId,
+        markFullDayAttendance,
+        markTodayAttendance,   // ✅ now provided
         setCurrentSemesterId,
-        markTodayAttendance,
+        markDayStatus,
+        addReminder,
       }}
     >
       {children}

@@ -22,6 +22,9 @@ export default function Home() {
 
   const { theory, lab, overall } =
     calculateOverallAttendance(currentSemester);
+  const theoryPercentage = theory?.percentage ?? 0;
+  const labPercentage = lab?.percentage ?? 0;
+  const overallPercentage = overall?.percentage ?? 0;
 
   const today = getTodayDate();
   const todaySchedule = getLecturesForDate(
@@ -154,12 +157,12 @@ export default function Home() {
           </p>
           <p
             className={`text-3xl font-bold mt-1 ${
-              theory.percentage >= 75
+              theoryPercentage >= 75
                 ? "text-green-600 dark:text-green-400"
                 : "text-red-600 dark:text-red-400"
             }`}
           >
-            {theory.percentage}%
+            {theoryPercentage}%
           </p>
           <p className="text-sm text-gray-600 dark:text-gray-400">
             Till today
@@ -171,6 +174,18 @@ export default function Home() {
           <p className="text-sm text-gray-500 dark:text-gray-400">
             Attendance (Labs)
           </p>
+          <p
+            className={`text-3xl font-bold mt-1 ${
+              labPercentage >= 75
+                ? "text-green-600 dark:text-green-400"
+                : "text-red-600 dark:text-red-400"
+            }`}
+          >
+            {labPercentage}%
+          </p>
+          <p className="text-sm text-gray-600 dark:text-gray-400">
+            Till today
+          </p>
         </StatCard>
 
         {/* OVERALL */}
@@ -180,12 +195,12 @@ export default function Home() {
           </p>
           <p
             className={`text-3xl font-bold mt-1 ${
-              overall.percentage >= 75
+              overallPercentage >= 75
                 ? "text-green-600 dark:text-green-400"
                 : "text-red-600 dark:text-red-400"
             }`}
           >
-            {overall.percentage}%
+            {overallPercentage}%
           </p>
           <p className="text-sm text-gray-600 dark:text-gray-400">
             Till today

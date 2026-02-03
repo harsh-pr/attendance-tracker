@@ -1,7 +1,5 @@
-import { useState } from "react";
 import { useSemester } from "../context/SemesterContext";
 import { getSubjectWiseStatus } from "../utils/attendanceUtils";
-import Modal from "../components/Modal";
 
 export default function Today() {
   const { currentSemester } = useSemester();
@@ -17,8 +15,6 @@ export default function Today() {
   const labSubjects = subjects.filter(
     (item) => item.subject.type === "lab"
   );
-
-  const [active, setActive] = useState(null);
 
   return (
     <div className="max-w-6xl mx-auto px-4 pt-6 space-y-6">
@@ -37,22 +33,12 @@ export default function Today() {
         <SubjectSection
           title="Theory"
           items={theorySubjects}
-          onSelect={setActive}
         />
         <SubjectSection
           title="Labs"
           items={labSubjects}
-          onSelect={setActive}
         />
       </div>
-
-      {/* ===== MODAL ===== */}
-      {active && (
-        <SubjectModal
-          data={active}
-          onClose={() => setActive(null)}
-        />
-      )}
     </div>
   );
 }
@@ -60,7 +46,7 @@ export default function Today() {
 /* =======================
    SUBJECT CARD
 ======================= */
-function SubjectCard({ data, onClick }) {
+function SubjectCard({ data }) {
   const { subject, attended, conducted, percentage, status } =
     data;
   const statusStyles = {
@@ -72,14 +58,10 @@ function SubjectCard({ data, onClick }) {
 
   return (
     <div
-      onClick={onClick}
       className="
-        p-5 rounded-2xl cursor-pointer
+        p-5 rounded-2xl
         bg-white dark:bg-gray-800
         border border-gray-200 dark:border-gray-700
-        transition-all duration-300
-        hover:-translate-y-1 hover:shadow-xl
-        active:scale-95
       "
     >
       <div className="flex items-start justify-between gap-3">
@@ -122,7 +104,7 @@ function SubjectCard({ data, onClick }) {
   );
 }
 
-function SubjectSection({ title, items, onSelect }) {
+function SubjectSection({ title, items }) {
   return (
     <section className="space-y-3">
       <div className="flex items-center justify-between">
@@ -143,46 +125,10 @@ function SubjectSection({ title, items, onSelect }) {
             <SubjectCard
               key={item.subject.id}
               data={item}
-              onClick={() => onSelect(item)}
             />
           ))}
         </div>
       )}
     </section>
-  );
-}
-
-/* =======================
-   SUBJECT MODAL
-======================= */
-function SubjectModal({ data, onClose }) {
-  const { subject, attended, conducted, percentage } =
-    data;
-
-  return (
-    <Modal open onClose={onClose}>
-      <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-2">
-        {subject.name}
-      </h2>
-
-      <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
-        {subject.type.toUpperCase()} lecture summary
-      </p>
-
-      <div className="space-y-2 text-gray-700 dark:text-gray-300">
-        <p>Total Conducted: {conducted}</p>
-        <p>Total Attended: {attended}</p>
-
-        <p
-          className={`text-lg font-semibold ${
-            percentage >= 75
-              ? "text-green-500"
-              : "text-red-500"
-          }`}
-        >
-          Attendance: {percentage}%
-        </p>
-      </div>
-    </Modal>
   );
 }

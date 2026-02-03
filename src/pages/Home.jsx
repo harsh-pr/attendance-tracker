@@ -3,9 +3,11 @@ import { useSemester } from "../context/SemesterContext";
 import { calculateOverallAttendance } from "../utils/attendanceUtils";
 import { getTodayDate } from "../store/attendanceStore";
 import { getLecturesForDate } from "../utils/timetableUtils";
+
 import AttendanceOverviewChart from "../components/AttendanceOverviewChart";
 import QuickTodayAttendance from "../components/QuickTodayAttendance";
 import OverallAttendanceModal from "../components/OverallAttendanceModal";
+import Modal from "../components/Modal";
 
 export default function Home() {
   const {
@@ -16,7 +18,7 @@ export default function Home() {
 
   const [quickOpen, setQuickOpen] = useState(false);
   const [overallOpen, setOverallOpen] = useState(false);
-  const [showAllLogs, setShowAllLogs] = useState(false);
+  const [allLogsOpen, setAllLogsOpen] = useState(false);
 
   const { theory, lab, overall } =
     calculateOverallAttendance(currentSemester);
@@ -69,7 +71,7 @@ export default function Home() {
     ),
     ...(todayLogEntry ? [todayLogEntry] : []),
   ].sort((a, b) => new Date(b.date) - new Date(a.date));
-  const visibleLogs = showAllLogs ? logs : logs.slice(0, 7);
+  const visibleLogs = logs.slice(0, 7);
   const statusStyles = {
     present:
       "bg-green-100 text-green-700 dark:bg-green-500/20 dark:text-green-200",
@@ -85,7 +87,6 @@ export default function Home() {
 
   return (
     <div className="max-w-6xl mx-auto px-4 pt-6 pb-24 space-y-8">
-
       {/* ===== HEADER ===== */}
 <div className="flex flex-col gap-2 sm:block">
   <div className="flex items-center justify-between sm:block">
@@ -170,18 +171,6 @@ export default function Home() {
           <p className="text-sm text-gray-500 dark:text-gray-400">
             Attendance (Labs)
           </p>
-          <p
-            className={`text-3xl font-bold mt-1 ${
-              lab.percentage >= 75
-                ? "text-green-600 dark:text-green-400"
-                : "text-red-600 dark:text-red-400"
-            }`}
-          >
-            {lab.percentage}%
-          </p>
-          <p className="text-sm text-gray-600 dark:text-gray-400">
-            Till today
-          </p>
         </StatCard>
 
         {/* OVERALL */}
@@ -221,10 +210,10 @@ export default function Home() {
           {logs.length > 7 && (
             <button
               type="button"
-              onClick={() => setShowAllLogs((prev) => !prev)}
+              onClick={() => setAllLogsOpen(true)}
               className="text-sm font-medium text-blue-600 dark:text-blue-400 hover:underline"
             >
-              {showAllLogs ? "View recent" : "View all"}
+              View all
             </button>
           )}
         </div>
@@ -270,8 +259,8 @@ export default function Home() {
                           key={`${day.date}-${lecture.subjectId}-${index}`}
                           className="flex items-center justify-between gap-2 rounded-lg border border-gray-200/70 dark:border-gray-700/70 px-3 py-2 text-xs text-gray-700 dark:text-gray-200"
                         >
-                          <div>
-                            <p className="font-medium">
+                          <div className="min-w-0">
+                            <p className="truncate font-medium">
                               {label}
                             </p>
                             <p className="text-[11px] text-gray-500 dark:text-gray-400">
@@ -306,6 +295,89 @@ export default function Home() {
         open={overallOpen}
         onClose={() => setOverallOpen(false)}
       />
+
+      <Modal
+        open={allLogsOpen}
+        onClose={() => setAllLogsOpen(false)}
+        size="xl"
+      >
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
+              Attendance Logs
+            </h2>
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              Full history with per-lecture status
+            </p>
+          </div>
+        </div>
+
+        <div className="mt-5 max-h-[60vh] space-y-4 overflow-y-auto pr-1">
+          {logs.length === 0 ? (
+            <div className="rounded-xl border border-dashed border-gray-300 dark:border-gray-700 p-4 text-sm text-gray-500 dark:text-gray-400">
+              No attendance logs yet.
+            </div>
+          ) : (
+            logs.map((day) => (
+              <div
+                key={`modal-${day.date}`}
+                className="rounded-2xl bg-gray-50 dark:bg-gray-800/60 p-4 border border-gray-200 dark:border-gray-700"
+              >
+                <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">
+                  {new Date(day.date).toLocaleDateString(
+                    "en-GB",
+                    {
+                      day: "2-digit",
+                      month: "short",
+                      year: "numeric",
+                    }
+                  )}
+                </p>
+                <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                  {day.lectures.length === 0 ? (
+                    <span className="text-gray-500 dark:text-gray-400">
+                      Holiday / No lectures
+                    </span>
+                  ) : (
+                    day.lectures.map((lecture, index) => {
+                      const subject = subjectsById.get(
+                        lecture.subjectId
+                      );
+                      const label = subject
+                        ? subject.name
+                        : lecture.subjectId;
+                      const statusLabel =
+                        lecture.status ?? "pending";
+                      return (
+                        <div
+                          key={`modal-${day.date}-${lecture.subjectId}-${index}`}
+                          className="flex items-center justify-between gap-3 rounded-xl border border-gray-200/70 dark:border-gray-700/70 px-3 py-2.5 text-xs text-gray-700 dark:text-gray-200"
+                        >
+                          <div className="min-w-0">
+                            <p className="truncate font-medium">
+                              {label}
+                            </p>
+                            <p className="text-[11px] text-gray-500 dark:text-gray-400">
+                              {lecture.type}
+                            </p>
+                          </div>
+                          <span
+                            className={`shrink-0 rounded-full px-2.5 py-0.5 text-[11px] font-semibold capitalize ${
+                              statusStyles[statusLabel]
+                            }`}
+                          >
+                            {statusLabel}
+                          </span>
+                        </div>
+                      );
+                    })
+                  )}
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+      </Modal>
     </div>
   );
 }

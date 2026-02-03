@@ -70,7 +70,6 @@ function SubjectCard({ data, onClick }) {
       "bg-gray-100 text-gray-700 dark:bg-gray-500/20 dark:text-gray-200",
   };
 
-
   return (
     <div
       onClick={onClick}

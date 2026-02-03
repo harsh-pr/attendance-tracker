@@ -1,7 +1,18 @@
 import { useEffect } from "react";
 import { createPortal } from "react-dom";
 
-export default function Modal({ open, onClose, children }) {
+const SIZE_CLASSES = {
+  md: "max-w-lg",
+  lg: "max-w-2xl",
+  xl: "max-w-4xl",
+};
+
+export default function Modal({
+  open,
+  onClose,
+  children,
+  size = "md",
+}) {
   // Lock background scroll
   useEffect(() => {
     if (open) {
@@ -27,14 +38,14 @@ export default function Modal({ open, onClose, children }) {
 
       {/* Modal */}
       <div
-        className="
+        className={`
           relative z-10
-          w-full max-w-lg mx-4
+          w-full mx-4 ${SIZE_CLASSES[size] || SIZE_CLASSES.md}
           rounded-2xl
           bg-white dark:bg-gray-900
           p-6 shadow-2xl
           animate-[modalIn_0.25s_ease-out]
-        "
+        `}
       >
         {children}
 

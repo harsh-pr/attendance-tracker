@@ -64,12 +64,12 @@ export default function OverallAttendanceModal({ open, onClose }) {
   });
 
   return (
-    <Modal open={open} onClose={onClose}>
+    <Modal open={open} onClose={onClose} size="xl">
       <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-gray-100">
         Overall Attendance Trend
       </h2>
 
-      <ResponsiveContainer width="100%" height={300}>
+      <ResponsiveContainer width="100%" height={380}>
         <LineChart data={data}>
           <CartesianGrid strokeDasharray="3 3" opacity={0.15} />
 
@@ -97,6 +97,8 @@ export default function OverallAttendanceModal({ open, onClose }) {
             dot={{ r: 4, fill: "#22c55e" }}
             activeDot={{ r: 6 }}
             isAnimationActive
+            animationDuration={1200}
+            animationEasing="linear"
             style={{
               filter:
                 "drop-shadow(0 0 6px rgba(34,197,94,0.6))",

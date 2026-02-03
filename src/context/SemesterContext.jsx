@@ -1,38 +1,71 @@
 // src/context/SemesterContext.jsx
+/* eslint-disable react-refresh/only-export-components */
 import { createContext, useContext, useEffect, useState } from "react";
-import { DEFAULT_SEMESTERS } from "../data/defaultSemesters";
+import {
+  DEFAULT_SEMESTERS,
+  DEFAULT_SEMESTER_ID,
+} from "../data/defaultSemesters";
 import { getLecturesForDate } from "../utils/timetableUtils";
 import { getTodayDate } from "../store/attendanceStore";
 
 const SemesterContext = createContext();
 
 export function SemesterProvider({ children }) {
-  const [semesters, setSemesters] = useState(() => {
-    const saved = localStorage.getItem("semesters");
-    return saved ? JSON.parse(saved) : DEFAULT_SEMESTERS;
-  });
-
-  const [currentSemesterId, setCurrentSemesterId] = useState(() => {
-    return (
-      localStorage.getItem("currentSemesterId") ||
-      DEFAULT_SEMESTERS[0].id
-    );
-  });
-
-  useEffect(() => {
-    localStorage.setItem("semesters", JSON.stringify(semesters));
-  }, [semesters]);
-
-  useEffect(() => {
-    localStorage.setItem(
-      "currentSemesterId",
-      currentSemesterId
-    );
-  }, [currentSemesterId]);
-
-  const currentSemester = semesters.find(
-    (s) => s.id === currentSemesterId
+  const [semesters, setSemesters] = useState(DEFAULT_SEMESTERS);
+  const [currentSemesterId, setCurrentSemesterId] = useState(
+    DEFAULT_SEMESTER_ID
   );
+  const [hasLoaded, setHasLoaded] = useState(false);
+
+  useEffect(() => {
+    const loadSemesters = async () => {
+      try {
+        const response = await fetch("/api/semesters");
+        if (!response.ok) {
+          throw new Error("Failed to load semesters");
+        }
+        const data = await response.json();
+        setSemesters(data.semesters?.length ? data.semesters : DEFAULT_SEMESTERS);
+        setCurrentSemesterId(
+          data.currentSemesterId || DEFAULT_SEMESTER_ID
+        );
+      } catch (error) {
+        console.error("Failed to load attendance data.", error);
+        setSemesters(DEFAULT_SEMESTERS);
+        setCurrentSemesterId(DEFAULT_SEMESTER_ID);
+      } finally {
+        setHasLoaded(true);
+      }
+    };
+
+    loadSemesters();
+  }, []);
+
+  useEffect(() => {
+    if (!hasLoaded) return;
+
+    const saveSemesters = async () => {
+      try {
+        await fetch("/api/semesters", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            currentSemesterId,
+            semesters,
+          }),
+        });
+      } catch (error) {
+        console.error("Failed to sync attendance data.", error);
+      }
+    };
+
+    saveSemesters();
+  }, [currentSemesterId, semesters, hasLoaded]);
+
+  const currentSemester =
+    semesters.find((s) => s.id === currentSemesterId) ||
+    semesters[0] ||
+    DEFAULT_SEMESTERS[0];
 
   /* ===== ENSURE DAY ENTRY FROM TIMETABLE ===== */
   function ensureDayEntry(date) {
@@ -44,9 +77,6 @@ export function SemesterProvider({ children }) {
         if (sem.attendanceData.some((d) => d.date === date)) {
           return sem;
         }
-
-        const weekdayKey = getWeekdayKey(date);
-        if (!weekdayKey) return sem;
 
         const daySchedule = getLecturesForDate(
           date,

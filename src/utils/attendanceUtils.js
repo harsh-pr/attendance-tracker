@@ -2,7 +2,7 @@ import { getTodayDate } from "../store/attendanceStore";
 
 /* ===== HELPERS ===== */
 export function isConducted(status) {
-  return status !== "cancelled";
+  return status != null && status !== "cancelled";
 }
 
 export function isAttended(status) {
@@ -72,18 +72,19 @@ export function calculateOverallAttendance(semester) {
       );
       if (!subject) return;
 
+      const isPending = lecture.status == null;
       const isCancelled = lecture.status === "cancelled";
       const isAttended =
         lecture.status === "present" ||
         lecture.status === "free";
 
       // ----- TODAY -----
-      if (!isCancelled && day.date === today) {
+       if (!isPending && !isCancelled && day.date === today) {
         todayTotal++;
         if (isAttended) todayAttended++;
       }
 
-      if (isCancelled) return;
+      if (isPending || isCancelled) return;
 
       // ----- THEORY -----
       if (subject.type === "theory") {
@@ -158,7 +159,7 @@ export function buildCumulativeAttendanceSeries(attendanceData, days) {
 
     if (day) {
       day.lectures.forEach(l => {
-        if (l.status === "cancelled") return;
+        if (l.status == null || l.status === "cancelled") return;
 
         totalConducted++;
 

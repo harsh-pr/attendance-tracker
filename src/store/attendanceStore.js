@@ -8,11 +8,14 @@ export function getTodayDate() {
 /**
  * Ensures a date entry exists and returns it
  */
-export function ensureDayExists(semester, date) {
+export function ensureDayExists(semester, date, semesterId) {
   let day = semester.attendanceData.find(d => d.date === date);
 
   if (!day) {
-    const lecturesFromTT = getLecturesForDate(date);
+    const lecturesFromTT = getLecturesForDate(
+      date,
+      semesterId || semester.id
+    );
 
     if (lecturesFromTT.length === 0) return null;
 
@@ -20,7 +23,7 @@ export function ensureDayExists(semester, date) {
       date,
       lectures: lecturesFromTT.map(l => ({
         subjectId: l.subjectId,
-        status: "present", // default
+        status: null,
         type: l.type,      // theory / lab
       })),
     };
@@ -41,7 +44,7 @@ export function markTodayAttendance(
   dateOverride
 ) {
   const date = dateOverride || getTodayDate();
-  const day = ensureDayExists(semester, date);
+  const day = ensureDayExists(semester, date, semester.id);
 
   if (!day) return;
 

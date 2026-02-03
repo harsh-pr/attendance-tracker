@@ -1,4 +1,5 @@
-import { WEEKLY_TIMETABLE } from "../data/timetable";
+import { SEMESTER_TIMETABLES } from "../data/timetable";
+import { DEFAULT_SEMESTER_ID } from "../data/defaultSemesters";
 
 export function getDayKeyFromDate(dateStr) {
   const day = new Date(dateStr).getDay();
@@ -11,8 +12,10 @@ export function getDayKeyFromDate(dateStr) {
   }[day] || null;
 }
 
-export function getLecturesForDate(dateStr) {
+export function getLecturesForDate(dateStr, semesterId) {
   const dayKey = getDayKeyFromDate(dateStr);
   if (!dayKey) return [];
-  return WEEKLY_TIMETABLE[dayKey] || [];
+  const timetable =
+    SEMESTER_TIMETABLES[semesterId || DEFAULT_SEMESTER_ID] || {};
+  return timetable[dayKey] || [];
 }

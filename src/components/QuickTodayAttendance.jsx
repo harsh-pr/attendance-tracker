@@ -12,7 +12,17 @@ export default function QuickTodayAttendance({ open, onClose }) {
   const { currentSemester, markTodayAttendance } = useSemester();
   const today = getTodayDate();
 
-  const todayData = ensureDayExists(currentSemester, today);
+  const todayData = ensureDayExists(
+    currentSemester,
+    today,
+    currentSemester.id
+  );
+  const subjectsById = new Map(
+    currentSemester.subjects.map((subject) => [
+      subject.id,
+      subject,
+    ])
+  );
 
   if (!todayData) {
     return (
@@ -37,12 +47,17 @@ export default function QuickTodayAttendance({ open, onClose }) {
       </h2>
 
       <div className="space-y-4 max-h-[60vh] overflow-y-auto">
-        {currentSemester.subjects.map(subject => {
-          const status = getStatus(subject.id);
+        
+        {todayData.lectures.map((lecture) => {
+          const subject = subjectsById.get(
+            lecture.subjectId
+          );
+          if (!subject) return null;
+          const status = getStatus(lecture.subjectId);
 
           return (
             <div
-              key={subject.id}
+              key={`${today}-${lecture.subjectId}`}
               className="rounded-xl p-4 border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900"
             >
               <div className="mb-2">
@@ -50,7 +65,7 @@ export default function QuickTodayAttendance({ open, onClose }) {
                   {subject.name}
                 </p>
                 <p className="text-sm text-gray-500 dark:text-gray-400">
-                  {subject.type}
+                  {lecture.type}
                 </p>
               </div>
 

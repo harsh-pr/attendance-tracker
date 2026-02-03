@@ -6,7 +6,6 @@ import {
   XAxis,
   YAxis,
   Tooltip,
-  CartesianGrid,
   Legend,
 } from "recharts";
 import { useSemester } from "../context/SemesterContext";
@@ -87,7 +86,7 @@ export default function AttendanceOverviewChart() {
   return (
     <div
       className="
-        rounded-2xl p-6 transition-transform hover:scale-[1.01]
+        rounded-2xl p-6 transition-transform hover:scale-[1.01] overflow-hidden
 
         /* LIGHT */
         bg-white border border-gray-200 text-gray-900
@@ -102,13 +101,6 @@ export default function AttendanceOverviewChart() {
 
       <ResponsiveContainer width="100%" height={320}>
         <BarChart data={data}>
-          {/* ===== GRID (VISIBLE IN LIGHT) ===== */}
-          <CartesianGrid
-            strokeDasharray="3 3"
-            stroke="currentColor"
-            className="text-gray-300 dark:text-gray-600"
-            opacity={0.6}
-          />
 
           {/* ===== AXES ===== */}
           <XAxis

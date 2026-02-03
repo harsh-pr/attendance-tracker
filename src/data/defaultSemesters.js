@@ -13,14 +13,14 @@ export const DEFAULT_SEMESTERS = [
       { id: "chem", name: "Elective Chemistry", type: "theory" },
       { id: "ss", name: "SS & CS", type: "theory" },
 
-      { id: "python", name: "Python Lab", type: "lab" },
-      { id: "ds", name: "DS Lab", type: "lab" },
-      { id: "eg", name: "EG Lab", type: "lab" },
-      { id: "phy", name: "Physics Lab", type: "lab" },
-      { id: "chem", name: "Chemistry Lab", type: "lab" },
-      { id: "math", name: "Maths Tutorial", type: "lab" },
-      { id: "iks", name: "IKS Lab", type: "lab" },
-      { id: "work", name: "Engineering Workshop", type: "lab" },
+      { id: "python_lab", name: "Python Lab", type: "lab" },
+      { id: "ds_lab", name: "Data Structure Lab", type: "lab" },
+      { id: "eg_lab", name: "EG/ACAD Lab", type: "lab" },
+      { id: "phy_lab", name: "Physics Lab", type: "lab" },
+      { id: "chem_lab", name: "Chemistry Lab", type: "lab" },
+      { id: "math_tut", name: "Maths Tutorial", type: "lab" },
+      { id: "iks_lab", name: "IKS Lab", type: "lab" },
+      { id: "workshop", name: "Engineering Workshop", type: "lab" },
     ],
 
     attendanceData: [
@@ -30,9 +30,9 @@ export const DEFAULT_SEMESTERS = [
         lectures: [
           { subjectId: "python", type: "theory", status: "absent" },
           { subjectId: "eg", type: "theory", status: "absent" },
-          { subjectId: "iks", type: "lab", status: "absent" },
+          { subjectId: "iks_lab", type: "lab", status: "absent" },
           { subjectId: "ds", type: "theory", status: "absent" },
-          { subjectId: "math", type: "lab", status: "absent" },
+          { subjectId: "math_tut", type: "lab", status: "absent" },
         ],
       },
 
@@ -53,15 +53,15 @@ export const DEFAULT_SEMESTERS = [
           { subjectId: "chem", type: "theory", status: "absent" },
           { subjectId: "eg", type: "theory", status: "absent" },
           { subjectId: "math", type: "theory", status: "absent" },
-          { subjectId: "chem", type: "lab", status: "absent" },
-          { subjectId: "ds", type: "lab", status: "absent" },
+          { subjectId: "chem_lab", type: "lab", status: "absent" },
+          { subjectId: "ds_lab", type: "lab", status: "absent" },
         ],
       },
 
       {
         date: "2026-01-8",
         lectures: [
-          { subjectId: "eg", type: "lab", status: "absent" },
+          { subjectId: "eg_lab", type: "lab", status: "absent" },
           { subjectId: "phy", type: "theory", status: "absent" },
           { subjectId: "math", type: "theory", status: "absent" },
           { subjectId: "ss", type: "theory", status: "absent" },
@@ -73,9 +73,9 @@ export const DEFAULT_SEMESTERS = [
         lectures: [
           { subjectId: "iks", type: "theory", status: "absent" },
           { subjectId: "phy", type: "theory", status: "absent" },
-          { subjectId: "python", type: "lab", status: "absent" },
+          { subjectId: "python_lab", type: "lab", status: "absent" },
           { subjectId: "eg", type: "theory", status: "absent" },
-          { subjectId: "work", type: "lab", status: "absent" },
+          { subjectId: "workshop", type: "lab", status: "absent" },
         ],
       },
 
@@ -84,9 +84,9 @@ export const DEFAULT_SEMESTERS = [
         lectures: [
           { subjectId: "python", type: "theory", status: "absent" },
           { subjectId: "eg", type: "theory", status: "absent" },
-          { subjectId: "iks", type: "lab", status: "absent" },
+          { subjectId: "iks_lab", type: "lab", status: "absent" },
           { subjectId: "ds", type: "theory", status: "absent" },
-          { subjectId: "math", type: "lab", status: "absent" },
+          { subjectId: "math_lab", type: "lab", status: "absent" },
         ],
       },
 
@@ -94,11 +94,21 @@ export const DEFAULT_SEMESTERS = [
         date: "2026-01-13",
         lectures: [
           { subjectId: "ds", type: "theory", status: "absent" },
-          { subjectId: "phy", type: "lab", status: "absent" },
+          { subjectId: "phy_lab", type: "lab", status: "absent" },
           { subjectId: "chem", type: "theory", status: "absent" },
           { subjectId: "python", type: "theory", status: "absent" },
           { subjectId: "iks", type: "theory", status: "absent" },
         ],
+      },
+
+      {
+        date: "2026-01-14",
+        lectures: [],
+      },
+
+      {
+        date: "2026-01-15",
+        lectures: [],
       },
       
       {
@@ -106,9 +116,9 @@ export const DEFAULT_SEMESTERS = [
         lectures: [
           { subjectId: "iks", type: "theory", status: "absent" },
           { subjectId: "phy", type: "theory", status: "absent" },
-          { subjectId: "python", type: "lab", status: "absent" },
+          { subjectId: "python_lab", type: "lab", status: "absent" },
           { subjectId: "eg", type: "theory", status: "absent" },
-          { subjectId: "work", type: "lab", status: "absent" },
+          { subjectId: "workshop", type: "lab", status: "absent" },
         ],
       },
 
@@ -117,9 +127,9 @@ export const DEFAULT_SEMESTERS = [
         lectures: [
           { subjectId: "python", type: "theory", status: "absent" },
           { subjectId: "eg", type: "theory", status: "absent" },
-          { subjectId: "iks", type: "lab", status: "absent" },
+          { subjectId: "iks_lab", type: "lab", status: "absent" },
           { subjectId: "ds", type: "theory", status: "absent" },
-          { subjectId: "math", type: "lab", status: "absent" },
+          { subjectId: "math_tut", type: "lab", status: "absent" },
         ],
       },
 
@@ -127,7 +137,7 @@ export const DEFAULT_SEMESTERS = [
         date: "2026-01-20",
         lectures: [
           { subjectId: "ds", type: "theory", status: "absent" },
-          { subjectId: "phy", type: "lab", status: "absent" },
+          { subjectId: "phy_lab", type: "lab", status: "absent" },
           { subjectId: "chem", type: "theory", status: "absent" },
           { subjectId: "python", type: "theory", status: "absent" },
           { subjectId: "iks", type: "theory", status: "absent" },
@@ -140,15 +150,15 @@ export const DEFAULT_SEMESTERS = [
           { subjectId: "chem", type: "theory", status: "absent" },
           { subjectId: "eg", type: "theory", status: "absent" },
           { subjectId: "math", type: "theory", status: "absent" },
-          { subjectId: "chem", type: "lab", status: "absent" },
-          { subjectId: "ds", type: "lab", status: "absent" },
+          { subjectId: "chem_lab", type: "lab", status: "absent" },
+          { subjectId: "ds_lab", type: "lab", status: "absent" },
         ],
       },
 
       {
         date: "2026-01-22",
         lectures: [
-          { subjectId: "eg", type: "lab", status: "absent" },
+          { subjectId: "eg_lab", type: "lab", status: "absent" },
           { subjectId: "phy", type: "theory", status: "absent" },
           { subjectId: "math", type: "theory", status: "absent" },
           { subjectId: "ss", type: "theory", status: "absent" },
@@ -160,9 +170,9 @@ export const DEFAULT_SEMESTERS = [
         lectures: [
           { subjectId: "iks", type: "theory", status: "absent" },
           { subjectId: "phy", type: "theory", status: "absent" },
-          { subjectId: "python", type: "lab", status: "absent" },
+          { subjectId: "python_lab", type: "lab", status: "absent" },
           { subjectId: "eg", type: "theory", status: "absent" },
-          { subjectId: "work", type: "lab", status: "absent" },
+          { subjectId: "workshop", type: "lab", status: "absent" },
         ],
       },
 
@@ -176,7 +186,7 @@ export const DEFAULT_SEMESTERS = [
         date: "2026-01-27",
         lectures: [
           { subjectId: "ds", type: "theory", status: "present" },
-          { subjectId: "phy", type: "lab", status: "present" },
+          { subjectId: "phy_lab", type: "lab", status: "present" },
           { subjectId: "chem", type: "theory", status: "present" },
           { subjectId: "python", type: "theory", status: "free" },
           { subjectId: "iks", type: "theory", status: "absent" },
@@ -190,8 +200,8 @@ export const DEFAULT_SEMESTERS = [
           { subjectId: "chem", type: "theory", status: "present" },
           { subjectId: "eg", type: "theory", status: "present" },
           { subjectId: "math", type: "theory", status: "present" },
-          { subjectId: "chem", type: "lab", status: "present" },
-          { subjectId: "ds", type: "lab", status: "cancelled" },
+          { subjectId: "chem_lab", type: "lab", status: "present" },
+          { subjectId: "ds_lab", type: "lab", status: "cancelled" },
         ],
       },
 
@@ -199,7 +209,7 @@ export const DEFAULT_SEMESTERS = [
       {
         date: "2026-01-29",
         lectures: [
-          { subjectId: "eg", type: "lab", status: "present" },
+          { subjectId: "eg_lab", type: "lab", status: "present" },
           { subjectId: "phy", type: "theory", status: "present" },
           { subjectId: "math", type: "theory", status: "present" },
           { subjectId: "ss", type: "theory", status: "absent" },
@@ -212,9 +222,9 @@ export const DEFAULT_SEMESTERS = [
         lectures: [
           { subjectId: "iks", type: "theory", status: "present" },
           { subjectId: "phy", type: "theory", status: "present" },
-          { subjectId: "python", type: "lab", status: "present" },
+          { subjectId: "python_lab", type: "lab", status: "present" },
           { subjectId: "eg", type: "theory", status: "present" },
-          { subjectId: "work", type: "lab", status: "present" },
+          { subjectId: "workshop", type: "lab", status: "present" },
         ],
       },
     ],

@@ -1,23 +1,10 @@
 // src/context/SemesterContext.jsx
 import { createContext, useContext, useEffect, useState } from "react";
 import { DEFAULT_SEMESTERS } from "../data/defaultSemesters";
-import { WEEKLY_TIMETABLE } from "../data/timetable";
+import { getLecturesForDate } from "../utils/timetableUtils";
 import { getTodayDate } from "../store/attendanceStore";
 
 const SemesterContext = createContext();
-
-/* ===== CORRECT WEEKDAY KEY ===== */
-function getWeekdayKey(dateStr) {
-  const day = new Date(dateStr).getDay();
-  const map = {
-    1: "monday",
-    2: "tuesday",
-    3: "wednesday",
-    4: "thursday",
-    5: "friday",
-  };
-  return map[day] || null;
-}
 
 export function SemesterProvider({ children }) {
   const [semesters, setSemesters] = useState(() => {
@@ -61,8 +48,10 @@ export function SemesterProvider({ children }) {
         const weekdayKey = getWeekdayKey(date);
         if (!weekdayKey) return sem;
 
-        const daySchedule =
-          WEEKLY_TIMETABLE[weekdayKey] || [];
+        const daySchedule = getLecturesForDate(
+          date,
+          currentSemesterId
+        );
 
         if (daySchedule.length === 0) return sem;
 

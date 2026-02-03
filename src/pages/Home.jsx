@@ -8,10 +8,15 @@ import QuickTodayAttendance from "../components/QuickTodayAttendance";
 import OverallAttendanceModal from "../components/OverallAttendanceModal";
 
 export default function Home() {
-  const { currentSemester } = useSemester();
+  const {
+    currentSemester,
+    setCurrentSemesterId,
+    semesters,
+  } = useSemester();
 
   const [quickOpen, setQuickOpen] = useState(false);
   const [overallOpen, setOverallOpen] = useState(false);
+  const [showAllLogs, setShowAllLogs] = useState(false);
 
   const { theory, lab, overall } =
     calculateOverallAttendance(currentSemester);
@@ -64,9 +69,23 @@ export default function Home() {
     ),
     ...(todayLogEntry ? [todayLogEntry] : []),
   ].sort((a, b) => new Date(b.date) - new Date(a.date));
+  const visibleLogs = showAllLogs ? logs : logs.slice(0, 7);
+  const statusStyles = {
+    present:
+      "bg-green-100 text-green-700 dark:bg-green-500/20 dark:text-green-200",
+    absent:
+      "bg-red-100 text-red-700 dark:bg-red-500/20 dark:text-red-200",
+    free:
+      "bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-200",
+    cancelled:
+      "bg-gray-100 text-gray-700 dark:bg-gray-500/20 dark:text-gray-200",
+    pending:
+      "bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-200",
+  };
 
   return (
     <div className="max-w-6xl mx-auto px-4 pt-6 pb-24 space-y-8">
+
       {/* ===== HEADER ===== */}
 <div className="flex flex-col gap-2 sm:block">
   <div className="flex items-center justify-between sm:block">
@@ -75,11 +94,10 @@ export default function Home() {
     </h1>
 
     {/* ===== MOBILE ONLY SEMESTER SELECTOR ===== */}
-    <div className="sm:hidden">
-        <select
+        <div className="sm:hidden">
+          <select
             value={currentSemester.id}
-            onChange={(e) => {}}
-            disabled
+            onChange={(e) => setCurrentSemesterId(e.target.value)}
             className="
               px-2 py-1 text-sm rounded-md
               bg-gray-100 dark:bg-gray-800
@@ -87,7 +105,11 @@ export default function Home() {
               text-gray-900 dark:text-gray-100
             "
           >
-            <option>{currentSemester.name}</option>
+            {semesters.map((sem) => (
+              <option key={sem.id} value={sem.id}>
+                {sem.name}
+              </option>
+            ))}
           </select>
         </div>
       </div>
@@ -187,22 +209,33 @@ export default function Home() {
 
       {/* ===== LOGS ===== */}
       <section className="space-y-4">
-        <div>
-          <h2 className="text-lg font-semibold">
-            Attendance Logs
-          </h2>
-          <p className="text-sm text-gray-500 dark:text-gray-400">
-            Latest entries with dates
-          </p>
+        <div className="flex items-center justify-between gap-4">
+          <div>
+            <h2 className="text-lg font-semibold">
+              Attendance Logs
+            </h2>
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              Latest entries with dates
+            </p>
+          </div>
+          {logs.length > 7 && (
+            <button
+              type="button"
+              onClick={() => setShowAllLogs((prev) => !prev)}
+              className="text-sm font-medium text-blue-600 dark:text-blue-400 hover:underline"
+            >
+              {showAllLogs ? "View recent" : "View all"}
+            </button>
+          )}
         </div>
 
         <div className="space-y-3">
-          {logs.length === 0 ? (
+          {visibleLogs.length === 0 ? (
             <div className="rounded-xl border border-dashed border-gray-300 dark:border-gray-700 p-4 text-sm text-gray-500 dark:text-gray-400">
               No attendance logs yet.
             </div>
           ) : (
-            logs.map((day) => (
+            visibleLogs.map((day) => (
               <div
                 key={day.date}
                 className="rounded-xl bg-white dark:bg-gray-800 p-4 border border-gray-200 dark:border-gray-700"
@@ -217,10 +250,10 @@ export default function Home() {
                     }
                   )}
                 </p>
-                <div className="mt-2 flex flex-wrap gap-2 text-xs">
+                <div className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
                   {day.lectures.length === 0 ? (
                     <span className="text-gray-500 dark:text-gray-400">
-                      Holiday / No lectures attended
+                      Holiday / No lectures
                     </span>
                   ) : (
                     day.lectures.map((lecture, index) => {
@@ -233,12 +266,26 @@ export default function Home() {
                       const statusLabel =
                         lecture.status ?? "pending";
                       return (
-                        <span
+                        <div
                           key={`${day.date}-${lecture.subjectId}-${index}`}
-                          className="rounded-full border border-gray-200 dark:border-gray-700 px-2 py-1 text-gray-600 dark:text-gray-300"
+                          className="flex items-center justify-between gap-2 rounded-lg border border-gray-200/70 dark:border-gray-700/70 px-3 py-2 text-xs text-gray-700 dark:text-gray-200"
                         >
-                          {label} • {statusLabel}
-                        </span>
+                          <div>
+                            <p className="font-medium">
+                              {label}
+                            </p>
+                            <p className="text-[11px] text-gray-500 dark:text-gray-400">
+                              {lecture.type}
+                            </p>
+                          </div>
+                          <span
+                            className={`rounded-full px-2 py-0.5 text-[11px] font-semibold capitalize ${
+                              statusStyles[statusLabel]
+                            }`}
+                          >
+                            {statusLabel}
+                          </span>
+                        </div>
                       );
                     })
                   )}

@@ -10,7 +10,7 @@ import {
 import Modal from "./Modal";
 import { useSemester } from "../context/SemesterContext";
 
-/* ===== Premium tooltip (same style) ===== */
+/* ===== Premium tooltip ===== */
 function CustomTooltip({ active, payload, label }) {
   if (!active || !payload || !payload.length) return null;
 
@@ -30,31 +30,24 @@ function CustomTooltip({ active, payload, label }) {
 export default function OverallAttendanceModal({ open, onClose }) {
   const { currentSemester } = useSemester();
 
-  // Last 14 days
-  const days = Array.from({ length: 14 }, (_, i) => {
-    const d = new Date();
-    d.setDate(d.getDate() - (13 - i));
-    return d.toISOString().split("T")[0];
-  });
+  /* ===== SORT DAYS CHRONOLOGICALLY ===== */
+  const sortedDays = [...currentSemester.attendanceData].sort(
+    (a, b) => new Date(a.date) - new Date(b.date)
+  );
 
   let totalConducted = 0;
   let totalAttended = 0;
 
-  const data = days.map((date) => {
-    const day = currentSemester.attendanceData.find(
-      (d) => d.date === date
-    );
+  /* ===== CUMULATIVE OVERALL ATTENDANCE ===== */
+  const data = sortedDays.map((day) => {
+    day.lectures.forEach((l) => {
+      if (l.status === "cancelled") return;
 
-    if (day) {
-      day.lectures.forEach((l) => {
-        if (l.status !== "cancelled") {
-          totalConducted++;
-          if (l.status === "present" || l.status === "free") {
-            totalAttended++;
-          }
-        }
-      });
-    }
+      totalConducted++;
+      if (l.status === "present" || l.status === "free") {
+        totalAttended++;
+      }
+    });
 
     const percentage =
       totalConducted === 0
@@ -62,7 +55,7 @@ export default function OverallAttendanceModal({ open, onClose }) {
         : Math.round((totalAttended / totalConducted) * 100);
 
     return {
-      date: new Date(date).toLocaleDateString("en-GB", {
+      date: new Date(day.date).toLocaleDateString("en-GB", {
         day: "2-digit",
         month: "short",
       }),
@@ -103,6 +96,7 @@ export default function OverallAttendanceModal({ open, onClose }) {
             strokeWidth={3}
             dot={{ r: 4, fill: "#22c55e" }}
             activeDot={{ r: 6 }}
+            isAnimationActive
             style={{
               filter:
                 "drop-shadow(0 0 6px rgba(34,197,94,0.6))",

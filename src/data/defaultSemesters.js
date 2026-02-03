@@ -175,11 +175,11 @@ export const DEFAULT_SEMESTERS = [
       {
         date: "2026-01-27",
         lectures: [
-          { subjectId: "python", type: "theory", status: "present" },
-          { subjectId: "eg", type: "theory", status: "present" },
-          { subjectId: "iks", type: "theory", status: "absent" },
-          { subjectId: "math", type: "theory", status: "present" },
           { subjectId: "ds", type: "theory", status: "present" },
+          { subjectId: "phy", type: "lab", status: "present" },
+          { subjectId: "chem", type: "theory", status: "present" },
+          { subjectId: "python", type: "theory", status: "free" },
+          { subjectId: "iks", type: "theory", status: "absent" },
         ],
       },
 
@@ -191,7 +191,7 @@ export const DEFAULT_SEMESTERS = [
           { subjectId: "eg", type: "theory", status: "present" },
           { subjectId: "math", type: "theory", status: "present" },
           { subjectId: "chem", type: "lab", status: "present" },
-          { subjectId: "ds", type: "lab", status: "cancelled" }, // DS lab cancelled
+          { subjectId: "ds", type: "lab", status: "cancelled" },
         ],
       },
 
@@ -199,10 +199,10 @@ export const DEFAULT_SEMESTERS = [
       {
         date: "2026-01-29",
         lectures: [
+          { subjectId: "eg", type: "lab", status: "present" },
           { subjectId: "phy", type: "theory", status: "present" },
           { subjectId: "math", type: "theory", status: "present" },
-          { subjectId: "ds", type: "theory", status: "absent" }, // CS → DS assumed
-          { subjectId: "iks", type: "theory", status: "absent" }, // SS assumed as IKS
+          { subjectId: "ss", type: "theory", status: "absent" },
         ],
       },
 
@@ -214,6 +214,7 @@ export const DEFAULT_SEMESTERS = [
           { subjectId: "phy", type: "theory", status: "present" },
           { subjectId: "python", type: "lab", status: "present" },
           { subjectId: "eg", type: "theory", status: "present" },
+          { subjectId: "work", type: "lab", status: "present" },
         ],
       },
     ],

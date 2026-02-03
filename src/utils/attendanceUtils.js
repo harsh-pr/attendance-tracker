@@ -148,3 +148,36 @@ export function calculateOverallAttendance(semester) {
     },
   };
 }
+
+export function buildCumulativeAttendanceSeries(attendanceData, days) {
+  let totalConducted = 0;
+  let totalAttended = 0;
+
+  return days.map(date => {
+    const day = attendanceData.find(d => d.date === date);
+
+    if (day) {
+      day.lectures.forEach(l => {
+        if (l.status === "cancelled") return;
+
+        totalConducted++;
+
+        if (l.status === "present" || l.status === "free") {
+          totalAttended++;
+        }
+      });
+    }
+
+    const percentage =
+      totalConducted === 0
+        ? 0
+        : Math.round((totalAttended / totalConducted) * 100);
+
+    return {
+      date,
+      percentage,
+      totalConducted,
+      totalAttended,
+    };
+  });
+}

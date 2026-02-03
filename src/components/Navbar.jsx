@@ -13,28 +13,28 @@ export default function Navbar() {
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800">
-      <div className="flex items-center gap-6 px-6 h-14">
-        {/* App Title */}
-        <h1
-          className="
-            text-2xl font-extrabold tracking-tight
-            text-black dark:text-white
-            font-[Poppins]
-          "
-        >
+      <div className="flex items-center px-4 sm:px-6 h-14">
+        
+        {/* ===== MOBILE TITLE (CENTERED) ===== */}
+        <h1 className="sm:hidden absolute left-1/2 -translate-x-1/2 text-lg font-extrabold text-black dark:text-white font-[Poppins]">
           AttendanceManager
         </h1>
 
-        {/* Semester Selector */}
+        {/* ===== DESKTOP TITLE ===== */}
+        <h1 className="hidden sm:block text-2xl font-extrabold tracking-tight text-black dark:text-white font-[Poppins]">
+          AttendanceManager
+        </h1>
+
+        {/* ===== DESKTOP SEMESTER SELECTOR ===== */}
         <select
           value={currentSemesterId}
           onChange={(e) => setCurrentSemesterId(e.target.value)}
           className="
+            hidden sm:block ml-4
             px-3 py-1 rounded-lg text-sm
             bg-gray-100 dark:bg-gray-800
             border border-gray-300 dark:border-gray-700
             text-gray-900 dark:text-gray-100
-            focus:outline-none
             cursor-pointer
           "
         >
@@ -45,8 +45,8 @@ export default function Navbar() {
           ))}
         </select>
 
-        {/* Navigation Tabs */}
-        <nav className="flex items-center gap-4 ml-4">
+        {/* ===== DESKTOP NAV ===== */}
+        <nav className="hidden sm:flex items-center gap-4 ml-6">
           <NavItem to="/">Home</NavItem>
           <NavItem to="/today">Detailed</NavItem>
           <NavItem to="/calendar">Calendar</NavItem>
@@ -54,30 +54,25 @@ export default function Navbar() {
           <NavItem to="/settings">Settings</NavItem>
         </nav>
 
-        {/* Spacer */}
         <div className="flex-1" />
 
-        {/* Theme Toggle */}
+        {/* ===== THEME TOGGLE (DESKTOP ONLY) ===== */}
         <button
           onClick={toggleTheme}
           className="
+            hidden sm:flex
             relative w-14 h-7 rounded-full
             bg-gray-300 dark:bg-gray-700
             transition-colors duration-300
-            cursor-pointer
-            flex items-center
+            cursor-pointer items-center
           "
-          aria-label="Toggle theme"
         >
-          {/* Slider */}
           <span
             className={`
               absolute left-1 top-1
-              w-5 h-5 rounded-full
-              bg-white
-              flex items-center justify-center
-              text-xs
-              transition-all duration-300 ease-in-out
+              w-5 h-5 rounded-full bg-white
+              flex items-center justify-center text-xs
+              transition-all duration-300
               ${theme === "dark" ? "translate-x-7" : ""}
             `}
           >
@@ -96,8 +91,7 @@ function NavItem({ to, children }) {
       className={({ isActive }) =>
         `
         px-3 py-1.5 rounded-lg text-sm font-medium
-        transition-all duration-200
-        cursor-pointer
+        transition-all duration-200 cursor-pointer
         ${
           isActive
             ? "bg-blue-600 text-white"

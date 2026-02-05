@@ -1,6 +1,6 @@
-import { useState } from "react";
 import Modal from "../components/Modal";
 import { useSemester } from "../context/SemesterContext";
+import { useRef, useState } from "react";
 
 const weekDays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
@@ -40,6 +40,18 @@ const statusConfig = {
     tile:
       "bg-white text-gray-700 dark:bg-gray-800 dark:text-gray-200",
   },
+};
+
+const exportPalette = {
+  full: { background: "#12352a", text: "#d1fae5" },
+  partial: { background: "#3a2e12", text: "#fde68a" },
+  absent: { background: "#3b1a1a", text: "#fecaca" },
+  holiday: { background: "#0f2a3a", text: "#bae6fd" },
+  none: { background: "#111827", text: "#e5e7eb" },
+  border: "#1f2937",
+  muted: "#9ca3af",
+  surface: "#0b1120",
+  softSurface: "#0f172a",
 };
 
 const lectureStatusStyles = {
@@ -111,6 +123,7 @@ export default function Calendar() {
   const [selectedDay, setSelectedDay] = useState(null);
   const [allRemindersOpen, setAllRemindersOpen] = useState(false);
   const [addReminderOpen, setAddReminderOpen] = useState(false);
+  const exportRef = useRef(null);
   const [reminderForm, setReminderForm] = useState({
     title: "",
     date: "",
@@ -204,6 +217,33 @@ export default function Calendar() {
   ).length;
   const attendanceThisMonth = totalMarkedDays
     ? Math.round((attendedDays / totalMarkedDays) * 100)
+    : 0;
+
+  const entriesThisMonth = attendanceData.filter((entry) => {
+    const parsed = parseDateString(entry.date);
+    return (
+      parsed &&
+      parsed.getFullYear() === year &&
+      parsed.getMonth() === monthIndex
+    );
+  });
+  const { totalClasses, totalAttended } = entriesThisMonth.reduce(
+    (acc, entry) => {
+      (entry.lectures ?? []).forEach((lecture) => {
+        const status = lecture.status ?? "pending";
+        if (["present", "absent", "partial"].includes(status)) {
+          acc.totalClasses += 1;
+          if (status === "present" || status === "partial") {
+            acc.totalAttended += 1;
+          }
+        }
+      });
+      return acc;
+    },
+    { totalClasses: 0, totalAttended: 0 }
+  );
+  const overallAttendancePct = totalClasses
+    ? Math.round((totalAttended / totalClasses) * 100)
     : 0;
 
   const previousMonthDate = new Date(year, monthIndex - 1, 1);
@@ -302,37 +342,79 @@ export default function Calendar() {
     });
   };
 
-  const handleExportMonth = () => {
-    const rows = [
-      ["Date", "Subject", "Type", "Status"].join(","),
-    ];
-    calendarDays.forEach((day) => {
-      const dateLabel = day.date.toISOString().slice(0, 10);
-      if (!day.dayEntry || day.dayEntry.lectures.length === 0) {
-        rows.push([dateLabel, "Holiday", "-", "-"].join(","));
-        return;
+  const handleExportMonth = async () => {
+    if (!exportRef.current) return;
+    const html2canvas = window.html2canvas;
+    const jsPDF = window.jspdf?.jsPDF;
+    if (!html2canvas || !jsPDF) return;
+    const canvas = await html2canvas(exportRef.current, {
+      scale: 2,
+      useCORS: true,
+      backgroundColor: exportPalette.surface,
+    });
+    const pdf = new jsPDF({
+      orientation: "portrait",
+      unit: "pt",
+      format: "a4",
+    });
+    const pageWidth = pdf.internal.pageSize.getWidth();
+    const pageHeight = pdf.internal.pageSize.getHeight();
+    const pageHeightPx = Math.floor(
+      (pageHeight * canvas.width) / pageWidth
+    );
+    const overlapPx = 2;
+    let renderedPages = 0;
+
+    while (renderedPages * pageHeightPx < canvas.height) {
+      const sourceY =
+        renderedPages === 0
+          ? 0
+          : renderedPages * pageHeightPx - overlapPx;
+      const sliceHeight = Math.min(
+        pageHeightPx + (renderedPages === 0 ? 0 : overlapPx),
+        canvas.height - sourceY
+      );
+      const pageCanvas = document.createElement("canvas");
+      pageCanvas.width = canvas.width;
+      pageCanvas.height = sliceHeight;
+      const pageContext = pageCanvas.getContext("2d");
+      if (!pageContext) return;
+      pageContext.fillStyle = exportPalette.surface;
+      pageContext.fillRect(0, 0, pageCanvas.width, pageCanvas.height);
+      pageContext.drawImage(
+        canvas,
+        0,
+        sourceY,
+        canvas.width,
+        sliceHeight,
+        0,
+        0,
+        canvas.width,
+        sliceHeight
+      );
+      const imageData = pageCanvas.toDataURL("image/png");
+      if (renderedPages > 0) {
+        pdf.addPage();
       }
-      day.dayEntry.lectures.forEach((lecture) => {
-        const subject = subjectsById.get(lecture.subjectId);
-        rows.push(
-          [
-            dateLabel,
-            subject?.name ?? lecture.subjectId,
-            lecture.type ?? "-",
-            lecture.status ?? "pending",
-          ].join(",")
-        );
-      });
-    });
-    const blob = new Blob([rows.join("\n")], {
-      type: "text/csv;charset=utf-8;",
-    });
-    const url = URL.createObjectURL(blob);
-    const anchor = document.createElement("a");
-    anchor.href = url;
-    anchor.download = `attendance-${year}-${monthIndex + 1}.csv`;
-    anchor.click();
-    URL.revokeObjectURL(url);
+      pdf.setFillColor(exportPalette.surface);
+      pdf.rect(0, 0, pageWidth, pageHeight, "F");
+      const renderedHeight =
+        sliceHeight < pageHeightPx
+          ? (sliceHeight * pageWidth) / canvas.width
+          : pageHeight;
+      pdf.addImage(
+        imageData,
+        "PNG",
+        0,
+        0,
+        pageWidth,
+        renderedHeight
+      );
+      renderedPages += 1;
+    }
+
+    const monthNumber = String(monthIndex + 1).padStart(2, "0");
+    pdf.save(`attendance-${year}-${monthNumber}.pdf`);
   };
 
   const handleAddReminder = (event) => {
@@ -371,6 +453,172 @@ export default function Calendar() {
 
   return (
     <div className="max-w-6xl mx-auto px-4 pt-6 pb-10 space-y-6">
+      <div
+        ref={exportRef}
+        className="fixed left-[-9999px] top-0 w-[800px] space-y-6 p-6"
+        style={{ backgroundColor: exportPalette.surface, color: "#f9fafb" }}
+      >
+        <div className="space-y-1">
+          <p
+            className="text-sm font-semibold uppercase tracking-[0.2em]"
+            style={{ color: exportPalette.muted }}
+          >
+            Attendance Summary
+          </p>
+          <h2 className="text-2xl font-semibold">{monthLabel}</h2>
+        </div>
+
+        <div
+          className="rounded-2xl p-4 shadow-sm"
+          style={{
+            border: `1px solid ${exportPalette.border}`,
+            backgroundColor: exportPalette.surface,
+          }}
+        >
+          <div
+            className="grid grid-cols-7 gap-2 text-[10px] font-semibold uppercase tracking-wide"
+            style={{ color: exportPalette.muted }}
+          >
+            {weekDays.map((day) => (
+              <div key={`export-${day}`} className="text-center">
+                {day}
+              </div>
+            ))}
+          </div>
+          <div className="mt-2 grid grid-cols-7 gap-2">
+            {leadingBlanks.map((blank) => (
+              <div
+                key={`export-${blank.key}`}
+                className="h-12 rounded-lg"
+              />
+            ))}
+            {calendarDays.map((day) => (
+              <div
+                key={`export-day-${day.dayNumber}`}
+                className="flex flex-col justify-between rounded-lg p-2 text-[11px] font-semibold"
+                style={{
+                  border: `1px solid ${exportPalette.border}`,
+                  backgroundColor:
+                    exportPalette[day.status]?.background ??
+                    exportPalette.none.background,
+                  color:
+                    exportPalette[day.status]?.text ?? exportPalette.none.text,
+                }}
+              >
+                <div
+                  className="flex items-center justify-between text-[10px]"
+                  style={{ color: exportPalette.muted }}
+                >
+                  <span>{day.dayNumber}</span>
+                  <span className="h-2 w-2 rounded-full bg-current opacity-60" />
+                </div>
+                <p className="text-[9px] font-semibold uppercase tracking-wide">
+                  {statusConfig[day.status].label}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="grid grid-cols-3 gap-3">
+          {[
+            {
+              label: "Total attendance",
+              value: totalAttended,
+            },
+            {
+              label: "Classes conducted",
+              value: totalClasses,
+            },
+            {
+              label: "Overall percentage",
+              value: `${overallAttendancePct}%`,
+            },
+          ].map((item) => (
+            <div
+              key={`export-summary-${item.label}`}
+              className="rounded-2xl p-4 text-center"
+              style={{
+                border: `1px solid ${exportPalette.border}`,
+                backgroundColor: exportPalette.softSurface,
+              }}
+            >
+              <p
+                className="text-xs font-semibold uppercase tracking-wide"
+                style={{ color: exportPalette.muted }}
+              >
+                {item.label}
+              </p>
+              <p className="mt-2 text-2xl font-semibold">
+                {item.value}
+              </p>
+            </div>
+          ))}
+        </div>
+        <div className="space-y-3">
+          <p
+            className="text-xs font-semibold uppercase tracking-[0.2em]"
+            style={{ color: exportPalette.muted }}
+          >
+            Detailed Attendance Log
+          </p>
+          <div
+            className="rounded-2xl p-4"
+            style={{
+              border: `1px solid ${exportPalette.border}`,
+              backgroundColor: exportPalette.softSurface,
+            }}
+          >
+            <div className="space-y-3 text-sm">
+              {calendarDays.map((day) => {
+                const dateLabel = day.date.toLocaleDateString("en-GB", {
+                  day: "2-digit",
+                  month: "short",
+                  year: "numeric",
+                });
+                const lectures = day.dayEntry?.lectures ?? [];
+                const hasLectures = lectures.length > 0;
+                const logLine = hasLectures
+                  ? lectures
+                      .map((lecture) => {
+                        const subject = subjectsById.get(lecture.subjectId);
+                        const subjectName = subject?.name ?? lecture.subjectId;
+                        const type = lecture.type ?? subject?.type ?? "lecture";
+                        const status = lecture.status ?? "pending";
+                        return `${subjectName} (${type}) · ${status}`;
+                      })
+                      .join(", ")
+                  : day.dayEntry
+                    ? "Holiday · No lectures"
+                    : "No entries";
+                return (
+                  <div
+                    key={`export-log-${day.dayNumber}`}
+                    className="rounded-xl p-3"
+                    style={{
+                      border: `1px solid ${exportPalette.border}`,
+                      backgroundColor:
+                        exportPalette[day.status]?.background ??
+                        exportPalette.none.background,
+                      color:
+                        exportPalette[day.status]?.text ??
+                        exportPalette.none.text,
+                    }}
+                  >
+                    <div className="flex items-center justify-between text-xs">
+                      <span style={{ color: exportPalette.muted }}>
+                        {dateLabel}
+                      </span>
+                      <span>{statusConfig[day.status].label}</span>
+                    </div>
+                    <p className="mt-2 text-xs">{logLine}</p>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      </div>
       <section className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
         <div className="space-y-2">
           <span className="inline-flex items-center gap-2 rounded-full border border-gray-200 dark:border-gray-700 bg-white/80 dark:bg-gray-900/40 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-gray-500 dark:text-gray-400">

@@ -1,6 +1,6 @@
 import Modal from "../components/Modal";
 import { useSemester } from "../context/SemesterContext";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 const weekDays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
@@ -115,14 +115,30 @@ function formatMonthLabel(date) {
     year: "numeric",
   });
 }
+function buildReminderTriggerTime(dateString, timeString) {
+  if (!dateString) return null;
+  const timeValue = timeString || "00:00";
+  const [year, month, day] = dateString.split("-").map(Number);
+  const [hours, minutes] = timeValue.split(":").map(Number);
+  if (!year || !month || !day) return null;
+  return new Date(
+    year,
+    month - 1,
+    day,
+    Number.isNaN(hours) ? 0 : hours,
+    Number.isNaN(minutes) ? 0 : minutes
+  );
+}
 
 export default function Calendar() {
-  const { currentSemester, addReminder } = useSemester();
+  const { currentSemester, addReminder, removeReminder, updateReminder } =
+    useSemester();
   const attendanceData = currentSemester.attendanceData ?? [];
   const reminders = currentSemester.reminders ?? [];
   const [selectedDay, setSelectedDay] = useState(null);
   const [allRemindersOpen, setAllRemindersOpen] = useState(false);
   const [addReminderOpen, setAddReminderOpen] = useState(false);
+  const [editingReminder, setEditingReminder] = useState(null);
   const exportRef = useRef(null);
   const [reminderForm, setReminderForm] = useState({
     title: "",
@@ -420,20 +436,78 @@ export default function Calendar() {
   const handleAddReminder = (event) => {
     event.preventDefault();
     if (!reminderForm.title || !reminderForm.date) return;
-    addReminder({
-      id: `${Date.now()}`,
-      title: reminderForm.title,
-      date: reminderForm.date,
-      time: reminderForm.time,
-      notifications: reminderForm.notifications,
-    });
-    setReminderForm({
-      title: "",
-      date: "",
-      time: "",
-      notifications: ["Mobile"],
-    });
-    setAddReminderOpen(false);
+    const triggerAt = buildReminderTriggerTime(
+      reminderForm.date,
+      reminderForm.time
+    );
+    if (editingReminder) {
+      const updates = {
+        title: reminderForm.title,
+        date: reminderForm.date,
+        time: reminderForm.time,
+        triggerAt: triggerAt?.toISOString() ?? null,
+        notifications: reminderForm.notifications,
+      };
+      updateReminder(editingReminder.id, updates);
+      scheduleReminderNotification({ ...editingReminder, ...updates });
+    } else {
+      const reminder = {
+        id: `${Date.now()}`,
+        title: reminderForm.title,
+        date: reminderForm.date,
+        time: reminderForm.time,
+        triggerAt: triggerAt?.toISOString() ?? null,
+        notifications: reminderForm.notifications,
+      };
+      addReminder(reminder);
+      scheduleReminderNotification(reminder);
+    }
+    handleCloseReminderModal();
+  };
+
+  const scheduleReminderNotification = (reminder) => {
+    const triggerTime = reminder.triggerAt
+      ? new Date(reminder.triggerAt)
+      : buildReminderTriggerTime(reminder.date, reminder.time);
+    if (!triggerTime || Number.isNaN(triggerTime.getTime())) return;
+    const delay = Math.max(triggerTime.getTime() - Date.now(), 0);
+
+    if (reminder.notifications?.includes("Desktop")) {
+      if ("Notification" in window) {
+        const requestPermission =
+          Notification.permission === "default"
+            ? Notification.requestPermission()
+            : Promise.resolve(Notification.permission);
+        requestPermission
+          .then((permission) => {
+            if (permission !== "granted") return;
+            window.setTimeout(() => {
+              new Notification(reminder.title, {
+                body: `Reminder scheduled for ${reminder.date}${
+                  reminder.time ? ` at ${reminder.time}` : ""
+                }`,
+              });
+            }, delay);
+          })
+          .catch((error) =>
+            console.error("Desktop notification request failed.", error)
+          );
+      }
+    }
+
+    if (reminder.notifications?.includes("Mobile")) {
+      const hasPushSupport =
+        "serviceWorker" in navigator && "PushManager" in window;
+      if (!hasPushSupport) {
+        window.setTimeout(() => {
+          window.alert(
+            `Reminder: ${reminder.title}\n${reminder.date}${
+              reminder.time ? ` at ${reminder.time}` : ""
+            }`
+          );
+        }, delay);
+      }
+    }
   };
 
   const handleNotificationToggle = (channel) => {
@@ -450,6 +524,55 @@ export default function Calendar() {
       };
     });
   };
+
+  const handleCloseReminderModal = () => {
+    setReminderForm({
+      title: "",
+      date: "",
+      time: "",
+      notifications: ["Mobile"],
+    });
+    setEditingReminder(null);
+    setAddReminderOpen(false);
+  };
+
+  const handleEditReminder = (reminder) => {
+    setEditingReminder(reminder);
+    setReminderForm({
+      title: reminder.title ?? "",
+      date: reminder.date ?? "",
+      time: reminder.time ?? "",
+      notifications: reminder.notifications?.length
+        ? reminder.notifications
+        : ["Mobile"],
+    });
+    setAddReminderOpen(true);
+  };
+
+  useEffect(() => {
+    const timeouts = reminders.map((reminder) => {
+      const triggerTime = reminder.triggerAt
+        ? new Date(reminder.triggerAt)
+        : buildReminderTriggerTime(reminder.date, reminder.time);
+      if (!triggerTime || Number.isNaN(triggerTime.getTime())) return null;
+      const delay = triggerTime.getTime() - Date.now();
+      if (delay <= 0) {
+        removeReminder(reminder.id);
+        return null;
+      }
+      return window.setTimeout(() => {
+        removeReminder(reminder.id);
+      }, delay);
+    });
+
+    return () => {
+      timeouts.forEach((timeoutId) => {
+        if (timeoutId) {
+          window.clearTimeout(timeoutId);
+        }
+      });
+    };
+  }, [reminders, removeReminder]);
 
   return (
     <div className="max-w-6xl mx-auto px-4 pt-6 pb-10 space-y-6">
@@ -476,6 +599,7 @@ export default function Calendar() {
           }}
         >
           <div
+
             className="grid grid-cols-7 gap-2 text-[10px] font-semibold uppercase tracking-wide"
             style={{ color: exportPalette.muted }}
           >
@@ -641,7 +765,16 @@ export default function Calendar() {
           </button>
           <button
             type="button"
-            onClick={() => setAddReminderOpen(true)}
+            onClick={() => {
+              setEditingReminder(null);
+              setReminderForm({
+                title: "",
+                date: "",
+                time: "",
+                notifications: ["Mobile"],
+              });
+              setAddReminderOpen(true);
+            }}
             className="rounded-full bg-gray-900 text-white dark:bg-white dark:text-gray-900 px-4 py-2 text-sm font-semibold shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
           >
             Add Reminder
@@ -854,7 +987,13 @@ export default function Calendar() {
                         {channel}
                       </span>
                     ))}
-                  </div>
+                    <button
+                      type="button"
+                      onClick={() => handleEditReminder(note)}
+                      className="rounded-full border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-gray-600 dark:text-gray-300 hover:border-gray-300 hover:text-gray-900 dark:hover:border-gray-500 dark:hover:text-white"
+                    >
+                      Edit
+                    </button>                  </div>
                 </div>
               ))
               )}
@@ -921,7 +1060,14 @@ export default function Calendar() {
                         {channel}
                       </span>
                     ))}
-                  </div>
+                    <button
+                      type="button"
+                      onClick={() => handleEditReminder(note)}
+                      className="rounded-full border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-gray-600 dark:text-gray-300 hover:border-gray-300 hover:text-gray-900 dark:hover:border-gray-500 dark:hover:text-white"
+                    >
+                      Edit
+                    </button>                  
+                    </div>
                 </div>
               </div>
             ))
@@ -930,14 +1076,14 @@ export default function Calendar() {
       </Modal>
 
       <Modal
-        open={addReminderOpen}
-        onClose={() => setAddReminderOpen(false)}
+        onClose={handleCloseReminderModal}
         size="lg"
+        showCloseButton={false}
       >
         <div className="flex items-start justify-between gap-4">
           <div>
             <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
-              Add Reminder
+              {editingReminder ? "Edit Reminder" : "Add Reminder"}
             </h2>
             <p className="text-sm text-gray-500 dark:text-gray-400">
               Schedule a reminder and pick your notification channels.
@@ -1035,7 +1181,7 @@ export default function Calendar() {
           <div className="flex justify-end gap-3">
             <button
               type="button"
-              onClick={() => setAddReminderOpen(false)}
+              onClick={handleCloseReminderModal} 
               className="rounded-full border border-gray-200 dark:border-gray-700 px-4 py-2 text-sm font-semibold text-gray-700 dark:text-gray-200"
             >
               Cancel

@@ -12,6 +12,7 @@ export default function Modal({
   onClose,
   children,
   size = "md",
+  showCloseButton = true,
 }) {
   // Lock background scroll
   useEffect(() => {
@@ -49,23 +50,25 @@ export default function Modal({
       >
         {children}
 
-        <div className="mt-6 flex justify-end">
-          <button
-            onClick={onClose}
-            className="
-              px-4 py-2 rounded-lg
-              bg-gray-900 text-white
-              dark:bg-white dark:text-black
-              cursor-pointer
+        {showCloseButton && (
+          <div className="mt-6 flex justify-end">
+            <button
+              onClick={onClose}
+              className="
+                px-4 py-2 rounded-lg
+                bg-gray-900 text-white
+                dark:bg-white dark:text-black
+                cursor-pointer
 
-              transition-all duration-200
-              hover:-translate-y-0.5 hover:shadow-lg
-              active:scale-95
-            "
-          >
-            Close
-          </button>
-        </div>
+                transition-all duration-200
+                hover:-translate-y-0.5 hover:shadow-lg
+                active:scale-95
+              "
+            >
+              Close
+            </button>
+          </div>
+        )}
       </div>
     </div>,
     document.body

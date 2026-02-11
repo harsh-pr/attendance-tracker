@@ -132,6 +132,38 @@ export function SemesterProvider({ children }) {
     );
   }
 
+  function updateReminder(reminderId, updates) {
+    setSemesters((prev) =>
+      prev.map((sem) => {
+        if (sem.id !== currentSemesterId) return sem;
+        const reminders = Array.isArray(sem.reminders)
+          ? sem.reminders
+          : [];
+        return {
+          ...sem,
+          reminders: reminders.map((item) =>
+            item.id === reminderId ? { ...item, ...updates } : item
+          ),
+        };
+      })
+    );
+  }
+
+  function removeReminder(reminderId) {
+    setSemesters((prev) =>
+      prev.map((sem) => {
+        if (sem.id !== currentSemesterId) return sem;
+        const reminders = Array.isArray(sem.reminders)
+          ? sem.reminders
+          : [];
+        return {
+          ...sem,
+          reminders: reminders.filter((item) => item.id !== reminderId),
+        };
+      })
+    );
+  }
+
   function markFullDayAttendance(status, date) {
     const targetDate = date || getTodayDate();
 
@@ -198,6 +230,8 @@ export function SemesterProvider({ children }) {
         setCurrentSemesterId,
         markDayStatus,
         addReminder,
+        updateReminder,
+        removeReminder,
       }}
     >
       {children}

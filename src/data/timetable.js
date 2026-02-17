@@ -4,7 +4,7 @@ export const SEMESTER_TIMETABLES = {
     monday: [
       { subjectId: "python", type: "theory" },
       { subjectId: "eg", type: "theory" },
-      { subjectId: "iks", type: "theory" },
+      { subjectId: "iks", type: "lab" },
       { subjectId: "ds", type: "theory" },
       { subjectId: "math_tut", type: "lab" },
     ],

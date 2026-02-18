@@ -72,7 +72,18 @@ export function SemesterProvider({ children }) {
     if (Number.isNaN(parsed.getTime())) {
       return dateString;
     }
-    return `${parsed.getFullYear()}-${parsed.getMonth() + 1}-${parsed.getDate()}`;
+    const month = String(parsed.getMonth() + 1).padStart(2, "0");
+    const day = String(parsed.getDate()).padStart(2, "0");
+    return `${parsed.getFullYear()}-${month}-${day}`;
+  }
+
+  function buildDayLectures(targetDate, semesterId, status) {
+    const schedule = getLecturesForDate(targetDate, semesterId);
+    return schedule.map((lecture) => ({
+      subjectId: lecture.subjectId,
+      type: lecture.type,
+      status,
+    }));
   }
 
   function markDayStatus(date, status) {
@@ -80,17 +91,12 @@ export function SemesterProvider({ children }) {
     setSemesters((prev) =>
       prev.map((sem) => {
         if (sem.id !== currentSemesterId) return sem;
-        const schedule = getLecturesForDate(targetDate, currentSemesterId);
-        let lectures = [];
+        let dayType = null;
 
-        if (status === "holiday") {
-          lectures = [];
-        } else if (schedule.length) {
-          lectures = schedule.map((lecture) => ({
-            subjectId: lecture.subjectId,
-            type: lecture.type,
-            status,
-          }));
+        if (status === "holiday" || status === "exam") {
+          dayType = status;
+        } else {
+          lectures = buildDayLectures(targetDate, currentSemesterId, status);
         }
 
         const existingDay = sem.attendanceData.find(
@@ -101,7 +107,13 @@ export function SemesterProvider({ children }) {
           return {
             ...sem,
             attendanceData: sem.attendanceData.map((day) =>
-              day.date === targetDate ? { ...day, lectures } : day
+              day.date === targetDate
+                ? {
+                    ...day,
+                    dayType,
+                    lectures,
+                  }
+                : day
             ),
           };
         }
@@ -110,7 +122,117 @@ export function SemesterProvider({ children }) {
           ...sem,
           attendanceData: [
             ...sem.attendanceData,
-            { date: targetDate, lectures },
+            {
+              date: targetDate,
+              dayType,
+              lectures,
+            },
+          ],
+        };
+      })
+    );
+  }
+
+  function markPartialDayAttendance(date, presentSubjectIds) {
+    const targetDate = normalizeDateString(date);
+    const selectedSubjectIds = new Set(presentSubjectIds);
+
+    setSemesters((prev) =>
+      prev.map((sem) => {
+        if (sem.id !== currentSemesterId) return sem;
+
+        const existingDay = sem.attendanceData.find(
+          (day) => day.date === targetDate
+        );
+        const baseLectures =
+          existingDay?.lectures?.length
+            ? existingDay.lectures
+            : buildDayLectures(targetDate, currentSemesterId, null);
+
+        const lectures = baseLectures.map((lecture) => ({
+          ...lecture,
+          status: selectedSubjectIds.has(lecture.subjectId)
+            ? "present"
+            : "absent",
+        }));
+
+        if (existingDay) {
+          return {
+            ...sem,
+            attendanceData: sem.attendanceData.map((day) =>
+              day.date === targetDate
+                ? {
+                    ...day,
+                    dayType: null,
+                    lectures,
+                  }
+                : day
+            ),
+          };
+        }
+
+        return {
+          ...sem,
+          attendanceData: [
+            ...sem.attendanceData,
+            {
+              date: targetDate,
+              dayType: null,
+              lectures,
+            },
+          ],
+        };
+      })
+    );
+  }
+
+  function markDayLectureStatuses(date, statusMap = {}) {
+    const targetDate = normalizeDateString(date);
+
+    setSemesters((prev) =>
+      prev.map((sem) => {
+        if (sem.id !== currentSemesterId) return sem;
+
+        const existingDay = sem.attendanceData.find(
+          (day) => day.date === targetDate
+        );
+        const baseLectures =
+          existingDay?.lectures?.length
+            ? existingDay.lectures
+            : buildDayLectures(targetDate, currentSemesterId, null);
+
+        const lectures = baseLectures.map((lecture) => {
+          const nextStatus = statusMap[lecture.subjectId];
+          return {
+            ...lecture,
+            status: nextStatus ?? lecture.status ?? null,
+          };
+        });
+
+        if (existingDay) {
+          return {
+            ...sem,
+            attendanceData: sem.attendanceData.map((day) =>
+              day.date === targetDate
+                ? {
+                    ...day,
+                    dayType: null,
+                    lectures,
+                  }
+                : day
+            ),
+          };
+        }
+
+        return {
+          ...sem,
+          attendanceData: [
+            ...sem.attendanceData,
+            {
+              date: targetDate,
+              dayType: null,
+              lectures,
+            },
           ],
         };
       })
@@ -229,6 +351,8 @@ export function SemesterProvider({ children }) {
         markTodayAttendance,   // ✅ now provided
         setCurrentSemesterId,
         markDayStatus,
+        markPartialDayAttendance,
+        markDayLectureStatuses,
         addReminder,
         updateReminder,
         removeReminder,

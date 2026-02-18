@@ -1,6 +1,7 @@
 import Modal from "../components/Modal";
 import { useSemester } from "../context/SemesterContext";
 import { useEffect, useRef, useState } from "react";
+import { getLecturesForDate } from "../utils/timetableUtils";
 
 const weekDays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
@@ -33,6 +34,13 @@ const statusConfig = {
     tile:
       "bg-sky-50/80 text-sky-900 dark:bg-sky-500/15 dark:text-sky-100",
   },
+  exam: {
+    label: "Exam Day",
+    badge:
+      "bg-violet-100 text-violet-700 dark:bg-violet-500/20 dark:text-violet-200",
+    tile:
+      "bg-violet-50/80 text-violet-900 dark:bg-violet-500/15 dark:text-violet-100",
+  },
   none: {
     label: "No Data",
     badge:
@@ -47,6 +55,7 @@ const exportPalette = {
   partial: { background: "#3a2e12", text: "#fde68a" },
   absent: { background: "#3b1a1a", text: "#fecaca" },
   holiday: { background: "#0f2a3a", text: "#bae6fd" },
+  exam: { background: "#2b1b3f", text: "#e9d5ff" },
   none: { background: "#111827", text: "#e5e7eb" },
   border: "#1f2937",
   muted: "#9ca3af",
@@ -80,7 +89,13 @@ function parseDateString(dateString) {
   return new Date(year, month - 1, day);
 }
 
-function getDayStatus({ lectures, isWeekend, hasEntry }) {
+function getDayStatus({ lectures, isWeekend, hasEntry, dayType }) {
+  if (dayType === "exam") {
+    return "exam";
+  }
+  if (dayType === "holiday") {
+    return "holiday";
+  }
   const presentCount = lectures.filter(
     (lecture) => lecture.status === "present"
   ).length;
@@ -130,15 +145,36 @@ function buildReminderTriggerTime(dateString, timeString) {
   );
 }
 
+function formatDateKey(date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
 export default function Calendar() {
-  const { currentSemester, addReminder, removeReminder, updateReminder } =
-    useSemester();
+  const {
+    currentSemester,
+    addReminder,
+    removeReminder,
+    updateReminder,
+    markDayStatus,
+    markDayLectureStatuses,
+  } = useSemester();
   const attendanceData = currentSemester.attendanceData ?? [];
   const reminders = currentSemester.reminders ?? [];
   const [selectedDay, setSelectedDay] = useState(null);
   const [allRemindersOpen, setAllRemindersOpen] = useState(false);
   const [addReminderOpen, setAddReminderOpen] = useState(false);
   const [editingReminder, setEditingReminder] = useState(null);
+  const [editDayOpen, setEditDayOpen] = useState(false);
+  const [partialMarkOpen, setPartialMarkOpen] = useState(false);
+  const [partialSelection, setPartialSelection] = useState([]);
+  const [notificationPermission, setNotificationPermission] = useState(
+    typeof window !== "undefined" && "Notification" in window
+      ? Notification.permission
+      : "unsupported"
+  );
   const exportRef = useRef(null);
   const [reminderForm, setReminderForm] = useState({
     title: "",
@@ -147,7 +183,7 @@ export default function Calendar() {
     notifications: ["Mobile"],
   });
 
-  const activeMonthDate = (() => {
+  const initialMonthDate = (() => {
     if (!attendanceData.length) return new Date();
     const latestDate = attendanceData.reduce((latest, entry) => {
       const parsed = parseDateString(entry.date);
@@ -156,6 +192,17 @@ export default function Calendar() {
     }, new Date(0));
     return latestDate;
   })();
+
+  const [activeMonthDate, setActiveMonthDate] = useState(
+    new Date(initialMonthDate.getFullYear(), initialMonthDate.getMonth(), 1)
+  );
+
+  useEffect(() => {
+    setActiveMonthDate(
+      new Date(initialMonthDate.getFullYear(), initialMonthDate.getMonth(), 1)
+    );
+  }, [currentSemester.id]);
+
 
   const monthLabel = formatMonthLabel(activeMonthDate);
   const year = activeMonthDate.getFullYear();
@@ -192,6 +239,7 @@ export default function Calendar() {
       lectures,
       isWeekend,
       hasEntry: Boolean(dayEntry),
+      dayType: dayEntry?.dayType,
     });
 
     return {
@@ -221,6 +269,7 @@ export default function Calendar() {
       partial: 0,
       absent: 0,
       holiday: 0,
+      exam: 0,
       none: 0,
     }
   );
@@ -229,7 +278,7 @@ export default function Calendar() {
     (day) => day.status !== "none"
   ).length;
   const attendedDays = calendarDays.filter((day) =>
-    ["full", "partial"].includes(day.status)
+    ["full", "partial", "exam"].includes(day.status)
   ).length;
   const attendanceThisMonth = totalMarkedDays
     ? Math.round((attendedDays / totalMarkedDays) * 100)
@@ -309,6 +358,7 @@ export default function Calendar() {
     partial: 0,
     absent: 0,
     holiday: 0,
+    exam: 0,
     none: 0,
   };
   for (let day = 1; day <= prevDays; day += 1) {
@@ -320,6 +370,7 @@ export default function Calendar() {
       lectures,
       isWeekend,
       hasEntry: Boolean(entry),
+      dayType: entry?.dayType,
     });
     previousStatusCounts[status] += 1;
   }
@@ -436,6 +487,9 @@ export default function Calendar() {
   const handleAddReminder = (event) => {
     event.preventDefault();
     if (!reminderForm.title || !reminderForm.date) return;
+    if (reminderForm.notifications?.length) {
+      ensureNotificationPermission();
+    }
     const triggerAt = buildReminderTriggerTime(
       reminderForm.date,
       reminderForm.time
@@ -447,9 +501,9 @@ export default function Calendar() {
         time: reminderForm.time,
         triggerAt: triggerAt?.toISOString() ?? null,
         notifications: reminderForm.notifications,
+        delivered: false,
       };
       updateReminder(editingReminder.id, updates);
-      scheduleReminderNotification({ ...editingReminder, ...updates });
     } else {
       const reminder = {
         id: `${Date.now()}`,
@@ -458,11 +512,27 @@ export default function Calendar() {
         time: reminderForm.time,
         triggerAt: triggerAt?.toISOString() ?? null,
         notifications: reminderForm.notifications,
+        delivered: false,
       };
       addReminder(reminder);
-      scheduleReminderNotification(reminder);
     }
     handleCloseReminderModal();
+  };
+
+  const ensureNotificationPermission = async () => {
+    if (!("Notification" in window)) {
+      return "unsupported";
+    }
+
+    if (Notification.permission === "granted") {
+      return "granted";
+    }
+
+    if (Notification.permission === "denied") {
+      return "denied";
+    }
+
+    return Notification.requestPermission();
   };
 
   const scheduleReminderNotification = (reminder) => {
@@ -471,43 +541,41 @@ export default function Calendar() {
       : buildReminderTriggerTime(reminder.date, reminder.time);
     if (!triggerTime || Number.isNaN(triggerTime.getTime())) return;
     const delay = Math.max(triggerTime.getTime() - Date.now(), 0);
+    return window.setTimeout(async () => {
+      const permission = await ensureNotificationPermission();
+      if (permission === "granted") {
+        const body = `Reminder for ${reminder.date}${
+          reminder.time ? ` at ${reminder.time}` : ""
+        }`;
 
-    if (reminder.notifications?.includes("Desktop")) {
-      if ("Notification" in window) {
-        const requestPermission =
-          Notification.permission === "default"
-            ? Notification.requestPermission()
-            : Promise.resolve(Notification.permission);
-        requestPermission
-          .then((permission) => {
-            if (permission !== "granted") return;
-            window.setTimeout(() => {
-              new Notification(reminder.title, {
-                body: `Reminder scheduled for ${reminder.date}${
-                  reminder.time ? ` at ${reminder.time}` : ""
-                }`,
-              });
-            }, delay);
-          })
-          .catch((error) =>
-            console.error("Desktop notification request failed.", error)
-          );
+        if (
+          reminder.notifications?.includes("Mobile") &&
+          "serviceWorker" in navigator
+        ) {
+          try {
+            const registration = await navigator.serviceWorker.ready;
+            await registration.showNotification(reminder.title, {
+              body,
+              tag: `reminder-${reminder.id}`,
+              renotify: true,
+            });
+          } catch (error) {
+            console.error("Mobile notification failed.", error);
+            new Notification(reminder.title, { body });
+          }
+        } else {
+          new Notification(reminder.title, { body });
+        }
+      } else {
+        window.alert(
+          `Reminder: ${reminder.title}\n${reminder.date}${
+            reminder.time ? ` at ${reminder.time}` : ""
+          }`
+        );
       }
-    }
 
-    if (reminder.notifications?.includes("Mobile")) {
-      const hasPushSupport =
-        "serviceWorker" in navigator && "PushManager" in window;
-      if (!hasPushSupport) {
-        window.setTimeout(() => {
-          window.alert(
-            `Reminder: ${reminder.title}\n${reminder.date}${
-              reminder.time ? ` at ${reminder.time}` : ""
-            }`
-          );
-        }, delay);
-      }
-    }
+      removeReminder(reminder.id);
+    }, delay);
   };
 
   const handleNotificationToggle = (channel) => {
@@ -549,21 +617,73 @@ export default function Calendar() {
     setAddReminderOpen(true);
   };
 
+  const handleDayStatusUpdate = (status) => {
+    if (!selectedDay?.date) return;
+    const date = formatDateKey(selectedDay.date);
+    markDayStatus(date, status);
+    setSelectedDay((prev) =>
+      prev
+        ? {
+            ...prev,
+            status: status === "present" ? "full" : status,
+          }
+        : prev
+    );
+    setEditDayOpen(false);
+  };
+
+  const handlePartialAttendanceSave = () => {
+    if (!selectedDay?.date) return;
+    const date = formatDateKey(selectedDay.date);
+    markDayLectureStatuses(date, partialSelection);
+
+    const values = Object.values(partialSelection);
+    const attendedCount = values.filter(
+      (status) => status === "present" || status === "free"
+    ).length;
+    const absentCount = values.filter((status) => status === "absent").length;
+
+    setSelectedDay((prev) =>
+      prev
+        ? {
+            ...prev,
+            status:
+              attendedCount === 0 && absentCount > 0
+                ? "absent"
+                : absentCount === 0 && attendedCount > 0
+                  ? "full"
+                  : "partial",
+          }
+        : prev
+    );
+    setPartialMarkOpen(false);
+    setEditDayOpen(false);
+  };
+
+  const setPartialStatus = (subjectId, status) => {
+    setPartialSelection((prev) => ({
+      ...prev,
+      [subjectId]: status,
+    }));
+  };
+
+  const selectedDayDateKey = selectedDay?.date
+    ? formatDateKey(selectedDay.date)
+    : null;
+  const timetableLectures = selectedDayDateKey
+    ? getLecturesForDate(selectedDayDateKey, currentSemester.id)
+    : [];
+  const selectedDayLectures = selectedDay?.dayEntry?.lectures?.length
+    ? selectedDay.dayEntry.lectures
+    : timetableLectures.map((lecture) => ({
+        ...lecture,
+        status: null,
+      }));
+
   useEffect(() => {
-    const timeouts = reminders.map((reminder) => {
-      const triggerTime = reminder.triggerAt
-        ? new Date(reminder.triggerAt)
-        : buildReminderTriggerTime(reminder.date, reminder.time);
-      if (!triggerTime || Number.isNaN(triggerTime.getTime())) return null;
-      const delay = triggerTime.getTime() - Date.now();
-      if (delay <= 0) {
-        removeReminder(reminder.id);
-        return null;
-      }
-      return window.setTimeout(() => {
-        removeReminder(reminder.id);
-      }, delay);
-    });
+    const timeouts = reminders
+      .filter((reminder) => !reminder.delivered)
+      .map((reminder) => scheduleReminderNotification(reminder));
 
     return () => {
       timeouts.forEach((timeoutId) => {
@@ -573,6 +693,30 @@ export default function Calendar() {
       });
     };
   }, [reminders, removeReminder]);
+
+  useEffect(() => {
+    if (!selectedDay?.date) return;
+    const dateKey = formatDateKey(selectedDay.date);
+    const liveEntry = attendanceData.find((day) => day.date === dateKey);
+    const isWeekend =
+      selectedDay.date.getDay() === 0 || selectedDay.date.getDay() === 6;
+    const liveStatus = getDayStatus({
+      lectures: liveEntry?.lectures ?? [],
+      isWeekend,
+      hasEntry: Boolean(liveEntry),
+      dayType: liveEntry?.dayType,
+    });
+
+    setSelectedDay((prev) =>
+      prev
+        ? {
+            ...prev,
+            dayEntry: liveEntry,
+            status: liveStatus,
+          }
+        : prev
+    );
+  }, [attendanceData, selectedDay?.date]);
 
   return (
     <div className="max-w-6xl mx-auto px-4 pt-6 pb-10 space-y-6">
@@ -758,6 +902,15 @@ export default function Calendar() {
         <div className="flex flex-wrap gap-3">
           <button
             type="button"
+            onClick={async () => {
+              await ensureNotificationPermission();
+            }}
+            className="rounded-full border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-4 py-2 text-sm font-semibold text-gray-700 dark:text-gray-200 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+          >
+            Notifications: {notificationPermission}
+          </button>
+          <button
+            type="button"
             onClick={handleExportMonth}
             className="rounded-full border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-4 py-2 text-sm font-semibold text-gray-700 dark:text-gray-200 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
           >
@@ -816,6 +969,14 @@ export default function Calendar() {
             ),
             status: "holiday",
           },
+          {
+            title: "Exam",
+            value: statusCounts.exam,
+            change: formatDelta(
+              statusCounts.exam - previousStatusCounts.exam
+            ),
+            status: "exam",
+          },
         ].map((item, index) => (
           <div
             key={item.title}
@@ -849,13 +1010,41 @@ export default function Calendar() {
       <section className="grid gap-6 lg:grid-cols-[2.1fr_1fr]">
         <div className="space-y-4 rounded-3xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900/50 p-6 shadow-sm">
           <div className="flex flex-wrap items-center justify-between gap-4">
-            <div>
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={() =>
+                  setActiveMonthDate(
+                    (prev) =>
+                      new Date(prev.getFullYear(), prev.getMonth() - 1, 1)
+                  )
+                }
+                aria-label="Previous month"
+                className="text-xl leading-none text-gray-600 transition hover:scale-110 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white"
+              >
+                ←
+              </button>
+              <div>
               <p className="text-sm font-semibold text-gray-500 dark:text-gray-400">
                 Calendar View
               </p>
               <h2 className="text-2xl font-semibold text-gray-900 dark:text-white">
                 {monthLabel}
               </h2>
+              </div>
+              <button
+                type="button"
+                onClick={() =>
+                  setActiveMonthDate(
+                    (prev) =>
+                      new Date(prev.getFullYear(), prev.getMonth() + 1, 1)
+                  )
+                }
+                aria-label="Next month"
+                className="text-xl leading-none text-gray-600 transition hover:scale-110 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white"
+              >
+                →
+              </button>
             </div>
             <div className="flex flex-wrap gap-2">
               {Object.entries(statusConfig)
@@ -881,42 +1070,42 @@ export default function Calendar() {
 
           <div className="rounded-2xl border border-gray-200 dark:border-gray-700 bg-gray-100/70 dark:bg-gray-800/60 p-2">
             <div className="grid grid-cols-7 gap-1 sm:gap-2">
-            {leadingBlanks.map((blank) => (
-              <div
-                key={blank.key}
-                className="h-12 sm:h-14 rounded-lg border border-transparent"
-              />
-            ))}
-            {calendarDays.map((day, index) => (
-              <button
-                key={day.dayNumber}
-                type="button"
-                onClick={() =>
-                  setSelectedDay({
-                    day: day.dayNumber,
-                    status: day.status,
-                    date: day.date,
-                    dayEntry: day.dayEntry,
-                  })
-                }
-                className={`group h-12 sm:h-14 rounded-lg border border-gray-200/80 dark:border-gray-700/80 bg-white dark:bg-gray-900 p-2 text-[11px] sm:text-sm font-semibold transition ${
-                  statusConfig[day.status].tile
-                } hover:-translate-y-1 hover:border-gray-300 hover:shadow-lg dark:hover:border-gray-600`}
-                style={{
-                  animation: "fadeUp 0.5s ease-out",
-                  animationDelay: `${(index % 7) * 50}ms`,
-                  animationFillMode: "both",
-                }}
-              >
-                <div className="flex items-center justify-between text-[10px] sm:text-xs text-gray-500 dark:text-gray-400">
-                  <span>{day.dayNumber}</span>
-                  <span className="h-2 w-2 rounded-full bg-current opacity-60" />
-                </div>
-                <p className="mt-3 sm:mt-4 text-[9px] sm:text-[11px] font-semibold uppercase tracking-wide">
-                  {statusConfig[day.status].label}
-                </p>
-              </button>
-            ))}
+              {leadingBlanks.map((blank) => (
+                <div
+                  key={blank.key}
+                  className="h-12 sm:h-14 rounded-lg border border-transparent"
+                />
+              ))}
+              {calendarDays.map((day, index) => (
+                <button
+                  key={day.dayNumber}
+                  type="button"
+                  onClick={() =>
+                    setSelectedDay({
+                      day: day.dayNumber,
+                      status: day.status,
+                      date: day.date,
+                      dayEntry: day.dayEntry,
+                    })
+                  }
+                  className={`group h-12 sm:h-14 rounded-lg border border-gray-200/80 dark:border-gray-700/80 bg-white dark:bg-gray-900 p-2 text-[11px] sm:text-sm font-semibold transition ${
+                    statusConfig[day.status].tile
+                  } hover:-translate-y-1 hover:border-gray-300 hover:shadow-lg dark:hover:border-gray-600`}
+                  style={{
+                    animation: "fadeUp 0.5s ease-out",
+                    animationDelay: `${(index % 7) * 50}ms`,
+                    animationFillMode: "both",
+                  }}
+                >
+                  <div className="flex items-center justify-between text-[10px] sm:text-xs text-gray-500 dark:text-gray-400">
+                    <span>{day.dayNumber}</span>
+                    <span className="h-2 w-2 rounded-full bg-current opacity-60" />
+                  </div>
+                  <p className="mt-3 sm:mt-4 text-[9px] sm:text-[11px] font-semibold uppercase tracking-wide">
+                    {statusConfig[day.status].label}
+                  </p>
+                </button>
+              ))}
             </div>
           </div>
         </div>
@@ -1076,6 +1265,7 @@ export default function Calendar() {
       </Modal>
 
       <Modal
+        open={addReminderOpen}
         onClose={handleCloseReminderModal}
         size="lg"
         showCloseButton={false}
@@ -1264,8 +1454,173 @@ export default function Calendar() {
             </div>
           )}
         </div>
+        <div className="mt-6 flex flex-wrap justify-end gap-2">
+          <button
+            type="button"
+            onClick={() => setEditDayOpen(true)}
+            className="rounded-full border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-4 py-2 text-xs font-semibold text-gray-700 dark:text-gray-200"
+          >
+            Mark / Edit Day
+          </button>
+        </div>
         </>
         )}
+      </Modal>
+
+      <Modal
+        open={editDayOpen}
+        onClose={() => setEditDayOpen(false)}
+        size="md"
+      >
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+          Mark attendance for selected date
+        </h3>
+        <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+          Choose full-day status or open partial presentee marking.
+        </p>
+        <div className="mt-4 grid grid-cols-2 gap-2">
+          <button
+            type="button"
+            onClick={() => handleDayStatusUpdate("present")}
+            className="rounded-xl border border-emerald-200 dark:border-emerald-500/30 bg-emerald-50 dark:bg-emerald-500/10 px-3 py-2 text-sm font-semibold text-emerald-700 dark:text-emerald-200"
+          >
+            Full Present
+          </button>
+          <button
+            type="button"
+            onClick={() => handleDayStatusUpdate("absent")}
+            className="rounded-xl border border-rose-200 dark:border-rose-500/30 bg-rose-50 dark:bg-rose-500/10 px-3 py-2 text-sm font-semibold text-rose-700 dark:text-rose-200"
+          >
+            Full Absent
+          </button>
+          <button
+            type="button"
+            onClick={() => handleDayStatusUpdate("holiday")}
+            className="rounded-xl border border-sky-200 dark:border-sky-500/30 bg-sky-50 dark:bg-sky-500/10 px-3 py-2 text-sm font-semibold text-sky-700 dark:text-sky-200"
+          >
+            Holiday
+          </button>
+          <button
+            type="button"
+            onClick={() => handleDayStatusUpdate("exam")}
+            className="rounded-xl border border-violet-200 dark:border-violet-500/30 bg-violet-50 dark:bg-violet-500/10 px-3 py-2 text-sm font-semibold text-violet-700 dark:text-violet-200"
+          >
+            Exam Day
+          </button>
+        </div>
+        <button
+          type="button"
+          onClick={() => {
+            setPartialSelection(
+              selectedDayLectures.reduce((acc, lecture) => {
+                acc[lecture.subjectId] = lecture.status ?? "absent";
+                return acc;
+              }, {})
+            );
+            setPartialMarkOpen(true);
+          }}
+          className="mt-4 w-full rounded-xl border border-amber-200 dark:border-amber-500/30 bg-amber-50 dark:bg-amber-500/10 px-3 py-2 text-sm font-semibold text-amber-700 dark:text-amber-200"
+        >
+          Partial Presentee Marking
+        </button>
+      </Modal>
+
+      <Modal
+        open={partialMarkOpen}
+        onClose={() => setPartialMarkOpen(false)}
+        size="md"
+      >
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+          Mark subject-wise status
+        </h3>
+        <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+          Pick Present, Absent, Free, or Cancelled for each lecture.
+        </p>
+        <div className="mt-4 max-h-72 space-y-2 overflow-y-auto pr-1">
+          {selectedDayLectures.length === 0 ? (
+            <div className="rounded-xl border border-dashed border-gray-300 dark:border-gray-700 p-3 text-sm text-gray-500 dark:text-gray-400">
+              No lectures found for this day.
+            </div>
+          ) : (
+            selectedDayLectures.map((lecture) => {
+              const subject = subjectsById.get(lecture.subjectId);
+              const currentStatus =
+                partialSelection[lecture.subjectId] ?? "absent";
+              return (
+                <div
+                  key={`partial-${lecture.subjectId}`}
+                  className="space-y-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-3 py-3"
+                >
+                  <span className="text-sm font-semibold text-gray-800 dark:text-gray-100">
+                    {subject?.name ?? lecture.subjectId}
+                  </span>
+                  <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+                    {[
+                      {
+                        value: "present",
+                        label: "Present",
+                        className:
+                          "border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-200",
+                      },
+                      {
+                        value: "absent",
+                        label: "Absent",
+                        className:
+                          "border-rose-200 bg-rose-50 text-rose-700 dark:border-rose-500/30 dark:bg-rose-500/10 dark:text-rose-200",
+                      },
+                      {
+                        value: "free",
+                        label: "Free",
+                        className:
+                          "border-sky-200 bg-sky-50 text-sky-700 dark:border-sky-500/30 dark:bg-sky-500/10 dark:text-sky-200",
+                      },
+                      {
+                        value: "cancelled",
+                        label: "Cancelled",
+                        className:
+                          "border-gray-200 bg-gray-100 text-gray-700 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200",
+                      },
+                    ].map((option) => {
+                      const active = currentStatus === option.value;
+                      return (
+                        <button
+                          key={`${lecture.subjectId}-${option.value}`}
+                          type="button"
+                          onClick={() =>
+                            setPartialStatus(lecture.subjectId, option.value)
+                          }
+                          className={`rounded-lg border px-2 py-1.5 text-xs font-semibold transition ${
+                            active
+                              ? `${option.className} ring-2 ring-offset-1 ring-gray-300 dark:ring-gray-500`
+                              : "border-gray-200 text-gray-600 dark:border-gray-700 dark:text-gray-300"
+                          }`}
+                        >
+                          {option.label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            })
+          )}
+        </div>
+        <div className="mt-4 flex justify-end gap-2">
+          <button
+            type="button"
+            onClick={() => setPartialMarkOpen(false)}
+            className="rounded-full border border-gray-200 dark:border-gray-700 px-4 py-2 text-sm font-semibold text-gray-700 dark:text-gray-200"
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            onClick={handlePartialAttendanceSave}
+            className="rounded-full bg-gray-900 px-4 py-2 text-sm font-semibold text-white dark:bg-white dark:text-gray-900"
+          >
+            Save Partial Marking
+          </button>
+        </div>
       </Modal>
     </div>
   );

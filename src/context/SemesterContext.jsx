@@ -91,6 +91,7 @@ export function SemesterProvider({ children }) {
     setSemesters((prev) =>
       prev.map((sem) => {
         if (sem.id !== currentSemesterId) return sem;
+        let lectures = [];
         let dayType = null;
 
         if (status === "holiday" || status === "exam") {
@@ -239,6 +240,23 @@ export function SemesterProvider({ children }) {
     );
   }
 
+  function removeDayAttendance(date) {
+    const targetDate = normalizeDateString(date);
+
+    setSemesters((prev) =>
+      prev.map((sem) => {
+        if (sem.id !== currentSemesterId) return sem;
+
+        return {
+          ...sem,
+          attendanceData: sem.attendanceData.filter(
+            (day) => day.date !== targetDate
+          ),
+        };
+      })
+    );
+  }
+
   function addReminder(reminder) {
     setSemesters((prev) =>
       prev.map((sem) => {
@@ -353,6 +371,7 @@ export function SemesterProvider({ children }) {
         markDayStatus,
         markPartialDayAttendance,
         markDayLectureStatuses,
+        removeDayAttendance,
         addReminder,
         updateReminder,
         removeReminder,

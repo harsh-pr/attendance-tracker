@@ -77,11 +77,6 @@ const lectureStatusStyles = {
     "bg-gray-100 text-gray-600 dark:bg-gray-500/20 dark:text-gray-300",
 };
 
-const notificationOptions = [
-  { value: "Mobile", label: "Mobile" },
-  { value: "Desktop", label: "Desktop" },
-];
-
 function parseDateString(dateString) {
   if (!dateString) return null;
   const [year, month, day] = dateString.split("-").map(Number);
@@ -97,10 +92,14 @@ function getDayStatus({ lectures, isWeekend, hasEntry, dayType }) {
     return "holiday";
   }
   const presentCount = lectures.filter(
-    (lecture) => lecture.status === "present"
+    (lecture) =>
+      lecture.status === "present" || lecture.status === "free"
   ).length;
   const absentCount = lectures.filter(
     (lecture) => lecture.status === "absent"
+  ).length;
+  const cancelledCount = lectures.filter(
+    (lecture) => lecture.status === "cancelled"
   ).length;
 
   if (lectures.length === 0 && isWeekend) {
@@ -117,6 +116,9 @@ function getDayStatus({ lectures, isWeekend, hasEntry, dayType }) {
   }
   if (presentCount > 0 && absentCount > 0) {
     return "partial";
+  }
+  if (lectures.length > 0 && cancelledCount === lectures.length) {
+    return "holiday";
   }
   if (isWeekend) {
     return "holiday";
@@ -160,6 +162,7 @@ export default function Calendar() {
     updateReminder,
     markDayStatus,
     markDayLectureStatuses,
+    removeDayAttendance,
   } = useSemester();
   const attendanceData = currentSemester.attendanceData ?? [];
   const reminders = currentSemester.reminders ?? [];
@@ -169,18 +172,12 @@ export default function Calendar() {
   const [editingReminder, setEditingReminder] = useState(null);
   const [editDayOpen, setEditDayOpen] = useState(false);
   const [partialMarkOpen, setPartialMarkOpen] = useState(false);
-  const [partialSelection, setPartialSelection] = useState([]);
-  const [notificationPermission, setNotificationPermission] = useState(
-    typeof window !== "undefined" && "Notification" in window
-      ? Notification.permission
-      : "unsupported"
-  );
+  const [partialSelection, setPartialSelection] = useState({});
   const exportRef = useRef(null);
   const [reminderForm, setReminderForm] = useState({
     title: "",
     date: "",
     time: "",
-    notifications: ["Mobile"],
   });
 
   const initialMonthDate = (() => {
@@ -202,7 +199,6 @@ export default function Calendar() {
       new Date(initialMonthDate.getFullYear(), initialMonthDate.getMonth(), 1)
     );
   }, [currentSemester.id]);
-
 
   const monthLabel = formatMonthLabel(activeMonthDate);
   const year = activeMonthDate.getFullYear();
@@ -487,9 +483,7 @@ export default function Calendar() {
   const handleAddReminder = (event) => {
     event.preventDefault();
     if (!reminderForm.title || !reminderForm.date) return;
-    if (reminderForm.notifications?.length) {
-      ensureNotificationPermission();
-    }
+    ensureNotificationPermission();
     const triggerAt = buildReminderTriggerTime(
       reminderForm.date,
       reminderForm.time
@@ -500,7 +494,6 @@ export default function Calendar() {
         date: reminderForm.date,
         time: reminderForm.time,
         triggerAt: triggerAt?.toISOString() ?? null,
-        notifications: reminderForm.notifications,
         delivered: false,
       };
       updateReminder(editingReminder.id, updates);
@@ -511,7 +504,6 @@ export default function Calendar() {
         date: reminderForm.date,
         time: reminderForm.time,
         triggerAt: triggerAt?.toISOString() ?? null,
-        notifications: reminderForm.notifications,
         delivered: false,
       };
       addReminder(reminder);
@@ -541,6 +533,7 @@ export default function Calendar() {
       : buildReminderTriggerTime(reminder.date, reminder.time);
     if (!triggerTime || Number.isNaN(triggerTime.getTime())) return;
     const delay = Math.max(triggerTime.getTime() - Date.now(), 0);
+
     return window.setTimeout(async () => {
       const permission = await ensureNotificationPermission();
       if (permission === "granted") {
@@ -548,10 +541,7 @@ export default function Calendar() {
           reminder.time ? ` at ${reminder.time}` : ""
         }`;
 
-        if (
-          reminder.notifications?.includes("Mobile") &&
-          "serviceWorker" in navigator
-        ) {
+        if ("serviceWorker" in navigator) {
           try {
             const registration = await navigator.serviceWorker.ready;
             await registration.showNotification(reminder.title, {
@@ -578,27 +568,11 @@ export default function Calendar() {
     }, delay);
   };
 
-  const handleNotificationToggle = (channel) => {
-    setReminderForm((prev) => {
-      const isSelected = prev.notifications.includes(channel);
-      const notifications = isSelected
-        ? prev.notifications.filter((item) => item !== channel)
-        : [...prev.notifications, channel];
-      return {
-        ...prev,
-        notifications: notifications.length
-          ? notifications
-          : prev.notifications,
-      };
-    });
-  };
-
   const handleCloseReminderModal = () => {
     setReminderForm({
       title: "",
       date: "",
       time: "",
-      notifications: ["Mobile"],
     });
     setEditingReminder(null);
     setAddReminderOpen(false);
@@ -610,9 +584,6 @@ export default function Calendar() {
       title: reminder.title ?? "",
       date: reminder.date ?? "",
       time: reminder.time ?? "",
-      notifications: reminder.notifications?.length
-        ? reminder.notifications
-        : ["Mobile"],
     });
     setAddReminderOpen(true);
   };
@@ -743,7 +714,6 @@ export default function Calendar() {
           }}
         >
           <div
-
             className="grid grid-cols-7 gap-2 text-[10px] font-semibold uppercase tracking-wide"
             style={{ color: exportPalette.muted }}
           >
@@ -902,15 +872,6 @@ export default function Calendar() {
         <div className="flex flex-wrap gap-3">
           <button
             type="button"
-            onClick={async () => {
-              await ensureNotificationPermission();
-            }}
-            className="rounded-full border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-4 py-2 text-sm font-semibold text-gray-700 dark:text-gray-200 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
-          >
-            Notifications: {notificationPermission}
-          </button>
-          <button
-            type="button"
             onClick={handleExportMonth}
             className="rounded-full border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-4 py-2 text-sm font-semibold text-gray-700 dark:text-gray-200 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
           >
@@ -924,7 +885,6 @@ export default function Calendar() {
                 title: "",
                 date: "",
                 time: "",
-                notifications: ["Mobile"],
               });
               setAddReminderOpen(true);
             }}
@@ -942,6 +902,14 @@ export default function Calendar() {
             value: statusCounts.full,
             change: formatDelta(
               statusCounts.full - previousStatusCounts.full
+            ),
+            status: "full",
+          },
+          {
+            title: "Partial days",
+            value: statusCounts.partial,
+            change: formatDelta(
+              statusCounts.partial - previousStatusCounts.partial
             ),
             status: "full",
           },
@@ -969,14 +937,6 @@ export default function Calendar() {
             ),
             status: "holiday",
           },
-          {
-            title: "Exam",
-            value: statusCounts.exam,
-            change: formatDelta(
-              statusCounts.exam - previousStatusCounts.exam
-            ),
-            status: "exam",
-          },
         ].map((item, index) => (
           <div
             key={item.title}
@@ -984,6 +944,7 @@ export default function Calendar() {
             style={{ animationDelay: `${index * 80}ms` }}
           >
             <div className="flex items-center justify-between">
+
               <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
                 {item.title}
               </p>
@@ -1009,8 +970,16 @@ export default function Calendar() {
 
       <section className="grid gap-6 lg:grid-cols-[2.1fr_1fr]">
         <div className="space-y-4 rounded-3xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900/50 p-6 shadow-sm">
-          <div className="flex flex-wrap items-center justify-between gap-4">
-            <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-start justify-between gap-4 pt-1">
+            <div className="space-y-1">
+              <p className="text-sm font-semibold text-gray-500 dark:text-gray-400">
+                Calendar View
+              </p>
+              <h2 className="text-2xl font-semibold text-gray-900 dark:text-white">
+                {monthLabel}
+              </h2>
+            </div>
+            <div className="flex items-center gap-5">
               <button
                 type="button"
                 onClick={() =>
@@ -1020,18 +989,10 @@ export default function Calendar() {
                   )
                 }
                 aria-label="Previous month"
-                className="text-xl leading-none text-gray-600 transition hover:scale-110 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white"
+                className="text-3xl leading-none text-gray-600 transition hover:scale-110 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white"
               >
                 ←
               </button>
-              <div>
-              <p className="text-sm font-semibold text-gray-500 dark:text-gray-400">
-                Calendar View
-              </p>
-              <h2 className="text-2xl font-semibold text-gray-900 dark:text-white">
-                {monthLabel}
-              </h2>
-              </div>
               <button
                 type="button"
                 onClick={() =>
@@ -1041,22 +1002,10 @@ export default function Calendar() {
                   )
                 }
                 aria-label="Next month"
-                className="text-xl leading-none text-gray-600 transition hover:scale-110 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white"
+                className="text-3xl leading-none text-gray-600 transition hover:scale-110 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white"
               >
                 →
               </button>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              {Object.entries(statusConfig)
-                .filter(([key]) => key !== "none")
-                .map(([key, config]) => (
-                  <span
-                    key={key}
-                    className={`rounded-full px-3 py-1 text-xs font-semibold ${config.badge}`}
-                  >
-                    {config.label}
-                  </span>
-                ))}
             </div>
           </div>
 
@@ -1070,18 +1019,18 @@ export default function Calendar() {
 
           <div className="rounded-2xl border border-gray-200 dark:border-gray-700 bg-gray-100/70 dark:bg-gray-800/60 p-2">
             <div className="grid grid-cols-7 gap-1 sm:gap-2">
-              {leadingBlanks.map((blank) => (
-                <div
-                  key={blank.key}
-                  className="h-12 sm:h-14 rounded-lg border border-transparent"
-                />
-              ))}
-              {calendarDays.map((day, index) => (
-                <button
-                  key={day.dayNumber}
-                  type="button"
-                  onClick={() =>
-                    setSelectedDay({
+            {leadingBlanks.map((blank) => (
+              <div
+                key={blank.key}
+                className="h-12 sm:h-14 rounded-lg border border-transparent"
+              />
+            ))}
+            {calendarDays.map((day, index) => (
+              <button
+                key={day.dayNumber}
+                type="button"
+                onClick={() =>
+                  setSelectedDay({
                       day: day.dayNumber,
                       status: day.status,
                       date: day.date,
@@ -1097,15 +1046,30 @@ export default function Calendar() {
                     animationFillMode: "both",
                   }}
                 >
-                  <div className="flex items-center justify-between text-[10px] sm:text-xs text-gray-500 dark:text-gray-400">
-                    <span>{day.dayNumber}</span>
-                    <span className="h-2 w-2 rounded-full bg-current opacity-60" />
-                  </div>
-                  <p className="mt-3 sm:mt-4 text-[9px] sm:text-[11px] font-semibold uppercase tracking-wide">
-                    {statusConfig[day.status].label}
-                  </p>
-                </button>
-              ))}
+                <div className="flex items-center justify-between text-[10px] sm:text-xs text-gray-500 dark:text-gray-400">
+                  <span>{day.dayNumber}</span>
+                  <span className="h-2 w-2 rounded-full bg-current opacity-60" />
+                </div>
+                <p className="mt-3 sm:mt-4 text-[9px] sm:text-[11px] font-semibold uppercase tracking-wide">
+                  {statusConfig[day.status].label}
+                </p>
+              </button>
+            ))}
+            </div>
+          </div>
+
+          <div className="flex justify-end pt-1">
+            <div className="flex flex-wrap gap-2">
+              {Object.entries(statusConfig)
+                .filter(([key]) => key !== "none")
+                .map(([key, config]) => (
+                  <span
+                    key={key}
+                    className={`rounded-full px-3 py-1 text-xs font-semibold ${config.badge}`}
+                  >
+                    {config.label}
+                  </span>
+                ))}
             </div>
           </div>
         </div>
@@ -1163,26 +1127,23 @@ export default function Calendar() {
                       {reminderDateLabel(note.date)}{" "}
                       {note.time ? `· ${note.time}` : ""}
                     </p>
-                    <p className="mt-1 text-[11px] text-gray-500 dark:text-gray-400">
-                      Notifications: {note.notifications?.join(", ") || "None"}
-                    </p>
                   </div>
                   <div className="flex flex-wrap items-center gap-2">
-                    {(note.notifications || []).map((channel) => (
-                      <span
-                        key={`${note.id ?? note.title}-${channel}`}
-                        className="rounded-full bg-white dark:bg-gray-800 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-300"
-                      >
-                        {channel}
-                      </span>
-                    ))}
                     <button
                       type="button"
                       onClick={() => handleEditReminder(note)}
                       className="rounded-full border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-gray-600 dark:text-gray-300 hover:border-gray-300 hover:text-gray-900 dark:hover:border-gray-500 dark:hover:text-white"
                     >
                       Edit
-                    </button>                  </div>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleDeleteReminder(note.id)}
+                      className="rounded-full border border-rose-200 dark:border-rose-500/30 bg-rose-50 dark:bg-rose-500/10 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-rose-700 dark:text-rose-200"
+                    >
+                      Delete
+                    </button>
+                  </div>                
                 </div>
               ))
               )}
@@ -1211,7 +1172,7 @@ export default function Calendar() {
               All Reminders
             </h2>
             <p className="text-sm text-gray-500 dark:text-gray-400">
-              Every reminder with notification channels
+              Every reminder you have scheduled
             </p>
           </div>
         </div>
@@ -1236,26 +1197,22 @@ export default function Calendar() {
                       {reminderDateLabel(note.date)}{" "}
                       {note.time ? `· ${note.time}` : ""}
                     </p>
-                    <p className="mt-1 text-[11px] text-gray-500 dark:text-gray-400">
-                      Notifications: {note.notifications?.join(", ") || "None"}
-                    </p>
                   </div>
                   <div className="flex flex-wrap gap-2">
-                    {(note.notifications || []).map((channel) => (
-                      <span
-                        key={`all-${note.id ?? note.title}-${channel}`}
-                        className="rounded-full bg-white dark:bg-gray-800 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-300"
-                      >
-                        {channel}
-                      </span>
-                    ))}
                     <button
                       type="button"
                       onClick={() => handleEditReminder(note)}
                       className="rounded-full border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-gray-600 dark:text-gray-300 hover:border-gray-300 hover:text-gray-900 dark:hover:border-gray-500 dark:hover:text-white"
                     >
                       Edit
-                    </button>                  
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleDeleteReminder(note.id)}
+                      className="rounded-full border border-rose-200 dark:border-rose-500/30 bg-rose-50 dark:bg-rose-500/10 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-rose-700 dark:text-rose-200"
+                    >
+                      Delete
+                    </button>              
                     </div>
                 </div>
               </div>
@@ -1276,7 +1233,7 @@ export default function Calendar() {
               {editingReminder ? "Edit Reminder" : "Add Reminder"}
             </h2>
             <p className="text-sm text-gray-500 dark:text-gray-400">
-              Schedule a reminder and pick your notification channels.
+              Schedule a reminder for this device.
             </p>
           </div>
         </div>
@@ -1337,37 +1294,6 @@ export default function Calendar() {
             </div>
           </div>
 
-          <div>
-            <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
-              Notifications
-            </p>
-            <div className="mt-2 flex flex-wrap gap-3">
-              {notificationOptions.map((option) => {
-                const isSelected = reminderForm.notifications.includes(
-                  option.value
-                );
-                return (
-                  <label
-                    key={option.value}
-                    className={`flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-semibold ${
-                      isSelected
-                        ? "border-gray-900 bg-gray-900 text-white dark:border-white dark:bg-white dark:text-gray-900"
-                        : "border-gray-200 bg-white text-gray-600 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300"
-                    }`}
-                  >
-                    <input
-                      type="checkbox"
-                      checked={isSelected}
-                      onChange={() => handleNotificationToggle(option.value)}
-                      className="hidden"
-                    />
-                    {option.label}
-                  </label>
-                );
-              })}
-            </div>
-          </div>
-
           <div className="flex justify-end gap-3">
             <button
               type="button"
@@ -1376,6 +1302,15 @@ export default function Calendar() {
             >
               Cancel
             </button>
+            {editingReminder && (
+              <button
+                type="button"
+                onClick={() => handleDeleteReminder(editingReminder.id)}
+                className="rounded-full border border-rose-200 dark:border-rose-500/30 bg-rose-50 dark:bg-rose-500/10 px-4 py-2 text-sm font-semibold text-rose-700 dark:text-rose-200"
+              >
+                Delete Reminder
+              </button>
+            )}
             <button
               type="submit"
               className="rounded-full bg-gray-900 px-4 py-2 text-sm font-semibold text-white dark:bg-white dark:text-gray-900"
@@ -1522,6 +1457,18 @@ export default function Calendar() {
           className="mt-4 w-full rounded-xl border border-amber-200 dark:border-amber-500/30 bg-amber-50 dark:bg-amber-500/10 px-3 py-2 text-sm font-semibold text-amber-700 dark:text-amber-200"
         >
           Partial Presentee Marking
+        </button>
+        <button
+          type="button"
+          onClick={() => {
+            if (!selectedDay?.date) return;
+            removeDayAttendance(formatDateKey(selectedDay.date));
+            setEditDayOpen(false);
+            setSelectedDay(null);
+          }}
+          className="mt-2 w-full rounded-xl border border-rose-200 dark:border-rose-500/30 bg-rose-50 dark:bg-rose-500/10 px-3 py-2 text-sm font-semibold text-rose-700 dark:text-rose-200"
+        >
+          Remove Attendance Data For This Day
         </button>
       </Modal>
 

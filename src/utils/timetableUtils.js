@@ -1,6 +1,14 @@
 import { SEMESTER_TIMETABLES } from "../data/timetable";
 import { DEFAULT_SEMESTER_ID } from "../data/defaultSemesters";
 
+const EMPTY_TIMETABLE = {
+  monday: [],
+  tuesday: [],
+  wednesday: [],
+  thursday: [],
+  friday: [],
+};
+
 export function getDayKeyFromDate(dateStr) {
   const day = new Date(dateStr).getDay();
   return {
@@ -12,10 +20,23 @@ export function getDayKeyFromDate(dateStr) {
   }[day] || null;
 }
 
-export function getLecturesForDate(dateStr, semesterId) {
+export function getLecturesForDate(dateStr, semesterInput, semesters = []) {
   const dayKey = getDayKeyFromDate(dateStr);
   if (!dayKey) return [];
+
+  const semester =
+    typeof semesterInput === "object"
+      ? semesterInput
+      : semesters.find((item) => item.id === semesterInput);
+  const semesterId =
+    typeof semesterInput === "string"
+      ? semesterInput
+      : semesterInput?.id;
+
   const timetable =
-    SEMESTER_TIMETABLES[semesterId || DEFAULT_SEMESTER_ID] || {};
+    semester?.timetable ||
+    SEMESTER_TIMETABLES[semesterId || DEFAULT_SEMESTER_ID] ||
+    EMPTY_TIMETABLE;
+
   return timetable[dayKey] || [];
 }

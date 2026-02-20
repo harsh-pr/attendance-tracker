@@ -642,7 +642,7 @@ export default function Calendar() {
     ? formatDateKey(selectedDay.date)
     : null;
   const timetableLectures = selectedDayDateKey
-    ? getLecturesForDate(selectedDayDateKey, currentSemester.id)
+    ? getLecturesForDate(selectedDayDateKey, currentSemester)
     : [];
   const selectedDayLectures = selectedDay?.dayEntry?.lectures?.length
     ? selectedDay.dayEntry.lectures
@@ -902,14 +902,6 @@ export default function Calendar() {
             value: statusCounts.full,
             change: formatDelta(
               statusCounts.full - previousStatusCounts.full
-            ),
-            status: "full",
-          },
-          {
-            title: "Partial days",
-            value: statusCounts.partial,
-            change: formatDelta(
-              statusCounts.partial - previousStatusCounts.partial
             ),
             status: "full",
           },

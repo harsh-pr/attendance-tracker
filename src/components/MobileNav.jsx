@@ -5,8 +5,6 @@ const links = [
   { to: "/", label: "Home", icon: "🏠" },
   { to: "/today", label: "Detailed", icon: "📝" },
   { to: "/calendar", label: "Calendar", icon: "🗓️" },
-  { to: "/stats", label: "Stats", icon: "📊" },
-  { to: "/settings", label: "Settings", icon: "⚙️" },
 ];
 
 export default function MobileNav() {

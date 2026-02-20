@@ -8,14 +8,11 @@ export function getTodayDate() {
 /**
  * Ensures a date entry exists and returns it
  */
-export function ensureDayExists(semester, date, semesterId) {
+export function ensureDayExists(semester, date, _semesterId) {
   let day = semester.attendanceData.find(d => d.date === date);
 
   if (!day) {
-    const lecturesFromTT = getLecturesForDate(
-      date,
-      semesterId || semester.id
-    );
+    const lecturesFromTT = getLecturesForDate(date, semester);
 
     if (lecturesFromTT.length === 0) return null;
 

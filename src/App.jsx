@@ -3,8 +3,6 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Home from "./pages/Home";
 import Today from "./pages/Today";
 import Calendar from "./pages/Calendar";
-import Stats from "./pages/Stats";
-import Settings from "./pages/Settings";
 
 import Navbar from "./components/Navbar";
 import MobileNav from "./components/MobileNav";
@@ -27,12 +25,9 @@ export default function App() {
               <Route path="/" element={<Home />} />
               <Route path="/today" element={<Today />} />
               <Route path="/calendar" element={<Calendar />} />
-              <Route path="/stats" element={<Stats />} />
-              <Route path="/settings" element={<Settings />} />
             </Routes>
           </main>
         </BrowserRouter>
       </SemesterProvider>
   );
 }
-

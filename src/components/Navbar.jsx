@@ -1,4 +1,5 @@
 import { NavLink } from "react-router-dom";
+import { useMemo, useState } from "react";
 import { useSemester } from "../context/SemesterContext";
 import { useTheme } from "../context/ThemeContext";
 
@@ -7,9 +8,25 @@ export default function Navbar() {
     semesters,
     currentSemesterId,
     setCurrentSemesterId,
+    addSemester,
   } = useSemester();
 
+  const [isSemesterMenuOpen, setIsSemesterMenuOpen] = useState(false);
+
   const { theme, toggleTheme } = useTheme();
+  const currentSemesterName = useMemo(
+    () =>
+      semesters.find((sem) => sem.id === currentSemesterId)?.name ||
+      "Select semester",
+    [semesters, currentSemesterId]
+  );
+
+  function handleAddSemester() {
+    const semesterName = window.prompt("Enter semester name");
+    if (!semesterName?.trim()) return;
+    addSemester(semesterName);
+    setIsSemesterMenuOpen(false);
+  }
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800">
@@ -26,32 +43,53 @@ export default function Navbar() {
         </h1>
 
         {/* ===== DESKTOP SEMESTER SELECTOR ===== */}
-        <select
-          value={currentSemesterId}
-          onChange={(e) => setCurrentSemesterId(e.target.value)}
-          className="
-            hidden sm:block ml-4
-            px-3 py-1 rounded-lg text-sm
-            bg-gray-100 dark:bg-gray-800
-            border border-gray-300 dark:border-gray-700
-            text-gray-900 dark:text-gray-100
-            cursor-pointer
-          "
-        >
-          {semesters.map((sem) => (
-            <option key={sem.id} value={sem.id}>
-              {sem.name}
-            </option>
-          ))}
-        </select>
+        <div className="relative hidden sm:block ml-4">
+          <button
+            type="button"
+            onClick={() => setIsSemesterMenuOpen((prev) => !prev)}
+            className="px-3 py-1.5 rounded-xl border border-blue-200 dark:border-blue-700 bg-blue-50 dark:bg-blue-900/40 text-blue-700 dark:text-blue-200 text-sm font-medium min-w-40 inline-flex items-center justify-between gap-3"
+          >
+            <span className="truncate">{currentSemesterName}</span>
+            <span className="text-xs">▾</span>
+          </button>
+
+          {isSemesterMenuOpen ? (
+            <div className="absolute left-0 mt-2 w-56 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-lg overflow-hidden">
+              {semesters.map((sem) => (
+                <button
+                  key={sem.id}
+                  type="button"
+                  onClick={() => {
+                    setCurrentSemesterId(sem.id);
+                    setIsSemesterMenuOpen(false);
+                  }}
+                  className={`w-full px-4 py-2 text-left text-sm transition ${
+                    sem.id === currentSemesterId
+                      ? "bg-blue-100 dark:bg-blue-900/60 text-blue-700 dark:text-blue-200"
+                      : "text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800"
+                  }`}
+                >
+                  {sem.name}
+                </button>
+              ))}
+
+              <div className="border-t border-gray-200 dark:border-gray-700" />
+              <button
+                type="button"
+                onClick={handleAddSemester}
+                className="w-full px-4 py-2 text-left text-sm text-emerald-600 dark:text-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-900/20"
+              >
+                + Add new semester
+              </button>
+            </div>
+          ) : null}
+        </div>
 
         {/* ===== DESKTOP NAV ===== */}
         <nav className="hidden sm:flex items-center gap-4 ml-6">
           <NavItem to="/">Home</NavItem>
           <NavItem to="/today">Detailed</NavItem>
           <NavItem to="/calendar">Calendar</NavItem>
-          <NavItem to="/stats">Stats</NavItem>
-          <NavItem to="/settings">Settings</NavItem>
         </nav>
 
         <div className="flex-1" />

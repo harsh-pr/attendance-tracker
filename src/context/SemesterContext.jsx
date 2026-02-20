@@ -4,10 +4,41 @@ import {
   DEFAULT_SEMESTERS,
   DEFAULT_SEMESTER_ID,
 } from "../data/defaultSemesters";
+import { SEMESTER_TIMETABLES } from "../data/timetable";
 import { getLecturesForDate } from "../utils/timetableUtils";
 import { getTodayDate, ensureDayExists } from "../store/attendanceStore";
 
 const SemesterContext = createContext();
+
+const EMPTY_TIMETABLE = {
+  monday: [],
+  tuesday: [],
+  wednesday: [],
+  thursday: [],
+  friday: [],
+};
+
+function normalizeSemester(semester) {
+  return {
+    attendanceData: [],
+    reminders: [],
+    ...semester,
+    timetable:
+      semester.timetable ||
+      SEMESTER_TIMETABLES[semester.id] ||
+      EMPTY_TIMETABLE,
+  };
+}
+
+function createSemesterId(semesters) {
+  let index = semesters.length + 1;
+  let candidate = `sem${index}`;
+  while (semesters.some((semester) => semester.id === candidate)) {
+    index += 1;
+    candidate = `sem${index}`;
+  }
+  return candidate;
+}
 
 export function SemesterProvider({ children }) {
   const [semesters, setSemesters] = useState(DEFAULT_SEMESTERS);
@@ -24,13 +55,20 @@ export function SemesterProvider({ children }) {
           throw new Error("Failed to load semesters");
         }
         const data = await response.json();
-        setSemesters(data.semesters?.length ? data.semesters : DEFAULT_SEMESTERS);
+        const loadedSemesters = data.semesters?.length
+          ? data.semesters.map(normalizeSemester)
+          : DEFAULT_SEMESTERS.map(normalizeSemester);
+        setSemesters(loadedSemesters);
         setCurrentSemesterId(
-          data.currentSemesterId || DEFAULT_SEMESTER_ID
+          loadedSemesters.some(
+            (semester) => semester.id === data.currentSemesterId
+          )
+            ? data.currentSemesterId
+            : loadedSemesters[0]?.id || DEFAULT_SEMESTER_ID
         );
       } catch (error) {
         console.error("Failed to load attendance data.", error);
-        setSemesters(DEFAULT_SEMESTERS);
+        setSemesters(DEFAULT_SEMESTERS.map(normalizeSemester));
         setCurrentSemesterId(DEFAULT_SEMESTER_ID);
       } finally {
         setHasLoaded(true);
@@ -64,7 +102,7 @@ export function SemesterProvider({ children }) {
   const currentSemester =
     semesters.find((s) => s.id === currentSemesterId) ||
     semesters[0] ||
-    DEFAULT_SEMESTERS[0];
+    normalizeSemester(DEFAULT_SEMESTERS[0]);
 
   /* ===== ENSURE DAY ENTRY FROM TIMETABLE ===== */
   function normalizeDateString(dateString) {
@@ -78,12 +116,37 @@ export function SemesterProvider({ children }) {
   }
 
   function buildDayLectures(targetDate, semesterId, status) {
-    const schedule = getLecturesForDate(targetDate, semesterId);
+    const semester = semesters.find((item) => item.id === semesterId);
+    const schedule = getLecturesForDate(targetDate, semester, semesters);
     return schedule.map((lecture) => ({
       subjectId: lecture.subjectId,
       type: lecture.type,
       status,
     }));
+  }
+
+  function addSemester(name) {
+    const trimmedName = name?.trim();
+    if (!trimmedName) return;
+
+    setSemesters((prev) => {
+      const newSemesterId = createSemesterId(prev);
+      const newSemester = {
+        id: newSemesterId,
+        name: trimmedName,
+        subjects: currentSemester.subjects.map((subject) => ({
+          ...subject,
+        })),
+        attendanceData: [],
+        reminders: [],
+        timetable: JSON.parse(
+          JSON.stringify(currentSemester.timetable || EMPTY_TIMETABLE)
+        ),
+      };
+
+      setCurrentSemesterId(newSemesterId);
+      return [...prev, newSemester];
+    });
   }
 
   function markDayStatus(date, status) {
@@ -375,6 +438,7 @@ export function SemesterProvider({ children }) {
         addReminder,
         updateReminder,
         removeReminder,
+        addSemester,
       }}
     >
       {children}

@@ -14,6 +14,7 @@ export default function Home() {
     currentSemester,
     setCurrentSemesterId,
     semesters,
+    addSemester,
     markDayStatus,
   } = useSemester();
 
@@ -35,7 +36,7 @@ export default function Home() {
   const today = getTodayDate();
   const todaySchedule = getLecturesForDate(
     today,
-    currentSemester.id
+     currentSemester
   );
   const todayEntry = currentSemester.attendanceData.find(
     (day) => day.date === today
@@ -107,7 +108,19 @@ export default function Home() {
         <div className="sm:hidden">
           <select
             value={currentSemester.id}
-            onChange={(e) => setCurrentSemesterId(e.target.value)}
+            onChange={(e) => {
+              if (e.target.value === "__new_semester__") {
+                const semesterName = window.prompt(
+                  "Enter semester name"
+                );
+                if (semesterName?.trim()) {
+                  addSemester(semesterName);
+                }
+                return;
+              }
+
+              setCurrentSemesterId(e.target.value);
+            }}
             className="
               px-2 py-1 text-sm rounded-md
               bg-gray-100 dark:bg-gray-800
@@ -120,6 +133,7 @@ export default function Home() {
                 {sem.name}
               </option>
             ))}
+            <option value="__new_semester__">+ Add Semester</option>
           </select>
         </div>
       </div>

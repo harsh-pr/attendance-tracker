@@ -1,14 +1,15 @@
 /* eslint-disable react-refresh/only-export-components */
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import {
   DEFAULT_SEMESTERS,
   DEFAULT_SEMESTER_ID,
 } from "../data/defaultSemesters";
-import { SEMESTER_TIMETABLES } from "../data/timetable";
 import { getLecturesForDate } from "../utils/timetableUtils";
 import { getTodayDate, ensureDayExists } from "../store/attendanceStore";
 
 const SemesterContext = createContext();
+
+const WEEK_DAYS = ["monday", "tuesday", "wednesday", "thursday", "friday"];
 
 const EMPTY_TIMETABLE = {
   monday: [],
@@ -18,15 +19,15 @@ const EMPTY_TIMETABLE = {
   friday: [],
 };
 
+function cloneEmptyTimetable() {
+  return JSON.parse(JSON.stringify(EMPTY_TIMETABLE));
+}
+
 function normalizeSemester(semester) {
   return {
     attendanceData: [],
-    reminders: [],
+    subjects: [],
     ...semester,
-    timetable:
-      semester.timetable ||
-      SEMESTER_TIMETABLES[semester.id] ||
-      EMPTY_TIMETABLE,
   };
 }
 
@@ -41,33 +42,41 @@ function createSemesterId(semesters) {
 }
 
 export function SemesterProvider({ children }) {
-  const [semesters, setSemesters] = useState(DEFAULT_SEMESTERS);
-  const [currentSemesterId, setCurrentSemesterId] = useState(
-    DEFAULT_SEMESTER_ID
-  );
+  const [semesters, setSemesters] = useState(DEFAULT_SEMESTERS.map(normalizeSemester));
+  const [currentSemesterId, setCurrentSemesterId] = useState(DEFAULT_SEMESTER_ID);
+  const [timetablesBySemester, setTimetablesBySemester] = useState({});
+  const [remindersBySemester, setRemindersBySemester] = useState({});
   const [hasLoaded, setHasLoaded] = useState(false);
 
   useEffect(() => {
-    const loadSemesters = async () => {
+    const loadAll = async () => {
       try {
-        const response = await fetch("/api/semesters");
-        if (!response.ok) {
-          throw new Error("Failed to load semesters");
-        }
-        const data = await response.json();
-        const loadedSemesters = data.semesters?.length
-          ? data.semesters.map(normalizeSemester)
+        const [semRes, timetableRes, reminderRes] = await Promise.all([
+          fetch("/api/semesters"),
+          fetch("/api/timetables"),
+          fetch("/api/reminders"),
+        ]);
+
+        if (!semRes.ok) throw new Error("Failed to load semesters");
+
+        const semData = await semRes.json();
+        const timetableData = timetableRes.ok ? await timetableRes.json() : { timetables: {} };
+        const reminderData = reminderRes.ok ? await reminderRes.json() : { reminders: {} };
+
+        const loadedSemesters = semData.semesters?.length
+          ? semData.semesters.map(normalizeSemester)
           : DEFAULT_SEMESTERS.map(normalizeSemester);
+
         setSemesters(loadedSemesters);
+        setTimetablesBySemester(timetableData.timetables || {});
+        setRemindersBySemester(reminderData.reminders || {});
         setCurrentSemesterId(
-          loadedSemesters.some(
-            (semester) => semester.id === data.currentSemesterId
-          )
-            ? data.currentSemesterId
+          loadedSemesters.some((s) => s.id === semData.currentSemesterId)
+            ? semData.currentSemesterId
             : loadedSemesters[0]?.id || DEFAULT_SEMESTER_ID
         );
       } catch (error) {
-        console.error("Failed to load attendance data.", error);
+        console.error("Failed to load app data.", error);
         setSemesters(DEFAULT_SEMESTERS.map(normalizeSemester));
         setCurrentSemesterId(DEFAULT_SEMESTER_ID);
       } finally {
@@ -75,49 +84,91 @@ export function SemesterProvider({ children }) {
       }
     };
 
-    loadSemesters();
+    loadAll();
   }, []);
 
   useEffect(() => {
     if (!hasLoaded) return;
-
-    const saveSemesters = async () => {
+    const save = async () => {
       try {
         await fetch("/api/semesters", {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            currentSemesterId,
-            semesters,
-          }),
+          body: JSON.stringify({ currentSemesterId, semesters }),
         });
       } catch (error) {
         console.error("Failed to sync attendance data.", error);
       }
     };
-
-    saveSemesters();
+    save();
   }, [currentSemesterId, semesters, hasLoaded]);
 
-  const currentSemester =
+  useEffect(() => {
+    if (!hasLoaded) return;
+    const save = async () => {
+      try {
+        await fetch("/api/timetables", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ timetables: timetablesBySemester }),
+        });
+      } catch (error) {
+        console.error("Failed to sync timetable data.", error);
+      }
+    };
+    save();
+  }, [timetablesBySemester, hasLoaded]);
+
+  useEffect(() => {
+    if (!hasLoaded) return;
+    const save = async () => {
+      try {
+        await fetch("/api/reminders", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ reminders: remindersBySemester }),
+        });
+      } catch (error) {
+        console.error("Failed to sync reminders data.", error);
+      }
+    };
+    save();
+  }, [remindersBySemester, hasLoaded]);
+
+  const baseCurrentSemester =
     semesters.find((s) => s.id === currentSemesterId) ||
     semesters[0] ||
     normalizeSemester(DEFAULT_SEMESTERS[0]);
 
-  /* ===== ENSURE DAY ENTRY FROM TIMETABLE ===== */
+  const currentTimetable = useMemo(
+    () => timetablesBySemester[currentSemesterId] || cloneEmptyTimetable(),
+    [timetablesBySemester, currentSemesterId]
+  );
+
+  const currentSemester = useMemo(
+    () => ({
+      ...baseCurrentSemester,
+      timetable: currentTimetable,
+      reminders: remindersBySemester[currentSemesterId] || [],
+    }),
+    [baseCurrentSemester, currentTimetable, remindersBySemester, currentSemesterId]
+  );
+
   function normalizeDateString(dateString) {
     const parsed = new Date(dateString);
-    if (Number.isNaN(parsed.getTime())) {
-      return dateString;
-    }
+    if (Number.isNaN(parsed.getTime())) return dateString;
     const month = String(parsed.getMonth() + 1).padStart(2, "0");
     const day = String(parsed.getDate()).padStart(2, "0");
     return `${parsed.getFullYear()}-${month}-${day}`;
   }
 
   function buildDayLectures(targetDate, semesterId, status) {
-    const semester = semesters.find((item) => item.id === semesterId);
-    const schedule = getLecturesForDate(targetDate, semester, semesters);
+    const semesterMeta = semesters.find((item) => item.id === semesterId);
+    const semesterWithData = {
+      ...semesterMeta,
+      timetable: timetablesBySemester[semesterId] || cloneEmptyTimetable(),
+    };
+    const schedule = getLecturesForDate(targetDate, semesterWithData);
     return schedule.map((lecture) => ({
       subjectId: lecture.subjectId,
       type: lecture.type,
@@ -125,28 +176,45 @@ export function SemesterProvider({ children }) {
     }));
   }
 
-  function addSemester(name) {
+  function addSemester(name, options = {}) {
     const trimmedName = name?.trim();
-    if (!trimmedName) return;
+    if (!trimmedName) return null;
 
-    setSemesters((prev) => {
-      const newSemesterId = createSemesterId(prev);
-      const newSemester = {
-        id: newSemesterId,
-        name: trimmedName,
-        subjects: currentSemester.subjects.map((subject) => ({
-          ...subject,
-        })),
-        attendanceData: [],
-        reminders: [],
-        timetable: JSON.parse(
-          JSON.stringify(currentSemester.timetable || EMPTY_TIMETABLE)
-        ),
-      };
+    const newSemesterId = createSemesterId(semesters);
+    const copyFromCurrent = options.copySubjects !== false;
+    const subjects = copyFromCurrent ? baseCurrentSemester.subjects : [];
 
-      setCurrentSemesterId(newSemesterId);
-      return [...prev, newSemester];
-    });
+    const newSemester = {
+      id: newSemesterId,
+      name: trimmedName,
+      subjects,
+      attendanceData: [],
+    };
+
+    setSemesters((prev) => [...prev, newSemester]);
+    setTimetablesBySemester((prev) => ({
+      ...prev,
+      [newSemesterId]: cloneEmptyTimetable(),
+    }));
+    setRemindersBySemester((prev) => ({
+      ...prev,
+      [newSemesterId]: [],
+    }));
+    setCurrentSemesterId(newSemesterId);
+    return newSemesterId;
+  }
+
+  function setSemesterTimetable(semesterId, timetable) {
+    setTimetablesBySemester((prev) => ({
+      ...prev,
+      [semesterId]: {
+        monday: timetable?.monday || [],
+        tuesday: timetable?.tuesday || [],
+        wednesday: timetable?.wednesday || [],
+        thursday: timetable?.thursday || [],
+        friday: timetable?.friday || [],
+      },
+    }));
   }
 
   function markDayStatus(date, status) {
@@ -163,35 +231,20 @@ export function SemesterProvider({ children }) {
           lectures = buildDayLectures(targetDate, currentSemesterId, status);
         }
 
-        const existingDay = sem.attendanceData.find(
-          (day) => day.date === targetDate
-        );
+        const existingDay = sem.attendanceData.find((day) => day.date === targetDate);
 
         if (existingDay) {
           return {
             ...sem,
             attendanceData: sem.attendanceData.map((day) =>
-              day.date === targetDate
-                ? {
-                    ...day,
-                    dayType,
-                    lectures,
-                  }
-                : day
+              day.date === targetDate ? { ...day, dayType, lectures } : day
             ),
           };
         }
 
         return {
           ...sem,
-          attendanceData: [
-            ...sem.attendanceData,
-            {
-              date: targetDate,
-              dayType,
-              lectures,
-            },
-          ],
+          attendanceData: [...sem.attendanceData, { date: targetDate, dayType, lectures }],
         };
       })
     );
@@ -205,46 +258,28 @@ export function SemesterProvider({ children }) {
       prev.map((sem) => {
         if (sem.id !== currentSemesterId) return sem;
 
-        const existingDay = sem.attendanceData.find(
-          (day) => day.date === targetDate
-        );
-        const baseLectures =
-          existingDay?.lectures?.length
-            ? existingDay.lectures
-            : buildDayLectures(targetDate, currentSemesterId, null);
+        const existingDay = sem.attendanceData.find((day) => day.date === targetDate);
+        const baseLectures = existingDay?.lectures?.length
+          ? existingDay.lectures
+          : buildDayLectures(targetDate, currentSemesterId, null);
 
         const lectures = baseLectures.map((lecture) => ({
           ...lecture,
-          status: selectedSubjectIds.has(lecture.subjectId)
-            ? "present"
-            : "absent",
+          status: selectedSubjectIds.has(lecture.subjectId) ? "present" : "absent",
         }));
 
         if (existingDay) {
           return {
             ...sem,
             attendanceData: sem.attendanceData.map((day) =>
-              day.date === targetDate
-                ? {
-                    ...day,
-                    dayType: null,
-                    lectures,
-                  }
-                : day
+              day.date === targetDate ? { ...day, dayType: null, lectures } : day
             ),
           };
         }
 
         return {
           ...sem,
-          attendanceData: [
-            ...sem.attendanceData,
-            {
-              date: targetDate,
-              dayType: null,
-              lectures,
-            },
-          ],
+          attendanceData: [...sem.attendanceData, { date: targetDate, dayType: null, lectures }],
         };
       })
     );
@@ -257,47 +292,28 @@ export function SemesterProvider({ children }) {
       prev.map((sem) => {
         if (sem.id !== currentSemesterId) return sem;
 
-        const existingDay = sem.attendanceData.find(
-          (day) => day.date === targetDate
-        );
-        const baseLectures =
-          existingDay?.lectures?.length
-            ? existingDay.lectures
-            : buildDayLectures(targetDate, currentSemesterId, null);
+        const existingDay = sem.attendanceData.find((day) => day.date === targetDate);
+        const baseLectures = existingDay?.lectures?.length
+          ? existingDay.lectures
+          : buildDayLectures(targetDate, currentSemesterId, null);
 
         const lectures = baseLectures.map((lecture) => {
           const nextStatus = statusMap[lecture.subjectId];
-          return {
-            ...lecture,
-            status: nextStatus ?? lecture.status ?? null,
-          };
+          return { ...lecture, status: nextStatus ?? lecture.status ?? null };
         });
 
         if (existingDay) {
           return {
             ...sem,
             attendanceData: sem.attendanceData.map((day) =>
-              day.date === targetDate
-                ? {
-                    ...day,
-                    dayType: null,
-                    lectures,
-                  }
-                : day
+              day.date === targetDate ? { ...day, dayType: null, lectures } : day
             ),
           };
         }
 
         return {
           ...sem,
-          attendanceData: [
-            ...sem.attendanceData,
-            {
-              date: targetDate,
-              dayType: null,
-              lectures,
-            },
-          ],
+          attendanceData: [...sem.attendanceData, { date: targetDate, dayType: null, lectures }],
         };
       })
     );
@@ -305,88 +321,50 @@ export function SemesterProvider({ children }) {
 
   function removeDayAttendance(date) {
     const targetDate = normalizeDateString(date);
-
     setSemesters((prev) =>
-      prev.map((sem) => {
-        if (sem.id !== currentSemesterId) return sem;
-
-        return {
-          ...sem,
-          attendanceData: sem.attendanceData.filter(
-            (day) => day.date !== targetDate
-          ),
-        };
-      })
+      prev.map((sem) =>
+        sem.id !== currentSemesterId
+          ? sem
+          : { ...sem, attendanceData: sem.attendanceData.filter((day) => day.date !== targetDate) }
+      )
     );
   }
 
   function addReminder(reminder) {
-    setSemesters((prev) =>
-      prev.map((sem) => {
-        if (sem.id !== currentSemesterId) return sem;
-        const reminders = Array.isArray(sem.reminders)
-          ? sem.reminders
-          : [];
-        return {
-          ...sem,
-          reminders: [...reminders, reminder],
-        };
-      })
-    );
+    setRemindersBySemester((prev) => ({
+      ...prev,
+      [currentSemesterId]: [...(prev[currentSemesterId] || []), reminder],
+    }));
   }
 
   function updateReminder(reminderId, updates) {
-    setSemesters((prev) =>
-      prev.map((sem) => {
-        if (sem.id !== currentSemesterId) return sem;
-        const reminders = Array.isArray(sem.reminders)
-          ? sem.reminders
-          : [];
-        return {
-          ...sem,
-          reminders: reminders.map((item) =>
-            item.id === reminderId ? { ...item, ...updates } : item
-          ),
-        };
-      })
-    );
+    setRemindersBySemester((prev) => ({
+      ...prev,
+      [currentSemesterId]: (prev[currentSemesterId] || []).map((item) =>
+        item.id === reminderId ? { ...item, ...updates } : item
+      ),
+    }));
   }
 
   function removeReminder(reminderId) {
-    setSemesters((prev) =>
-      prev.map((sem) => {
-        if (sem.id !== currentSemesterId) return sem;
-        const reminders = Array.isArray(sem.reminders)
-          ? sem.reminders
-          : [];
-        return {
-          ...sem,
-          reminders: reminders.filter((item) => item.id !== reminderId),
-        };
-      })
-    );
+    setRemindersBySemester((prev) => ({
+      ...prev,
+      [currentSemesterId]: (prev[currentSemesterId] || []).filter((item) => item.id !== reminderId),
+    }));
   }
 
   function markFullDayAttendance(status, date) {
     const targetDate = date || getTodayDate();
-
     ensureDayExists(currentSemester, targetDate, currentSemesterId);
 
     setSemesters((prev) =>
       prev.map((sem) => {
         if (sem.id !== currentSemesterId) return sem;
-
         return {
           ...sem,
           attendanceData: sem.attendanceData.map((day) =>
             day.date === targetDate
-              ? {
-                  ...day,
-                  lectures: day.lectures.map((lec) => ({
-                    ...lec,
-                    status,
-                  })),
-                }
+              ? { ...day, lectures: day.lectures.map((lec) => ({ ...lec, status })) }
               : day
           ),
         };
@@ -394,7 +372,6 @@ export function SemesterProvider({ children }) {
     );
   }
 
-  /** NEW: markTodayAttendance for a single subject */
   function markTodayAttendance(subjectId, status) {
     const today = getTodayDate();
     ensureDayExists(currentSemester, today, currentSemesterId);
@@ -410,9 +387,7 @@ export function SemesterProvider({ children }) {
               ? {
                   ...day,
                   lectures: day.lectures.map((lec) =>
-                    lec.subjectId === subjectId
-                      ? { ...lec, status }
-                      : lec
+                    lec.subjectId === subjectId ? { ...lec, status } : lec
                   ),
                 }
               : day
@@ -428,9 +403,12 @@ export function SemesterProvider({ children }) {
         semesters,
         currentSemester,
         currentSemesterId,
-        markFullDayAttendance,
-        markTodayAttendance,   // ✅ now provided
+        currentTimetable,
         setCurrentSemesterId,
+        addSemester,
+        setSemesterTimetable,
+        markFullDayAttendance,
+        markTodayAttendance,
         markDayStatus,
         markPartialDayAttendance,
         markDayLectureStatuses,
@@ -438,7 +416,7 @@ export function SemesterProvider({ children }) {
         addReminder,
         updateReminder,
         removeReminder,
-        addSemester,
+        weekDays: WEEK_DAYS,
       }}
     >
       {children}

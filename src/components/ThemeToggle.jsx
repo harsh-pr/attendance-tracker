@@ -21,7 +21,7 @@ export default function ThemeToggle() {
           w-5 h-5 rounded-full
           bg-white
           flex items-center justify-center
-          text-xs
+          text-xs leading-none
           transition-all duration-300 ease-in-out
           ${theme === "dark" ? "translate-x-7" : ""}
         `}

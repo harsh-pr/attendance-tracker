@@ -1,10 +1,8 @@
 // src/components/QuickTodayAttendance.jsx
 import Modal from "./Modal";
 import { useSemester } from "../context/SemesterContext";
-import {
-  getTodayDate,
-  ensureDayExists,
-} from "../store/attendanceStore";
+import { getTodayDate } from "../store/attendanceStore";
+import { getLecturesForDate } from "../utils/timetableUtils";
 
 const ACTIONS = ["present", "absent", "free", "cancelled"];
 
@@ -12,11 +10,24 @@ export default function QuickTodayAttendance({ open, onClose }) {
   const { currentSemester, markTodayAttendance } = useSemester();
   const today = getTodayDate();
 
-  const todayData = ensureDayExists(
-    currentSemester,
-    today,
-    currentSemester.id
+  const todayEntry = currentSemester.attendanceData.find(
+    (day) => day.date === today
   );
+  const timetableLectures = getLecturesForDate(today, currentSemester);
+  const statusBySubjectId = new Map(
+    (todayEntry?.lectures || []).map((lecture) => [
+      lecture.subjectId,
+      lecture.status,
+    ])
+  );
+
+  const todayData = {
+    date: today,
+    lectures: timetableLectures.map((lecture) => ({
+      ...lecture,
+      status: statusBySubjectId.get(lecture.subjectId) ?? null,
+    })),
+  };
   const subjectsById = new Map(
     currentSemester.subjects.map((subject) => [
       subject.id,
@@ -24,7 +35,7 @@ export default function QuickTodayAttendance({ open, onClose }) {
     ])
   );
 
-  if (!todayData) {
+  if (!todayData.lectures.length) {
     return (
       <Modal open={open} onClose={onClose}>
         <p className="text-gray-500 dark:text-gray-400">

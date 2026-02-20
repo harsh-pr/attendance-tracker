@@ -28,15 +28,7 @@ export function getLecturesForDate(dateStr, semesterInput, semesters = []) {
     typeof semesterInput === "object"
       ? semesterInput
       : semesters.find((item) => item.id === semesterInput);
-  const semesterId =
-    typeof semesterInput === "string"
-      ? semesterInput
-      : semesterInput?.id;
-
-  const timetable =
-    semester?.timetable ||
-    SEMESTER_TIMETABLES[semesterId || DEFAULT_SEMESTER_ID] ||
-    EMPTY_TIMETABLE;
+  const timetable = semester?.timetable || EMPTY_TIMETABLE;
 
   return timetable[dayKey] || [];
 }

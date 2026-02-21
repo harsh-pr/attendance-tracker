@@ -543,12 +543,16 @@ export default function Calendar() {
 
         if ("serviceWorker" in navigator) {
           try {
-            const registration = await navigator.serviceWorker.ready;
-            await registration.showNotification(reminder.title, {
-              body,
-              tag: `reminder-${reminder.id}`,
-              renotify: true,
-            });
+            const registration = await navigator.serviceWorker.getRegistration();
+            if (registration) {
+              await registration.showNotification(reminder.title, {
+                body,
+                tag: `reminder-${reminder.id}`,
+                renotify: true,
+              });
+            } else {
+              new Notification(reminder.title, { body });
+            }
           } catch (error) {
             console.error("Mobile notification failed.", error);
             new Notification(reminder.title, { body });
@@ -586,6 +590,15 @@ export default function Calendar() {
       time: reminder.time ?? "",
     });
     setAddReminderOpen(true);
+  };
+
+  const handleDeleteReminder = (reminderId) => {
+    if (!reminderId) return;
+    removeReminder(reminderId);
+
+    if (editingReminder?.id === reminderId) {
+      handleCloseReminderModal();
+    }
   };
 
   const handleDayStatusUpdate = (status) => {

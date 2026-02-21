@@ -107,30 +107,59 @@ async function parseErrorMessage(response) {
   }
 }
 
-async function tryTimetableSync(endpoint, timetablesPayload) {
+async function tryTimetableSync(endpoints, timetablesPayload) {
+  const candidates = Array.isArray(endpoints) ? endpoints : [endpoints];
   const requestBodies = [
     { timetables: timetablesPayload },
     timetablesPayload,
     { timetable: timetablesPayload },
   ];
 
-  for (const body of requestBodies) {
+  for (const endpoint of candidates) {
+    for (const body of requestBodies) {
+      try {
+        const response = await fetch(endpoint, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body),
+        });
+
+        if (response.ok) {
+          return { ok: true };
+        }
+
+        if (response.status !== 400) {
+          return { ok: false, response };
+        }
+      } catch {
+        break;
+      }
+    }
+  }
+
+  return { ok: false, response: null };
+}
+
+async function persistRemindersWithFallback(endpoints, remindersPayload) {
+  const candidates = Array.isArray(endpoints) ? endpoints : [endpoints];
+
+  for (const endpoint of candidates) {
     try {
       const response = await fetch(endpoint, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
+        body: JSON.stringify({ reminders: remindersPayload }),
       });
 
       if (response.ok) {
         return { ok: true };
       }
 
-      if (response.status !== 400) {
+      if (response.status !== 404 && response.status !== 501) {
         return { ok: false, response };
       }
     } catch {
-      return { ok: false, response: null };
+      // Try next candidate endpoint.
     }
   }
 
@@ -328,27 +357,23 @@ export function SemesterProvider({ children }) {
   }
 
   async function persistRemindersPayload(remindersPayload) {
-    try {
-      const response = await fetch(REMINDER_ENDPOINT, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ reminders: remindersPayload }),
-      });
+    const result = await persistRemindersWithFallback(REMINDER_ENDPOINT, remindersPayload);
 
-      if (response.ok) {
-        setApiAvailability((prev) => ({ ...prev, reminders: true }));
-        return;
-      }
+    if (result.ok) {
+      setApiAvailability((prev) => ({ ...prev, reminders: true }));
+      return;
+    }
 
-      if (response.status === 404 || response.status === 501) {
-        setApiAvailability((prev) => ({ ...prev, reminders: false }));
-        return;
-      }
+    if (result.response?.status === 404 || result.response?.status === 501) {
+      setApiAvailability((prev) => ({ ...prev, reminders: false }));
+      return;
+    }
 
-      const errorText = await parseErrorMessage(response);
-      console.error(`Reminders sync failed (${response.status}): ${errorText}`);
-    } catch (error) {
-      console.error("Failed to sync reminders data.", error);
+    if (result.response) {
+      const errorText = await parseErrorMessage(result.response);
+      console.error(`Reminders sync failed (${result.response.status}): ${errorText}`);
+    } else {
+      console.error("Reminders sync failed.");
     }
   }
 

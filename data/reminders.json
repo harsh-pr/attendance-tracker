@@ -1,6 +1,15 @@
 {
   "reminders": {
-    "sem2": [],
+    "sem2": [
+      {
+        "id": "1771688933897",
+        "title": "test",
+        "date": "2026-02-21",
+        "time": "21:19",
+        "triggerAt": "2026-02-21T15:49:00.000Z",
+        "delivered": false
+      }
+    ],
     "sem3": []
   }
 }

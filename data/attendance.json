@@ -1,5 +1,5 @@
 {
-  "currentSemesterId": "sem3",
+  "currentSemesterId": "sem2",
   "semesters": [
     {
       "id": "sem2",
@@ -1005,11 +1005,6 @@
           "lectures": []
         }
       ]
-    },
-    {
-      "id": "sem3",
-      "name": "sem 3",
-      "attendanceData": []
     }
   ]
 }

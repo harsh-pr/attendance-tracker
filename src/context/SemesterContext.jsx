@@ -13,6 +13,8 @@ const WEEK_DAYS = ["monday", "tuesday", "wednesday", "thursday", "friday"];
 
 
 const LOCAL_TIMETABLES_KEY = "attendance:timetables";
+const TIMETABLE_ENDPOINT = ["/api/timetables", "/api/timetable"];
+const REMINDER_ENDPOINT = ["/api/reminders", "/api/reminder"];
 
 function readLocalJson(key, fallback) {
   try {
@@ -77,6 +79,64 @@ function buildDefaultSubjectsBySemester() {
   }, {});
 }
 
+async function fetchJsonIfOk(endpoint, options = {}) {
+  const endpoints = Array.isArray(endpoint) ? endpoint : [endpoint];
+
+  for (const candidate of endpoints) {
+    try {
+      const response = await fetch(candidate, options);
+      if (!response.ok) {
+        continue;
+      }
+
+      return { endpoint: candidate, data: await response.json(), response };
+    } catch {
+      // Try next candidate.
+    }
+  }
+
+  return null;
+}
+
+async function parseErrorMessage(response) {
+  try {
+    const text = await response.text();
+    return text || "No response body";
+  } catch {
+    return "Unable to read error response";
+  }
+}
+
+async function tryTimetableSync(endpoint, timetablesPayload) {
+  const requestBodies = [
+    { timetables: timetablesPayload },
+    timetablesPayload,
+    { timetable: timetablesPayload },
+  ];
+
+  for (const body of requestBodies) {
+    try {
+      const response = await fetch(endpoint, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+
+      if (response.ok) {
+        return { ok: true };
+      }
+
+      if (response.status !== 400) {
+        return { ok: false, response };
+      }
+    } catch {
+      return { ok: false, response: null };
+    }
+  }
+
+  return { ok: false, response: null };
+}
+
 export function SemesterProvider({ children }) {
   const [semesters, setSemesters] = useState(
     DEFAULT_SEMESTERS.map(({ subjects, ...semester }) => normalizeSemester(semester))
@@ -92,31 +152,28 @@ export function SemesterProvider({ children }) {
     timetables: true,
     reminders: true,
   });
-
   useEffect(() => {
     const loadAll = async () => {
       try {
-        const [semRes, subjectRes, timetableRes, reminderRes] = await Promise.all([
+        const [semRes, subjectRes, timetableResult, reminderResult] = await Promise.all([
           fetch("/api/semesters"),
           fetch("/api/subjects"),
-          fetch("/api/timetables"),
-          fetch("/api/reminders"),
+          fetchJsonIfOk(TIMETABLE_ENDPOINT),
+          fetchJsonIfOk(REMINDER_ENDPOINT),
         ]);
 
         if (!semRes.ok) throw new Error("Failed to load semesters");
 
         const semData = await semRes.json();
         const subjectData = subjectRes.ok ? await subjectRes.json() : { subjectsBySemester: {} };
-        const timetableData = timetableRes.ok
-          ? await timetableRes.json()
-          : { timetables: readLocalJson(LOCAL_TIMETABLES_KEY, {}) };
-        const reminderData = reminderRes.ok ? await reminderRes.json() : { reminders: {} };
+        const timetableData = timetableResult?.data || { timetables: readLocalJson(LOCAL_TIMETABLES_KEY, {}) };
+        const reminderData = reminderResult?.data || { reminders: {} };
 
         setApiAvailability({
           semesters: semRes.ok,
           subjects: subjectRes.ok,
-          timetables: timetableRes.ok,
-          reminders: reminderRes.ok,
+          timetables: Boolean(timetableResult),
+          reminders: Boolean(reminderResult),
         });
 
         const loadedSemesters = semData.semesters?.length
@@ -213,46 +270,13 @@ export function SemesterProvider({ children }) {
     writeLocalJson(LOCAL_TIMETABLES_KEY, timetablesBySemester);
 
     if (!apiAvailability.timetables) return;
-    const save = async () => {
-      try {
-        const response = await fetch("/api/timetables", {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ timetables: timetablesBySemester }),
-        });
-
-        if (!response.ok) {
-          console.error("Timetables sync failed. Disabling timetables autosave endpoint.");
-          setApiAvailability((prev) => ({ ...prev, timetables: false }));
-        }
-      } catch (error) {
-        console.error("Failed to sync timetable data.", error);
-        setApiAvailability((prev) => ({ ...prev, timetables: false }));
-      }
-    };
-    save();
+    void persistTimetablesPayload(timetablesBySemester);
   }, [timetablesBySemester, hasLoaded, apiAvailability.timetables]);
 
   useEffect(() => {
     if (!hasLoaded || !apiAvailability.reminders) return;
-    const save = async () => {
-      try {
-        const response = await fetch("/api/reminders", {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ reminders: remindersBySemester }),
-        });
 
-        if (!response.ok) {
-          console.error("Reminders sync failed. Disabling reminders autosave endpoint.");
-          setApiAvailability((prev) => ({ ...prev, reminders: false }));
-        }
-      } catch (error) {
-        console.error("Failed to sync reminders data.", error);
-        setApiAvailability((prev) => ({ ...prev, reminders: false }));
-      }
-    };
-    save();
+    void persistRemindersPayload(remindersBySemester);
   }, [remindersBySemester, hasLoaded, apiAvailability.reminders]);
 
   const baseCurrentSemester =
@@ -303,29 +327,51 @@ export function SemesterProvider({ children }) {
     }));
   }
 
-
-  async function persistTimetablesPayload(timetablesPayload) {
-    writeLocalJson(LOCAL_TIMETABLES_KEY, timetablesPayload);
-
+  async function persistRemindersPayload(remindersPayload) {
     try {
-      const response = await fetch("/api/timetables", {
+      const response = await fetch(REMINDER_ENDPOINT, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ timetables: timetablesPayload }),
+        body: JSON.stringify({ reminders: remindersPayload }),
       });
 
       if (response.ok) {
-        setApiAvailability((prev) => ({ ...prev, timetables: true }));
+        setApiAvailability((prev) => ({ ...prev, reminders: true }));
         return;
       }
 
       if (response.status === 404 || response.status === 501) {
-        setApiAvailability((prev) => ({ ...prev, timetables: false }));
+        setApiAvailability((prev) => ({ ...prev, reminders: false }));
+        return;
       }
 
-      console.error("Timetables sync failed.");
+      const errorText = await parseErrorMessage(response);
+      console.error(`Reminders sync failed (${response.status}): ${errorText}`);
     } catch (error) {
-      console.error("Failed to sync timetable data.", error);
+      console.error("Failed to sync reminders data.", error);
+    }
+  }
+
+  async function persistTimetablesPayload(timetablesPayload) {
+    writeLocalJson(LOCAL_TIMETABLES_KEY, timetablesPayload);
+
+    const result = await tryTimetableSync(TIMETABLE_ENDPOINT, timetablesPayload);
+
+    if (result.ok) {
+      setApiAvailability((prev) => ({ ...prev, timetables: true }));
+      return;
+    }
+
+    if (result.response?.status === 404 || result.response?.status === 501) {
+      setApiAvailability((prev) => ({ ...prev, timetables: false }));
+      return;
+    }
+
+    if (result.response) {
+      const errorText = await parseErrorMessage(result.response);
+      console.error(`Timetables sync failed (${result.response.status}): ${errorText}`);
+    } else {
+      console.error("Timetables sync failed.");
     }
   }
 

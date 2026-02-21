@@ -9,12 +9,14 @@
     "dev:server": "node server.js",
     "build": "vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "split:data": "node scripts/splitAttendanceData.mjs"
   },
   "dependencies": {
+    "firebase": "^12.9.0",
+    "framer-motion": "^12.29.2",
     "html2canvas": "^1.4.1",
     "jspdf": "^3.0.3",
-    "framer-motion": "^12.29.2",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "react-router-dom": "^7.13.0",

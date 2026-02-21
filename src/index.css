@@ -24,15 +24,6 @@
   }
 }
 
-@keyframes themeRipple {
-  0% {
-    clip-path: circle(0% at 95% 5%);
-  }
-  100% {
-    clip-path: circle(150% at 95% 5%);
-  }
-}
-
 @keyframes fadeUp {
   0% {
     opacity: 0;

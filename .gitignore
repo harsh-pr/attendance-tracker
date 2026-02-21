@@ -4,4 +4,3 @@ dist
 .env.local
 .vite
 .DS_Store
-data/ 

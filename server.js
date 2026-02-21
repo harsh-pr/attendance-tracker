@@ -9,12 +9,17 @@ const __dirname = path.dirname(__filename);
 
 const dataDir = path.join(__dirname, "data");
 const attendanceFile = path.join(dataDir, "attendance.json");
+const subjectsFile = path.join(dataDir, "subjects.json");
 const timetablesFile = path.join(dataDir, "timetables.json");
 const remindersFile = path.join(dataDir, "reminders.json");
 
 const fallbackAttendance = {
   currentSemesterId: "sem2",
   semesters: [],
+};
+
+const fallbackSubjects = {
+  subjectsBySemester: {},
 };
 
 const fallbackTimetables = {
@@ -24,6 +29,8 @@ const fallbackTimetables = {
 const fallbackReminders = {
   reminders: {},
 };
+
+let migrationCompleted = false;
 
 async function readJsonFile(filePath, fallback, label) {
   try {
@@ -57,7 +64,52 @@ function sendJson(res, statusCode, payload) {
   res.end(JSON.stringify(payload));
 }
 
+async function migrateLegacySubjects() {
+  if (migrationCompleted) return;
+
+  const attendanceData = await readJsonFile(attendanceFile, fallbackAttendance, "Attendance data");
+  const subjectsData = await readJsonFile(subjectsFile, fallbackSubjects, "Subject data");
+
+  let attendanceChanged = false;
+  let subjectsChanged = false;
+
+  const migratedSemesters = (attendanceData.semesters || []).map((semester) => {
+    if (!Array.isArray(semester.subjects)) {
+      return semester;
+    }
+
+    if (!Array.isArray(subjectsData.subjectsBySemester?.[semester.id])) {
+      subjectsData.subjectsBySemester = {
+        ...(subjectsData.subjectsBySemester || {}),
+        [semester.id]: semester.subjects,
+      };
+      subjectsChanged = true;
+    }
+
+    attendanceChanged = true;
+    const { subjects, ...rest } = semester;
+    return rest;
+  });
+
+  if (attendanceChanged) {
+    await writeJsonFile(attendanceFile, {
+      currentSemesterId: attendanceData.currentSemesterId,
+      semesters: migratedSemesters,
+    });
+  }
+
+  if (subjectsChanged) {
+    await writeJsonFile(subjectsFile, {
+      subjectsBySemester: subjectsData.subjectsBySemester || {},
+    });
+  }
+
+  migrationCompleted = true;
+}
+
 const server = http.createServer(async (req, res) => {
+  await migrateLegacySubjects();
+
   if (req.url === "/api/semesters" && req.method === "GET") {
     try {
       const data = await readJsonFile(attendanceFile, fallbackAttendance, "Attendance data");
@@ -91,7 +143,11 @@ const server = http.createServer(async (req, res) => {
 
         const payload = {
           currentSemesterId: currentSemesterId ?? semesters[0]?.id ?? null,
-          semesters: semesters.map(({ reminders, timetable, ...semester }) => semester),
+          semesters: semesters.map(({ id, name, attendanceData }) => ({
+            id,
+            name,
+            attendanceData: Array.isArray(attendanceData) ? attendanceData : [],
+          })),
         };
 
         await writeJsonFile(attendanceFile, payload);
@@ -99,6 +155,49 @@ const server = http.createServer(async (req, res) => {
       } catch (error) {
         console.error("Failed to save attendance data.", error);
         return sendJson(res, 500, { error: "Failed to save attendance data." });
+      }
+    });
+
+    return;
+  }
+
+  if (req.url === "/api/subjects" && req.method === "GET") {
+    try {
+      const data = await readJsonFile(subjectsFile, fallbackSubjects, "Subject data");
+      return sendJson(res, 200, data);
+    } catch (error) {
+      console.error("Failed to read subject data.", error);
+      return sendJson(res, 500, { error: "Failed to read subject data." });
+    }
+  }
+
+  if (req.url === "/api/subjects" && req.method === "PUT") {
+    let body = "";
+    req.on("data", (chunk) => {
+      body += chunk;
+    });
+
+    req.on("end", async () => {
+      try {
+        let parsed = {};
+        try {
+          parsed = body ? JSON.parse(body) : {};
+        } catch (parseError) {
+          console.error("Failed to parse subjects payload.", parseError);
+          return sendJson(res, 400, { error: "Invalid JSON payload." });
+        }
+
+        const { subjectsBySemester } = parsed ?? {};
+        if (!subjectsBySemester || typeof subjectsBySemester !== "object") {
+          return sendJson(res, 400, { error: "subjectsBySemester must be an object." });
+        }
+
+        const payload = { subjectsBySemester };
+        await writeJsonFile(subjectsFile, payload);
+        return sendJson(res, 200, payload);
+      } catch (error) {
+        console.error("Failed to save subject data.", error);
+        return sendJson(res, 500, { error: "Failed to save subject data." });
       }
     });
 
@@ -131,10 +230,9 @@ const server = http.createServer(async (req, res) => {
           return sendJson(res, 400, { error: "Invalid JSON payload." });
         }
 
-        const { timetables } = parsed ?? {};
-        if (!timetables || typeof timetables !== "object") {
-          return sendJson(res, 400, { error: "timetables must be an object." });
-        }
+        const parsedTimetables = parsed?.timetables;
+        const timetables =
+          parsedTimetables && typeof parsedTimetables === "object" ? parsedTimetables : {};
 
         const payload = { timetables };
         await writeJsonFile(timetablesFile, payload);
@@ -174,10 +272,9 @@ const server = http.createServer(async (req, res) => {
           return sendJson(res, 400, { error: "Invalid JSON payload." });
         }
 
-        const { reminders } = parsed ?? {};
-        if (!reminders || typeof reminders !== "object") {
-          return sendJson(res, 400, { error: "reminders must be an object." });
-        }
+        const parsedReminders = parsed?.reminders;
+        const reminders =
+          parsedReminders && typeof parsedReminders === "object" ? parsedReminders : {};
 
         const payload = { reminders };
         await writeJsonFile(remindersFile, payload);

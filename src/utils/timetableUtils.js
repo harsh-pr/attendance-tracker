@@ -1,6 +1,3 @@
-import { SEMESTER_TIMETABLES } from "../data/timetable";
-import { DEFAULT_SEMESTER_ID } from "../data/defaultSemesters";
-
 const EMPTY_TIMETABLE = {
   monday: [],
   tuesday: [],

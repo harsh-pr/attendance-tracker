@@ -28,7 +28,9 @@ export default function Navbar() {
     currentTimetable,
     setCurrentSemesterId,
     addSemester,
+    deleteSemester,
     setSemesterTimetable,
+    setSemesterSubjects,
     weekDays,
   } = useSemester();
 
@@ -38,8 +40,11 @@ export default function Navbar() {
   const [isCreateSemesterOpen, setIsCreateSemesterOpen] = useState(false);
   const [isTimetableOpen, setIsTimetableOpen] = useState(false);
   const [newSemesterName, setNewSemesterName] = useState("");
-  const [copySubjects, setCopySubjects] = useState(true);
+  const [copySourceSemesterId, setCopySourceSemesterId] = useState("");
   const [timetableDraft, setTimetableDraft] = useState(EMPTY_TIMETABLE);
+  const [subjectsDraft, setSubjectsDraft] = useState([]);
+  const [newSubjectName, setNewSubjectName] = useState("");
+  const [newSubjectType, setNewSubjectType] = useState("theory");
 
   const menuRef = useRef(null);
 
@@ -61,26 +66,39 @@ export default function Navbar() {
 
   useEffect(() => {
     if (!isTimetableOpen) return;
+
+    const semesterSubjects = (currentSemester.subjects || []).map((subject) => ({ ...subject }));
+    setSubjectsDraft(semesterSubjects);
+
+    const validIds = new Set(semesterSubjects.map((subject) => subject.id));
     const source = currentTimetable || EMPTY_TIMETABLE;
     setTimetableDraft({
-      monday: [...(source.monday || [])],
-      tuesday: [...(source.tuesday || [])],
-      wednesday: [...(source.wednesday || [])],
-      thursday: [...(source.thursday || [])],
-      friday: [...(source.friday || [])],
+      monday: (source.monday || []).filter((lecture) => validIds.has(lecture.subjectId)).map((lecture) => ({ ...lecture })),
+      tuesday: (source.tuesday || []).filter((lecture) => validIds.has(lecture.subjectId)).map((lecture) => ({ ...lecture })),
+      wednesday: (source.wednesday || []).filter((lecture) => validIds.has(lecture.subjectId)).map((lecture) => ({ ...lecture })),
+      thursday: (source.thursday || []).filter((lecture) => validIds.has(lecture.subjectId)).map((lecture) => ({ ...lecture })),
+      friday: (source.friday || []).filter((lecture) => validIds.has(lecture.subjectId)).map((lecture) => ({ ...lecture })),
     });
-  }, [isTimetableOpen, currentTimetable]);
+  }, [isTimetableOpen, currentTimetable, currentSemester.subjects]);
 
   const currentSemesterName = useMemo(
     () => semesters.find((sem) => sem.id === currentSemesterId)?.name || "Select semester",
     [semesters, currentSemesterId]
   );
 
-  const subjects = currentSemester.subjects || [];
+  const subjects = subjectsDraft;
+  const sortedSubjects = useMemo(
+    () =>
+      [...subjects].sort((a, b) => {
+        if (a.type !== b.type) return a.type === "theory" ? -1 : 1;
+        return a.name.localeCompare(b.name);
+      }),
+    [subjects]
+  );
 
   function openCreateSemesterModal() {
     setNewSemesterName("");
-    setCopySubjects(true);
+    setCopySourceSemesterId("");
     setIsSemesterMenuOpen(false);
     setIsCreateSemesterOpen(true);
   }
@@ -88,7 +106,7 @@ export default function Navbar() {
   function submitCreateSemester(event) {
     event.preventDefault();
     if (!newSemesterName.trim()) return;
-    addSemester(newSemesterName.trim(), { copySubjects });
+    addSemester(newSemesterName.trim(), { sourceSemesterId: copySourceSemesterId || null });
     setIsCreateSemesterOpen(false);
   }
 
@@ -100,7 +118,7 @@ export default function Navbar() {
       ...prev,
       [dayKey]: [
         ...(prev[dayKey] || []),
-        { subjectId: fallbackSubjectId, type: subjects[0].type || "theory" },
+        { subjectId: fallbackSubjectId, type: "theory" },
       ],
     }));
   }
@@ -113,14 +131,6 @@ export default function Navbar() {
           ? {
               ...lecture,
               [field]: value,
-              ...(field === "subjectId"
-                ? {
-                    type:
-                      subjects.find((subject) => subject.id === value)?.type ||
-                      lecture.type ||
-                      "theory",
-                  }
-                : {}),
             }
           : lecture
       ),
@@ -134,9 +144,80 @@ export default function Navbar() {
     }));
   }
 
+  function slugifySubjectId(name) {
+    return name
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "_")
+      .replace(/^_+|_+$/g, "") || "subject";
+  }
+
+  function saveSubjectsDraft() {
+    if (typeof setSemesterSubjects === "function") {
+      setSemesterSubjects(currentSemesterId, subjectsDraft);
+    }
+  }
+
   function saveTimetable() {
-    setSemesterTimetable(currentSemesterId, timetableDraft);
+    const validIds = new Set(subjectsDraft.map((subject) => subject.id));
+
+    const cleanedTimetable = {
+      monday: (timetableDraft.monday || []).filter((lecture) => validIds.has(lecture.subjectId)),
+      tuesday: (timetableDraft.tuesday || []).filter((lecture) => validIds.has(lecture.subjectId)),
+      wednesday: (timetableDraft.wednesday || []).filter((lecture) => validIds.has(lecture.subjectId)),
+      thursday: (timetableDraft.thursday || []).filter((lecture) => validIds.has(lecture.subjectId)),
+      friday: (timetableDraft.friday || []).filter((lecture) => validIds.has(lecture.subjectId)),
+    };
+
+    saveSubjectsDraft();
+    setSemesterTimetable(currentSemesterId, cleanedTimetable);
     setIsTimetableOpen(false);
+  }
+
+  function submitSubjectCreate(event) {
+    event.preventDefault();
+    const trimmed = newSubjectName.trim();
+    if (!trimmed) return;
+
+    setSubjectsDraft((prev) => {
+      const base = slugifySubjectId(trimmed);
+      let nextId = base;
+      let index = 2;
+      while (prev.some((subject) => subject.id === nextId)) {
+        nextId = `${base}_${index}`;
+        index += 1;
+      }
+
+      return [...prev, { id: nextId, name: trimmed, type: newSubjectType }];
+    });
+
+    setNewSubjectName("");
+    setNewSubjectType("theory");
+  }
+
+  function removeDraftSubject(subjectId) {
+    setSubjectsDraft((prev) => prev.filter((subject) => subject.id !== subjectId));
+    setTimetableDraft((prev) => ({
+      monday: (prev.monday || []).filter((lecture) => lecture.subjectId !== subjectId),
+      tuesday: (prev.tuesday || []).filter((lecture) => lecture.subjectId !== subjectId),
+      wednesday: (prev.wednesday || []).filter((lecture) => lecture.subjectId !== subjectId),
+      thursday: (prev.thursday || []).filter((lecture) => lecture.subjectId !== subjectId),
+      friday: (prev.friday || []).filter((lecture) => lecture.subjectId !== subjectId),
+    }));
+  }
+
+  function handleDeleteCurrentSemester() {
+    if (semesters.length <= 1) {
+      window.alert("At least one semester is required.");
+      return;
+    }
+
+    const confirmed = window.confirm(
+      `Delete ${currentSemesterName}? This will remove its attendance, subjects, timetable, and reminders.`
+    );
+
+    if (!confirmed) return;
+    deleteSemester(currentSemesterId);
+    setIsSemesterMenuOpen(false);
   }
 
   return (
@@ -155,7 +236,7 @@ export default function Navbar() {
             <button
               type="button"
               onClick={() => setIsSemesterMenuOpen((prev) => !prev)}
-              className="px-3 py-1.5 rounded-xl bg-blue-50 dark:bg-blue-900/40 text-blue-700 dark:text-blue-200 text-sm font-medium min-w-40 inline-flex items-center gap-2"
+              className="px-3 py-1.5 rounded-xl border-0 border-none appearance-none shadow-none ring-0 focus:ring-0 focus:outline-none focus-visible:outline-none focus-visible:ring-0 bg-blue-50 dark:bg-blue-900/40 text-blue-700 dark:text-blue-200 text-sm font-medium min-w-40 inline-flex items-center gap-2"
             >
               <span className="truncate">{currentSemesterName}</span>
               <span
@@ -205,6 +286,13 @@ export default function Navbar() {
                 >
                   ✎ Edit timetable
                 </button>
+                <button
+                  type="button"
+                  onClick={handleDeleteCurrentSemester}
+                  className="w-full px-4 py-2 text-left text-sm text-red-600 dark:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20"
+                >
+                  🗑 Delete this semester
+                </button>
               </div>
             ) : null}
           </div>
@@ -245,13 +333,20 @@ export default function Navbar() {
               required
             />
           </label>
-          <label className="flex items-center gap-2 text-sm">
-            <input
-              type="checkbox"
-              checked={copySubjects}
-              onChange={(e) => setCopySubjects(e.target.checked)}
-            />
-            Copy subjects from current semester
+          <label className="block text-sm">
+            Copy subjects from semester (optional)
+            <select
+              value={copySourceSemesterId}
+              onChange={(e) => setCopySourceSemesterId(e.target.value)}
+              className="mt-1 w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800"
+            >
+              <option value="">Do not copy subjects</option>
+              {semesters.map((semester) => (
+                <option key={semester.id} value={semester.id}>
+                  {semester.name}
+                </option>
+              ))}
+            </select>
           </label>
           <div className="flex justify-end">
             <button type="submit" className="px-4 py-2 rounded-lg bg-blue-600 text-white">
@@ -262,7 +357,7 @@ export default function Navbar() {
       </Modal>
 
       <Modal open={isTimetableOpen} onClose={() => setIsTimetableOpen(false)} size="xl" showCloseButton={false}>
-        <div className="space-y-4 text-gray-900 dark:text-gray-100">
+        <div className="space-y-4 text-gray-900 dark:text-gray-100 max-h-[80vh] overflow-y-auto pr-1">
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-xl font-semibold">Edit Timetable — {currentSemesterName}</h2>
@@ -279,9 +374,57 @@ export default function Navbar() {
             </button>
           </div>
 
+          <form onSubmit={submitSubjectCreate} className="grid grid-cols-1 sm:grid-cols-6 gap-2 rounded-xl border border-gray-200 dark:border-gray-700 p-3">
+            <input
+              value={newSubjectName}
+              onChange={(e) => setNewSubjectName(e.target.value)}
+              className="sm:col-span-3 px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900"
+              placeholder="New subject name"
+            />
+            <select
+              value={newSubjectType}
+              onChange={(e) => setNewSubjectType(e.target.value)}
+              className="sm:col-span-2 px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900"
+            >
+              <option value="theory">theory</option>
+              <option value="lab">lab</option>
+            </select>
+            <button type="submit" className="sm:col-span-1 px-3 py-2 rounded-lg bg-blue-600 text-white">
+              + Subject
+            </button>
+          </form>
+
+
+
+          {subjects.length ? (
+            <div className="rounded-xl border border-gray-200 dark:border-gray-700 p-3 space-y-2">
+              <p className="text-sm font-medium">Subjects in {currentSemesterName}</p>
+              <div className="space-y-1 max-h-40 overflow-auto pr-1">
+                {subjects.map((subject) => (
+                  <div
+                    key={subject.id}
+                    className="flex items-center justify-between rounded-lg bg-gray-100 dark:bg-gray-800 px-3 py-2"
+                  >
+                    <div className="text-sm">
+                      {subject.name}
+                      <span className="ml-2 text-xs text-gray-500 dark:text-gray-400">{subject.type}</span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => removeDraftSubject(subject.id)}
+                      className="text-xs px-2 py-1 rounded bg-red-600 text-white"
+                    >
+                      Delete
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : null}
+
           {subjects.length === 0 ? (
             <div className="rounded-xl border border-dashed border-gray-300 dark:border-gray-700 p-4 text-sm text-gray-500 dark:text-gray-400">
-              No subjects in this semester. Create semester with "Copy subjects" enabled first.
+              No subjects in this semester yet. Add subjects first, then build timetable.
             </div>
           ) : (
             <div className="space-y-3 max-h-[65vh] overflow-auto pr-1">
@@ -310,20 +453,25 @@ export default function Navbar() {
                           >
                             <select
                               value={lecture.subjectId}
-                              onChange={(e) =>
-                                updateLectureRow(dayKey, index, "subjectId", e.target.value)
-                              }
-                              className="col-span-8 px-2 py-1 rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900"
+                              onChange={(e) => {
+                                const nextSubjectId = e.target.value;
+                                const selectedSubject = sortedSubjects.find((subject) => subject.id === nextSubjectId);
+                                updateLectureRow(dayKey, index, "subjectId", nextSubjectId);
+                                updateLectureRow(
+                                  dayKey,
+                                  index,
+                                  "type",
+                                  selectedSubject?.type || lecture.type || "theory"
+                                );
+                              }}
+                              className="col-span-10 px-2 py-1 rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900"
                             >
-                              {subjects.map((subject) => (
+                              {sortedSubjects.map((subject) => (
                                 <option key={subject.id} value={subject.id}>
-                                  {subject.name}
+                                  {subject.name} ({subject.type})
                                 </option>
                               ))}
                             </select>
-                            <span className="col-span-2 text-xs text-gray-500 dark:text-gray-400">
-                              {lecture.type}
-                            </span>
                             <button
                               type="button"
                               onClick={() => removeLectureRow(dayKey, index)}

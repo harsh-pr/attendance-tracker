@@ -1,0 +1,1015 @@
+{
+  "currentSemesterId": "sem3",
+  "semesters": [
+    {
+      "id": "sem2",
+      "name": "Semester 2",
+      "attendanceData": [
+        {
+          "date": "2026-01-05",
+          "lectures": [
+            {
+              "subjectId": "python",
+              "type": "theory",
+              "status": "absent"
+            },
+            {
+              "subjectId": "eg",
+              "type": "theory",
+              "status": "absent"
+            },
+            {
+              "subjectId": "iks_lab",
+              "type": "lab",
+              "status": "absent"
+            },
+            {
+              "subjectId": "ds",
+              "type": "theory",
+              "status": "absent"
+            },
+            {
+              "subjectId": "math_tut",
+              "type": "lab",
+              "status": "cancelled"
+            }
+          ]
+        },
+        {
+          "date": "2026-01-06",
+          "lectures": [
+            {
+              "subjectId": "ds",
+              "type": "theory",
+              "status": "absent"
+            },
+            {
+              "subjectId": "phy",
+              "type": "lab",
+              "status": "absent"
+            },
+            {
+              "subjectId": "chem",
+              "type": "theory",
+              "status": "absent"
+            },
+            {
+              "subjectId": "python",
+              "type": "theory",
+              "status": "absent"
+            },
+            {
+              "subjectId": "iks",
+              "type": "theory",
+              "status": "absent"
+            }
+          ]
+        },
+        {
+          "date": "2026-01-07",
+          "lectures": [
+            {
+              "subjectId": "chem",
+              "type": "theory",
+              "status": "absent"
+            },
+            {
+              "subjectId": "eg",
+              "type": "theory",
+              "status": "absent"
+            },
+            {
+              "subjectId": "math",
+              "type": "theory",
+              "status": "absent"
+            },
+            {
+              "subjectId": "chem_lab",
+              "type": "lab",
+              "status": "absent"
+            },
+            {
+              "subjectId": "ds_lab",
+              "type": "lab",
+              "status": "absent"
+            }
+          ]
+        },
+        {
+          "date": "2026-01-08",
+          "lectures": [
+            {
+              "subjectId": "eg_lab",
+              "type": "lab",
+              "status": "absent"
+            },
+            {
+              "subjectId": "phy",
+              "type": "theory",
+              "status": "absent"
+            },
+            {
+              "subjectId": "math",
+              "type": "theory",
+              "status": "absent"
+            },
+            {
+              "subjectId": "ss",
+              "type": "theory",
+              "status": "absent"
+            }
+          ]
+        },
+        {
+          "date": "2026-01-09",
+          "lectures": [
+            {
+              "subjectId": "iks",
+              "type": "theory",
+              "status": "absent"
+            },
+            {
+              "subjectId": "phy",
+              "type": "theory",
+              "status": "absent"
+            },
+            {
+              "subjectId": "python_lab",
+              "type": "lab",
+              "status": "absent"
+            },
+            {
+              "subjectId": "eg",
+              "type": "theory",
+              "status": "absent"
+            },
+            {
+              "subjectId": "workshop",
+              "type": "lab",
+              "status": "absent"
+            }
+          ]
+        },
+        {
+          "date": "2026-01-12",
+          "lectures": [
+            {
+              "subjectId": "python",
+              "type": "theory",
+              "status": "absent"
+            },
+            {
+              "subjectId": "eg",
+              "type": "theory",
+              "status": "absent"
+            },
+            {
+              "subjectId": "iks_lab",
+              "type": "lab",
+              "status": "absent"
+            },
+            {
+              "subjectId": "ds",
+              "type": "theory",
+              "status": "absent"
+            },
+            {
+              "subjectId": "math_lab",
+              "type": "lab",
+              "status": "absent"
+            }
+          ]
+        },
+        {
+          "date": "2026-01-13",
+          "lectures": [
+            {
+              "subjectId": "ds",
+              "type": "theory",
+              "status": "absent"
+            },
+            {
+              "subjectId": "phy_lab",
+              "type": "lab",
+              "status": "absent"
+            },
+            {
+              "subjectId": "chem",
+              "type": "theory",
+              "status": "absent"
+            },
+            {
+              "subjectId": "python",
+              "type": "theory",
+              "status": "absent"
+            },
+            {
+              "subjectId": "iks",
+              "type": "theory",
+              "status": "absent"
+            }
+          ]
+        },
+        {
+          "date": "2026-01-14",
+          "lectures": []
+        },
+        {
+          "date": "2026-01-15",
+          "lectures": []
+        },
+        {
+          "date": "2026-01-16",
+          "lectures": [
+            {
+              "subjectId": "iks",
+              "type": "theory",
+              "status": "absent"
+            },
+            {
+              "subjectId": "phy",
+              "type": "theory",
+              "status": "absent"
+            },
+            {
+              "subjectId": "python_lab",
+              "type": "lab",
+              "status": "absent"
+            },
+            {
+              "subjectId": "eg",
+              "type": "theory",
+              "status": "absent"
+            },
+            {
+              "subjectId": "workshop",
+              "type": "lab",
+              "status": "absent"
+            }
+          ]
+        },
+        {
+          "date": "2026-01-19",
+          "lectures": [
+            {
+              "subjectId": "python",
+              "type": "theory",
+              "status": "absent"
+            },
+            {
+              "subjectId": "eg",
+              "type": "theory",
+              "status": "absent"
+            },
+            {
+              "subjectId": "iks_lab",
+              "type": "lab",
+              "status": "absent"
+            },
+            {
+              "subjectId": "ds",
+              "type": "theory",
+              "status": "absent"
+            },
+            {
+              "subjectId": "math_tut",
+              "type": "lab",
+              "status": "cancelled"
+            }
+          ]
+        },
+        {
+          "date": "2026-01-20",
+          "lectures": [
+            {
+              "subjectId": "ds",
+              "type": "theory",
+              "status": "absent"
+            },
+            {
+              "subjectId": "phy_lab",
+              "type": "lab",
+              "status": "absent"
+            },
+            {
+              "subjectId": "chem",
+              "type": "theory",
+              "status": "absent"
+            },
+            {
+              "subjectId": "python",
+              "type": "theory",
+              "status": "absent"
+            },
+            {
+              "subjectId": "iks",
+              "type": "theory",
+              "status": "absent"
+            }
+          ]
+        },
+        {
+          "date": "2026-01-21",
+          "lectures": [
+            {
+              "subjectId": "chem",
+              "type": "theory",
+              "status": "absent"
+            },
+            {
+              "subjectId": "eg",
+              "type": "theory",
+              "status": "absent"
+            },
+            {
+              "subjectId": "math",
+              "type": "theory",
+              "status": "absent"
+            },
+            {
+              "subjectId": "chem_lab",
+              "type": "lab",
+              "status": "absent"
+            },
+            {
+              "subjectId": "ds_lab",
+              "type": "lab",
+              "status": "absent"
+            }
+          ]
+        },
+        {
+          "date": "2026-01-22",
+          "lectures": [
+            {
+              "subjectId": "eg_lab",
+              "type": "lab",
+              "status": "absent"
+            },
+            {
+              "subjectId": "phy",
+              "type": "theory",
+              "status": "absent"
+            },
+            {
+              "subjectId": "math",
+              "type": "theory",
+              "status": "absent"
+            },
+            {
+              "subjectId": "ss",
+              "type": "theory",
+              "status": "absent"
+            }
+          ]
+        },
+        {
+          "date": "2026-01-23",
+          "lectures": [
+            {
+              "subjectId": "iks",
+              "type": "theory",
+              "status": "absent"
+            },
+            {
+              "subjectId": "phy",
+              "type": "theory",
+              "status": "absent"
+            },
+            {
+              "subjectId": "python_lab",
+              "type": "lab",
+              "status": "absent"
+            },
+            {
+              "subjectId": "eg",
+              "type": "theory",
+              "status": "absent"
+            },
+            {
+              "subjectId": "workshop",
+              "type": "lab",
+              "status": "absent"
+            }
+          ]
+        },
+        {
+          "date": "2026-01-26",
+          "lectures": []
+        },
+        {
+          "date": "2026-01-27",
+          "lectures": [
+            {
+              "subjectId": "ds",
+              "type": "theory",
+              "status": "present"
+            },
+            {
+              "subjectId": "phy_lab",
+              "type": "lab",
+              "status": "present"
+            },
+            {
+              "subjectId": "chem",
+              "type": "theory",
+              "status": "present"
+            },
+            {
+              "subjectId": "python",
+              "type": "theory",
+              "status": "free"
+            },
+            {
+              "subjectId": "iks",
+              "type": "theory",
+              "status": "absent"
+            }
+          ]
+        },
+        {
+          "date": "2026-01-28",
+          "lectures": [
+            {
+              "subjectId": "chem",
+              "type": "theory",
+              "status": "present"
+            },
+            {
+              "subjectId": "eg",
+              "type": "theory",
+              "status": "present"
+            },
+            {
+              "subjectId": "math",
+              "type": "theory",
+              "status": "present"
+            },
+            {
+              "subjectId": "chem_lab",
+              "type": "lab",
+              "status": "present"
+            },
+            {
+              "subjectId": "ds_lab",
+              "type": "lab",
+              "status": "cancelled"
+            }
+          ]
+        },
+        {
+          "date": "2026-01-29",
+          "lectures": [
+            {
+              "subjectId": "eg_lab",
+              "type": "lab",
+              "status": "present"
+            },
+            {
+              "subjectId": "phy",
+              "type": "theory",
+              "status": "present"
+            },
+            {
+              "subjectId": "math",
+              "type": "theory",
+              "status": "present"
+            },
+            {
+              "subjectId": "ss",
+              "type": "theory",
+              "status": "absent"
+            }
+          ]
+        },
+        {
+          "date": "2026-01-30",
+          "lectures": [
+            {
+              "subjectId": "iks",
+              "type": "theory",
+              "status": "present"
+            },
+            {
+              "subjectId": "phy",
+              "type": "theory",
+              "status": "present"
+            },
+            {
+              "subjectId": "python_lab",
+              "type": "lab",
+              "status": "present"
+            },
+            {
+              "subjectId": "eg",
+              "type": "theory",
+              "status": "present"
+            },
+            {
+              "subjectId": "workshop",
+              "type": "lab",
+              "status": "present"
+            }
+          ]
+        },
+        {
+          "date": "2026-02-03",
+          "lectures": [
+            {
+              "subjectId": "ds",
+              "type": "theory",
+              "status": "absent"
+            },
+            {
+              "subjectId": "phy_lab",
+              "type": "lab",
+              "status": "absent"
+            },
+            {
+              "subjectId": "chem",
+              "type": "theory",
+              "status": "absent"
+            },
+            {
+              "subjectId": "python",
+              "type": "theory",
+              "status": "absent"
+            },
+            {
+              "subjectId": "iks",
+              "type": "theory",
+              "status": "absent"
+            }
+          ]
+        },
+        {
+          "date": "2026-02-02",
+          "lectures": [
+            {
+              "subjectId": "python",
+              "type": "theory",
+              "status": "absent"
+            },
+            {
+              "subjectId": "eg",
+              "type": "theory",
+              "status": "absent"
+            },
+            {
+              "subjectId": "iks_lab",
+              "type": "lab",
+              "status": "absent"
+            },
+            {
+              "subjectId": "ds",
+              "type": "theory",
+              "status": "absent"
+            },
+            {
+              "subjectId": "math_tut",
+              "type": "lab",
+              "status": "absent"
+            }
+          ]
+        },
+        {
+          "date": "2026-02-04",
+          "lectures": [
+            {
+              "subjectId": "chem",
+              "type": "theory",
+              "status": "present"
+            },
+            {
+              "subjectId": "eg",
+              "type": "theory",
+              "status": "present"
+            },
+            {
+              "subjectId": "math",
+              "type": "theory",
+              "status": "present"
+            },
+            {
+              "subjectId": "chem_lab",
+              "type": "lab",
+              "status": "present"
+            },
+            {
+              "subjectId": "ds_lab",
+              "type": "lab",
+              "status": "present"
+            }
+          ]
+        },
+        {
+          "date": "2026-02-05",
+          "lectures": [
+            {
+              "subjectId": "eg_lab",
+              "type": "lab",
+              "status": "present"
+            },
+            {
+              "subjectId": "phy",
+              "type": "theory",
+              "status": "present"
+            },
+            {
+              "subjectId": "math",
+              "type": "theory",
+              "status": "present"
+            },
+            {
+              "subjectId": "ss",
+              "type": "theory",
+              "status": "present"
+            }
+          ]
+        },
+        {
+          "date": "2026-02-06",
+          "lectures": [
+            {
+              "subjectId": "iks",
+              "type": "theory",
+              "status": "present"
+            },
+            {
+              "subjectId": "phy",
+              "type": "theory",
+              "status": "present"
+            },
+            {
+              "subjectId": "python_lab",
+              "type": "lab",
+              "status": "present"
+            },
+            {
+              "subjectId": "eg",
+              "type": "theory",
+              "status": "present"
+            },
+            {
+              "subjectId": "workshop",
+              "type": "lab",
+              "status": "present"
+            }
+          ]
+        },
+        {
+          "date": "2026-02-10",
+          "lectures": [
+            {
+              "subjectId": "ds",
+              "type": "theory",
+              "status": "present"
+            },
+            {
+              "subjectId": "phy_lab",
+              "type": "lab",
+              "status": "present"
+            },
+            {
+              "subjectId": "chem",
+              "type": "theory",
+              "status": "present"
+            },
+            {
+              "subjectId": "python",
+              "type": "theory",
+              "status": "absent"
+            },
+            {
+              "subjectId": "iks",
+              "type": "theory",
+              "status": "absent"
+            }
+          ]
+        },
+        {
+          "date": "2026-02-09",
+          "lectures": [
+            {
+              "subjectId": "python",
+              "type": "theory",
+              "status": "present"
+            },
+            {
+              "subjectId": "eg",
+              "type": "theory",
+              "status": "present"
+            },
+            {
+              "subjectId": "iks_lab",
+              "type": "lab",
+              "status": "present"
+            },
+            {
+              "subjectId": "ds",
+              "type": "theory",
+              "status": "present"
+            },
+            {
+              "subjectId": "math_tut",
+              "type": "lab",
+              "status": "absent"
+            }
+          ]
+        },
+        {
+          "date": "2026-02-11",
+          "lectures": [
+            {
+              "subjectId": "chem",
+              "type": "theory",
+              "status": "cancelled"
+            },
+            {
+              "subjectId": "eg",
+              "type": "theory",
+              "status": "present"
+            },
+            {
+              "subjectId": "math",
+              "type": "theory",
+              "status": "present"
+            },
+            {
+              "subjectId": "chem_lab",
+              "type": "lab",
+              "status": "cancelled"
+            },
+            {
+              "subjectId": "ds_lab",
+              "type": "lab",
+              "status": "present"
+            }
+          ]
+        },
+        {
+          "date": "2026-02-12",
+          "lectures": [
+            {
+              "subjectId": "eg_lab",
+              "type": "lab",
+              "status": "present"
+            },
+            {
+              "subjectId": "phy",
+              "type": "theory",
+              "status": "present"
+            },
+            {
+              "subjectId": "math",
+              "type": "theory",
+              "status": "present"
+            },
+            {
+              "subjectId": "ss",
+              "type": "theory",
+              "status": "present"
+            }
+          ]
+        },
+        {
+          "date": "2026-02-13",
+          "lectures": [
+            {
+              "subjectId": "iks",
+              "type": "theory",
+              "status": "present"
+            },
+            {
+              "subjectId": "phy",
+              "type": "theory",
+              "status": "present"
+            },
+            {
+              "subjectId": "python_lab",
+              "type": "lab",
+              "status": "present"
+            },
+            {
+              "subjectId": "eg",
+              "type": "theory",
+              "status": "present"
+            },
+            {
+              "subjectId": "workshop",
+              "type": "lab",
+              "status": "present"
+            }
+          ]
+        },
+        {
+          "date": "2026-02-16",
+          "lectures": [
+            {
+              "subjectId": "python",
+              "type": "theory",
+              "status": "present"
+            },
+            {
+              "subjectId": "eg",
+              "type": "theory",
+              "status": "present"
+            },
+            {
+              "subjectId": "iks",
+              "type": "lab",
+              "status": "present"
+            },
+            {
+              "subjectId": "ds",
+              "type": "theory",
+              "status": "absent"
+            },
+            {
+              "subjectId": "math_tut",
+              "type": "lab",
+              "status": "absent"
+            }
+          ]
+        },
+        {
+          "date": "2026-02-18",
+          "lectures": [
+            {
+              "subjectId": "chem",
+              "type": "theory",
+              "status": "present"
+            },
+            {
+              "subjectId": "eg",
+              "type": "theory",
+              "status": "present"
+            },
+            {
+              "subjectId": "math",
+              "type": "theory",
+              "status": "present"
+            },
+            {
+              "subjectId": "chem_lab",
+              "type": "lab",
+              "status": "present"
+            },
+            {
+              "subjectId": "ds_lab",
+              "type": "lab",
+              "status": "absent"
+            }
+          ]
+        },
+        {
+          "date": "2026-02-17",
+          "lectures": [
+            {
+              "subjectId": "ds",
+              "type": "theory",
+              "status": "absent"
+            },
+            {
+              "subjectId": "phy_lab",
+              "type": "lab",
+              "status": "absent"
+            },
+            {
+              "subjectId": "chem",
+              "type": "theory",
+              "status": "absent"
+            },
+            {
+              "subjectId": "python",
+              "type": "theory",
+              "status": "absent"
+            },
+            {
+              "subjectId": "iks",
+              "type": "theory",
+              "status": "absent"
+            }
+          ]
+        },
+        {
+          "date": "2026-02-19",
+          "lectures": [],
+          "dayType": "holiday"
+        },
+        {
+          "date": "2026-02-20",
+          "lectures": [
+            {
+              "subjectId": "iks",
+              "type": "theory",
+              "status": "absent"
+            },
+            {
+              "subjectId": "phy",
+              "type": "theory",
+              "status": "absent"
+            },
+            {
+              "subjectId": "python_lab",
+              "type": "lab",
+              "status": "absent"
+            },
+            {
+              "subjectId": "eg",
+              "type": "theory",
+              "status": "absent"
+            },
+            {
+              "subjectId": "workshop",
+              "type": "lab",
+              "status": "cancelled"
+            }
+          ]
+        },
+        {
+          "date": "2026-02-23",
+          "dayType": null,
+          "lectures": [
+            {
+              "subjectId": "python",
+              "type": "theory",
+              "status": "absent"
+            },
+            {
+              "subjectId": "eg",
+              "type": "theory",
+              "status": "absent"
+            },
+            {
+              "subjectId": "iks",
+              "type": "lab",
+              "status": "absent"
+            },
+            {
+              "subjectId": "ds",
+              "type": "theory",
+              "status": "absent"
+            },
+            {
+              "subjectId": "math_tut",
+              "type": "lab",
+              "status": "absent"
+            }
+          ]
+        },
+        {
+          "date": "2026-02-24",
+          "dayType": null,
+          "lectures": [
+            {
+              "subjectId": "ds",
+              "type": "theory",
+              "status": "absent"
+            },
+            {
+              "subjectId": "phy_lab",
+              "type": "lab",
+              "status": "absent"
+            },
+            {
+              "subjectId": "chem",
+              "type": "theory",
+              "status": "absent"
+            },
+            {
+              "subjectId": "python",
+              "type": "theory",
+              "status": "absent"
+            },
+            {
+              "subjectId": "iks",
+              "type": "theory",
+              "status": "absent"
+            }
+          ]
+        },
+        {
+          "date": "2026-02-25",
+          "dayType": "exam",
+          "lectures": []
+        },
+        {
+          "date": "2026-02-26",
+          "dayType": "exam",
+          "lectures": []
+        },
+        {
+          "date": "2026-02-27",
+          "dayType": "exam",
+          "lectures": []
+        }
+      ]
+    },
+    {
+      "id": "sem3",
+      "name": "sem 3",
+      "attendanceData": []
+    }
+  ]
+}

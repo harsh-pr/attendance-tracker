@@ -88,6 +88,10 @@ export function SemesterProvider({ children }) {
   const [timetablesBySemester, setTimetablesBySemester] = useState({});
   const [remindersBySemester, setRemindersBySemester] = useState({});
   const [hasLoaded, setHasLoaded] = useState(false);
+  // canSave is ONLY true after we've successfully read from Firestore.
+  // This prevents the save effects from firing with default data and
+  // overwriting real Firestore data on the first render.
+  const [canSave, setCanSave] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState(null);
 
@@ -100,6 +104,7 @@ export function SemesterProvider({ children }) {
       try {
         const data = await loadAllData();
         if (data) {
+          // Firestore has data — load it in
           const loadedSemesters = data.semesters.map(normalizeSemester);
           setSemesters(loadedSemesters);
           setSubjectsBySemester({
@@ -114,11 +119,15 @@ export function SemesterProvider({ children }) {
               : loadedSemesters[0]?.id || DEFAULT_SEMESTER_ID
           );
         }
-        // If data is null (first time), defaults are already set — Firestore will be
-        // populated when the user first makes a change.
+        // Whether data existed or not, we can now allow saves.
+        // If data was null it means Firestore is empty (genuine first use),
+        // so saving defaults is correct. If data existed, state is now
+        // populated from Firestore so saving is also safe.
+        setCanSave(true);
       } catch (err) {
         console.error("Failed to load from Firestore:", err);
         setSaveError("Failed to load data. Using local defaults.");
+        // Don't set canSave — if Firestore is unreachable, don't overwrite
       } finally {
         setHasLoaded(true);
       }
@@ -135,16 +144,16 @@ export function SemesterProvider({ children }) {
 
   // ── SAVE META (semester list + active id) ──────────────────────────────────
   useEffect(() => {
-    if (!hasLoaded) return;
+    if (!canSave) return;
     saveMeta(debouncedCurrentSemesterId, debouncedSemesters).catch((err) => {
       console.error("Failed to save meta:", err);
       setSaveError("Failed to sync semester list.");
     });
-  }, [debouncedCurrentSemesterId, debouncedSemesters, hasLoaded]);
+  }, [debouncedCurrentSemesterId, debouncedSemesters, canSave]);
 
   // ── SAVE ATTENDANCE (only dirty semesters) ─────────────────────────────────
   useEffect(() => {
-    if (!hasLoaded) return;
+    if (!canSave) return;
     const dirty = dirtyAttendanceRef.current;
     if (dirty.size === 0) return;
 
@@ -157,34 +166,34 @@ export function SemesterProvider({ children }) {
       console.error("Failed to save attendance:", err);
       setSaveError("Failed to sync attendance.");
     });
-  }, [debouncedSemesters, hasLoaded]);
+  }, [debouncedSemesters, canSave]);
 
   // ── SAVE SUBJECTS ──────────────────────────────────────────────────────────
   useEffect(() => {
-    if (!hasLoaded) return;
+    if (!canSave) return;
     saveSubjects(debouncedSubjects).catch((err) => {
       console.error("Failed to save subjects:", err);
       setSaveError("Failed to sync subjects.");
     });
-  }, [debouncedSubjects, hasLoaded]);
+  }, [debouncedSubjects, canSave]);
 
   // ── SAVE TIMETABLES ────────────────────────────────────────────────────────
   useEffect(() => {
-    if (!hasLoaded) return;
+    if (!canSave) return;
     saveTimetables(debouncedTimetables).catch((err) => {
       console.error("Failed to save timetables:", err);
       setSaveError("Failed to sync timetables.");
     });
-  }, [debouncedTimetables, hasLoaded]);
+  }, [debouncedTimetables, canSave]);
 
   // ── SAVE REMINDERS ─────────────────────────────────────────────────────────
   useEffect(() => {
-    if (!hasLoaded) return;
+    if (!canSave) return;
     saveReminders(debouncedReminders).catch((err) => {
       console.error("Failed to save reminders:", err);
       setSaveError("Failed to sync reminders.");
     });
-  }, [debouncedReminders, hasLoaded]);
+  }, [debouncedReminders, canSave]);
 
   // ── DERIVED STATE ──────────────────────────────────────────────────────────
   const baseCurrentSemester =
@@ -487,6 +496,7 @@ export function SemesterProvider({ children }) {
     currentSemesterId,
     currentTimetable,
     hasLoaded,
+    canSave,
     isSaving,
     saveError,
     setCurrentSemesterId,

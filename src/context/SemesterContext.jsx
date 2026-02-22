@@ -98,6 +98,17 @@ export function SemesterProvider({ children }) {
   // Track which semesters have dirty attendance so we only save what changed
   const dirtyAttendanceRef = useRef(new Set());
 
+  // Snapshot of what was loaded FROM Firestore.
+  // Save effects compare against this — if unchanged, it means no user action
+  // has happened yet, so we skip the write and prevent overwriting Firestore.
+  const loadedSnapshotRef = useRef({
+    semesters: null,
+    currentSemesterId: null,
+    subjects: null,
+    timetables: null,
+    reminders: null,
+  });
+
   // ── LOAD on mount ──────────────────────────────────────────────────────────
   useEffect(() => {
     const load = async () => {
@@ -106,23 +117,36 @@ export function SemesterProvider({ children }) {
         if (data) {
           // Firestore has data — load it in
           const loadedSemesters = data.semesters.map(normalizeSemester);
-          setSemesters(loadedSemesters);
-          setSubjectsBySemester({
+          const mergedSubjects = {
             ...buildDefaultSubjectsBySemester(),
             ...data.subjectsBySemester,
-          });
-          setTimetablesBySemester(data.timetablesBySemester || {});
-          setRemindersBySemester(data.remindersBySemester || {});
-          setCurrentSemesterId(
+          };
+          const loadedTimetables = data.timetablesBySemester || {};
+          const loadedReminders = data.remindersBySemester || {};
+          const loadedCurrentId =
             loadedSemesters.some((s) => s.id === data.currentSemesterId)
               ? data.currentSemesterId
-              : loadedSemesters[0]?.id || DEFAULT_SEMESTER_ID
-          );
+              : loadedSemesters[0]?.id || DEFAULT_SEMESTER_ID;
+
+          setSemesters(loadedSemesters);
+          setSubjectsBySemester(mergedSubjects);
+          setTimetablesBySemester(loadedTimetables);
+          setRemindersBySemester(loadedReminders);
+          setCurrentSemesterId(loadedCurrentId);
+
+          // Store snapshot — save effects compare against this to detect
+          // actual user changes vs. the initial load, preventing overwrites.
+          loadedSnapshotRef.current = {
+            semesters: loadedSemesters,
+            currentSemesterId: loadedCurrentId,
+            subjects: mergedSubjects,
+            timetables: loadedTimetables,
+            reminders: loadedReminders,
+          };
         }
-        // Whether data existed or not, we can now allow saves.
-        // If data was null it means Firestore is empty (genuine first use),
-        // so saving defaults is correct. If data existed, state is now
-        // populated from Firestore so saving is also safe.
+        // Allow saves now. If data was null, Firestore is empty so writing
+        // defaults is correct. If data existed, snapshot is set so save
+        // effects will skip firing unless the user actually changes something.
         setCanSave(true);
       } catch (err) {
         console.error("Failed to load from Firestore:", err);
@@ -142,13 +166,17 @@ export function SemesterProvider({ children }) {
   const debouncedTimetables = useDebounce(timetablesBySemester, 800);
   const debouncedReminders = useDebounce(remindersBySemester, 800);
 
-  // ── SAVE META (semester list + active id) ──────────────────────────────────
+  // ── SAVE META ──────────────────────────────────────────────────────────────
   useEffect(() => {
     if (!canSave) return;
-    saveMeta(debouncedCurrentSemesterId, debouncedSemesters).catch((err) => {
-      console.error("Failed to save meta:", err);
-      setSaveError("Failed to sync semester list.");
-    });
+    const snap = loadedSnapshotRef.current;
+    if (
+      JSON.stringify(debouncedSemesters) === JSON.stringify(snap.semesters) &&
+      debouncedCurrentSemesterId === snap.currentSemesterId
+    ) return;
+    saveMeta(debouncedCurrentSemesterId, debouncedSemesters).catch((err) =>
+      console.error("Failed to save meta:", err)
+    );
   }, [debouncedCurrentSemesterId, debouncedSemesters, canSave]);
 
   // ── SAVE ATTENDANCE (only dirty semesters) ─────────────────────────────────
@@ -156,43 +184,38 @@ export function SemesterProvider({ children }) {
     if (!canSave) return;
     const dirty = dirtyAttendanceRef.current;
     if (dirty.size === 0) return;
-
     const semestersToSave = debouncedSemesters.filter((s) => dirty.has(s.id));
     dirtyAttendanceRef.current = new Set();
-
     Promise.all(
       semestersToSave.map((s) => saveAttendance(s.id, s.attendanceData))
-    ).catch((err) => {
-      console.error("Failed to save attendance:", err);
-      setSaveError("Failed to sync attendance.");
-    });
+    ).catch((err) => console.error("Failed to save attendance:", err));
   }, [debouncedSemesters, canSave]);
 
   // ── SAVE SUBJECTS ──────────────────────────────────────────────────────────
   useEffect(() => {
     if (!canSave) return;
-    saveSubjects(debouncedSubjects).catch((err) => {
-      console.error("Failed to save subjects:", err);
-      setSaveError("Failed to sync subjects.");
-    });
+    if (JSON.stringify(debouncedSubjects) === JSON.stringify(loadedSnapshotRef.current.subjects)) return;
+    saveSubjects(debouncedSubjects).catch((err) =>
+      console.error("Failed to save subjects:", err)
+    );
   }, [debouncedSubjects, canSave]);
 
   // ── SAVE TIMETABLES ────────────────────────────────────────────────────────
   useEffect(() => {
     if (!canSave) return;
-    saveTimetables(debouncedTimetables).catch((err) => {
-      console.error("Failed to save timetables:", err);
-      setSaveError("Failed to sync timetables.");
-    });
+    if (JSON.stringify(debouncedTimetables) === JSON.stringify(loadedSnapshotRef.current.timetables)) return;
+    saveTimetables(debouncedTimetables).catch((err) =>
+      console.error("Failed to save timetables:", err)
+    );
   }, [debouncedTimetables, canSave]);
 
   // ── SAVE REMINDERS ─────────────────────────────────────────────────────────
   useEffect(() => {
     if (!canSave) return;
-    saveReminders(debouncedReminders).catch((err) => {
-      console.error("Failed to save reminders:", err);
-      setSaveError("Failed to sync reminders.");
-    });
+    if (JSON.stringify(debouncedReminders) === JSON.stringify(loadedSnapshotRef.current.reminders)) return;
+    saveReminders(debouncedReminders).catch((err) =>
+      console.error("Failed to save reminders:", err)
+    );
   }, [debouncedReminders, canSave]);
 
   // ── DERIVED STATE ──────────────────────────────────────────────────────────

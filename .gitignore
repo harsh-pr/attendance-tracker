@@ -1,2 +1,3 @@
-src/firebase.js
-src/cloud.js
+data/
+.env.local
+src/firebase/

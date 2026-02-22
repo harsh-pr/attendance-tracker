@@ -3,6 +3,14 @@ import { useSemester } from "../context/SemesterContext";
 import { useEffect, useRef, useState } from "react";
 import { getLecturesForDate } from "../utils/timetableUtils";
 
+const { showModal, requestPermissionIfNeeded, onAllow, onDismiss } = useNotificationPermission();
+
+// before addReminder():
+await requestPermissionIfNeeded();
+
+// in JSX:
+<NotificationPermissionModal open={showModal} onAllow={onAllow} onDismiss={onDismiss} />
+
 const weekDays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
 const statusConfig = {
@@ -479,7 +487,7 @@ export default function Calendar() {
     const monthNumber = String(monthIndex + 1).padStart(2, "0");
     pdf.save(`attendance-${year}-${monthNumber}.pdf`);
   };
-
+  
   const handleAddReminder = (event) => {
     event.preventDefault();
     if (!reminderForm.title || !reminderForm.date) return;

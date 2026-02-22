@@ -11,147 +11,87 @@ import {
   loadAllData,
   saveMeta,
   saveAttendance,
-  saveAllAttendance,
   saveSubjects,
   saveTimetables,
   saveReminders,
 } from "../firebase/firestoreService";
 
 const SemesterContext = createContext();
-
 const WEEK_DAYS = ["monday", "tuesday", "wednesday", "thursday", "friday"];
 
-const EMPTY_TIMETABLE = {
-  monday: [],
-  tuesday: [],
-  wednesday: [],
-  thursday: [],
-  friday: [],
-};
+const EMPTY_TIMETABLE = { monday: [], tuesday: [], wednesday: [], thursday: [], friday: [] };
 
 function cloneEmptyTimetable() {
   return JSON.parse(JSON.stringify(EMPTY_TIMETABLE));
 }
-
-function normalizeSemester(semester) {
-  return {
-    attendanceData: [],
-    ...semester,
-  };
+function normalizeSemester(sem) {
+  return { attendanceData: [], ...sem };
 }
-
 function createSemesterId(semesters) {
-  let index = semesters.length + 1;
-  let candidate = `sem${index}`;
-  while (semesters.some((s) => s.id === candidate)) {
-    index += 1;
-    candidate = `sem${index}`;
-  }
-  return candidate;
+  let i = semesters.length + 1;
+  let id = `sem${i}`;
+  while (semesters.some((s) => s.id === id)) { i++; id = `sem${i}`; }
+  return id;
 }
-
 function slugifySubjectId(name) {
-  return (
-    name
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, "_")
-      .replace(/^_+|_+$/g, "") || "subject"
-  );
-}
-
-function buildDefaultSubjectsBySemester() {
-  return DEFAULT_SEMESTERS.reduce((acc, sem) => {
-    acc[sem.id] = sem.subjects || [];
-    return acc;
-  }, {});
-}
-
-// ─── DEBOUNCE HELPER ──────────────────────────────────────────────────────────
-function useDebounce(value, delay) {
-  const [debounced, setDebounced] = useState(value);
-  useEffect(() => {
-    const timer = setTimeout(() => setDebounced(value), delay);
-    return () => clearTimeout(timer);
-  }, [value, delay]);
-  return debounced;
+  return name.toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_+|_+$/g, "") || "subject";
 }
 
 // ─── PROVIDER ────────────────────────────────────────────────────────────────
 export function SemesterProvider({ children }) {
-  const [semesters, setSemesters] = useState(
-    DEFAULT_SEMESTERS.map(({ subjects, ...sem }) => normalizeSemester(sem))
-  );
+  // ── STATE — starts completely empty, filled from Firestore ─────────────────
+  const [semesters, setSemesters] = useState([]);
   const [currentSemesterId, setCurrentSemesterId] = useState(DEFAULT_SEMESTER_ID);
-  const [subjectsBySemester, setSubjectsBySemester] = useState(
-    buildDefaultSubjectsBySemester
-  );
+  const [subjectsBySemester, setSubjectsBySemester] = useState({});
   const [timetablesBySemester, setTimetablesBySemester] = useState({});
   const [remindersBySemester, setRemindersBySemester] = useState({});
+
+  // hasLoaded: true once Firestore fetch completes (success or fail)
   const [hasLoaded, setHasLoaded] = useState(false);
-  // canSave is ONLY true after we've successfully read from Firestore.
-  // This prevents the save effects from firing with default data and
-  // overwriting real Firestore data on the first render.
-  const [canSave, setCanSave] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
-  const [saveError, setSaveError] = useState(null);
-
-  // Track which semesters have dirty attendance so we only save what changed
-  const dirtyAttendanceRef = useRef(new Set());
-
-  // Snapshot of what was loaded FROM Firestore.
-  // Save effects compare against this — if unchanged, it means no user action
-  // has happened yet, so we skip the write and prevent overwriting Firestore.
-  const loadedSnapshotRef = useRef({
-    semesters: null,
-    currentSemesterId: null,
-    subjects: null,
-    timetables: null,
-    reminders: null,
-  });
+  // isFirestoreEmpty: true if Firestore had no data (genuine first run)
+  const isFirestoreEmptyRef = useRef(false);
 
   // ── LOAD on mount ──────────────────────────────────────────────────────────
   useEffect(() => {
     const load = async () => {
       try {
         const data = await loadAllData();
+
         if (data) {
-          // Firestore has data — load it in
+          // Firestore has real data — use it directly, no defaults merged
           const loadedSemesters = data.semesters.map(normalizeSemester);
-          const mergedSubjects = {
-            ...buildDefaultSubjectsBySemester(),
-            ...data.subjectsBySemester,
-          };
-          const loadedTimetables = data.timetablesBySemester || {};
-          const loadedReminders = data.remindersBySemester || {};
-          const loadedCurrentId =
+          setSemesters(loadedSemesters);
+          setSubjectsBySemester(data.subjectsBySemester || {});
+          setTimetablesBySemester(data.timetablesBySemester || {});
+          setRemindersBySemester(data.remindersBySemester || {});
+          setCurrentSemesterId(
             loadedSemesters.some((s) => s.id === data.currentSemesterId)
               ? data.currentSemesterId
-              : loadedSemesters[0]?.id || DEFAULT_SEMESTER_ID;
-
-          setSemesters(loadedSemesters);
-          setSubjectsBySemester(mergedSubjects);
-          setTimetablesBySemester(loadedTimetables);
-          setRemindersBySemester(loadedReminders);
-          setCurrentSemesterId(loadedCurrentId);
-
-          // Store snapshot — save effects compare against this to detect
-          // actual user changes vs. the initial load, preventing overwrites.
-          loadedSnapshotRef.current = {
-            semesters: loadedSemesters,
-            currentSemesterId: loadedCurrentId,
-            subjects: mergedSubjects,
-            timetables: loadedTimetables,
-            reminders: loadedReminders,
-          };
+              : loadedSemesters[0]?.id || DEFAULT_SEMESTER_ID
+          );
+        } else {
+          // Firestore is empty — first time user, load defaults
+          isFirestoreEmptyRef.current = true;
+          const defaultSemesters = DEFAULT_SEMESTERS.map(({ subjects, ...sem }) => normalizeSemester(sem));
+          const defaultSubjects = DEFAULT_SEMESTERS.reduce((acc, sem) => {
+            acc[sem.id] = sem.subjects || [];
+            return acc;
+          }, {});
+          setSemesters(defaultSemesters);
+          setSubjectsBySemester(defaultSubjects);
+          setCurrentSemesterId(DEFAULT_SEMESTER_ID);
         }
-        // Allow saves now. If data was null, Firestore is empty so writing
-        // defaults is correct. If data existed, snapshot is set so save
-        // effects will skip firing unless the user actually changes something.
-        setCanSave(true);
       } catch (err) {
         console.error("Failed to load from Firestore:", err);
-        setSaveError("Failed to load data. Using local defaults.");
-        // Don't set canSave — if Firestore is unreachable, don't overwrite
+        // On error, show defaults but don't save them (don't touch Firestore)
+        const defaultSemesters = DEFAULT_SEMESTERS.map(({ subjects, ...sem }) => normalizeSemester(sem));
+        const defaultSubjects = DEFAULT_SEMESTERS.reduce((acc, sem) => {
+          acc[sem.id] = sem.subjects || [];
+          return acc;
+        }, {});
+        setSemesters(defaultSemesters);
+        setSubjectsBySemester(defaultSubjects);
+        setCurrentSemesterId(DEFAULT_SEMESTER_ID);
       } finally {
         setHasLoaded(true);
       }
@@ -159,64 +99,38 @@ export function SemesterProvider({ children }) {
     load();
   }, []);
 
-  // ── DEBOUNCED VALUES (avoid hammering Firestore on every keystroke) ─────────
-  const debouncedSemesters = useDebounce(semesters, 800);
-  const debouncedCurrentSemesterId = useDebounce(currentSemesterId, 800);
-  const debouncedSubjects = useDebounce(subjectsBySemester, 800);
-  const debouncedTimetables = useDebounce(timetablesBySemester, 800);
-  const debouncedReminders = useDebounce(remindersBySemester, 800);
+  // ── EXPLICIT SAVE HELPERS ──────────────────────────────────────────────────
+  // These are called directly from mutation functions — never automatically.
 
-  // ── SAVE META ──────────────────────────────────────────────────────────────
-  useEffect(() => {
-    if (!canSave) return;
-    const snap = loadedSnapshotRef.current;
-    if (
-      JSON.stringify(debouncedSemesters) === JSON.stringify(snap.semesters) &&
-      debouncedCurrentSemesterId === snap.currentSemesterId
-    ) return;
-    saveMeta(debouncedCurrentSemesterId, debouncedSemesters).catch((err) =>
+  function persistMeta(nextCurrentId, nextSemesters) {
+    saveMeta(nextCurrentId, nextSemesters).catch((err) =>
       console.error("Failed to save meta:", err)
     );
-  }, [debouncedCurrentSemesterId, debouncedSemesters, canSave]);
+  }
 
-  // ── SAVE ATTENDANCE (only dirty semesters) ─────────────────────────────────
-  useEffect(() => {
-    if (!canSave) return;
-    const dirty = dirtyAttendanceRef.current;
-    if (dirty.size === 0) return;
-    const semestersToSave = debouncedSemesters.filter((s) => dirty.has(s.id));
-    dirtyAttendanceRef.current = new Set();
-    Promise.all(
-      semestersToSave.map((s) => saveAttendance(s.id, s.attendanceData))
-    ).catch((err) => console.error("Failed to save attendance:", err));
-  }, [debouncedSemesters, canSave]);
+  function persistAttendance(semesterId, attendanceData) {
+    saveAttendance(semesterId, attendanceData).catch((err) =>
+      console.error("Failed to save attendance:", err)
+    );
+  }
 
-  // ── SAVE SUBJECTS ──────────────────────────────────────────────────────────
-  useEffect(() => {
-    if (!canSave) return;
-    if (JSON.stringify(debouncedSubjects) === JSON.stringify(loadedSnapshotRef.current.subjects)) return;
-    saveSubjects(debouncedSubjects).catch((err) =>
+  function persistSubjects(nextSubjects) {
+    saveSubjects(nextSubjects).catch((err) =>
       console.error("Failed to save subjects:", err)
     );
-  }, [debouncedSubjects, canSave]);
+  }
 
-  // ── SAVE TIMETABLES ────────────────────────────────────────────────────────
-  useEffect(() => {
-    if (!canSave) return;
-    if (JSON.stringify(debouncedTimetables) === JSON.stringify(loadedSnapshotRef.current.timetables)) return;
-    saveTimetables(debouncedTimetables).catch((err) =>
+  function persistTimetables(nextTimetables) {
+    saveTimetables(nextTimetables).catch((err) =>
       console.error("Failed to save timetables:", err)
     );
-  }, [debouncedTimetables, canSave]);
+  }
 
-  // ── SAVE REMINDERS ─────────────────────────────────────────────────────────
-  useEffect(() => {
-    if (!canSave) return;
-    if (JSON.stringify(debouncedReminders) === JSON.stringify(loadedSnapshotRef.current.reminders)) return;
-    saveReminders(debouncedReminders).catch((err) =>
+  function persistReminders(nextReminders) {
+    saveReminders(nextReminders).catch((err) =>
       console.error("Failed to save reminders:", err)
     );
-  }, [debouncedReminders, canSave]);
+  }
 
   // ── DERIVED STATE ──────────────────────────────────────────────────────────
   const baseCurrentSemester =
@@ -267,10 +181,6 @@ export function SemesterProvider({ children }) {
     }));
   }
 
-  function markDirtyAttendance(semesterId) {
-    dirtyAttendanceRef.current.add(semesterId);
-  }
-
   // ── SEMESTER CRUD ──────────────────────────────────────────────────────────
   function addSemester(name, options = {}) {
     const trimmedName = name?.trim();
@@ -282,16 +192,21 @@ export function SemesterProvider({ children }) {
       : [];
 
     const newSemester = { id: newId, name: trimmedName, attendanceData: [] };
+    const nextSemesters = [...semesters, newSemester];
+    const nextSubjects = { ...subjectsBySemester, [newId]: sourceSubjects.map((s) => ({ ...s })) };
+    const nextTimetables = { ...timetablesBySemester, [newId]: cloneEmptyTimetable() };
+    const nextReminders = { ...remindersBySemester, [newId]: [] };
 
-    setSemesters((prev) => [...prev, newSemester]);
-    setSubjectsBySemester((prev) => ({
-      ...prev,
-      [newId]: sourceSubjects.map((s) => ({ ...s })),
-    }));
-    setTimetablesBySemester((prev) => ({ ...prev, [newId]: cloneEmptyTimetable() }));
-    setRemindersBySemester((prev) => ({ ...prev, [newId]: [] }));
+    setSemesters(nextSemesters);
+    setSubjectsBySemester(nextSubjects);
+    setTimetablesBySemester(nextTimetables);
+    setRemindersBySemester(nextReminders);
     setCurrentSemesterId(newId);
-    markDirtyAttendance(newId);
+
+    persistMeta(newId, nextSemesters);
+    persistSubjects(nextSubjects);
+    persistTimetables(nextTimetables);
+    persistReminders(nextReminders);
     return newId;
   }
 
@@ -303,11 +218,24 @@ export function SemesterProvider({ children }) {
         ? semesters.find((s) => s.id !== semesterId)?.id || currentSemesterId
         : currentSemesterId;
 
-    setSemesters((prev) => prev.filter((s) => s.id !== semesterId));
-    setSubjectsBySemester((prev) => { const n = { ...prev }; delete n[semesterId]; return n; });
-    setTimetablesBySemester((prev) => { const n = { ...prev }; delete n[semesterId]; return n; });
-    setRemindersBySemester((prev) => { const n = { ...prev }; delete n[semesterId]; return n; });
+    const nextSemesters = semesters.filter((s) => s.id !== semesterId);
+    const nextSubjects = { ...subjectsBySemester };
+    const nextTimetables = { ...timetablesBySemester };
+    const nextReminders = { ...remindersBySemester };
+    delete nextSubjects[semesterId];
+    delete nextTimetables[semesterId];
+    delete nextReminders[semesterId];
+
+    setSemesters(nextSemesters);
+    setSubjectsBySemester(nextSubjects);
+    setTimetablesBySemester(nextTimetables);
+    setRemindersBySemester(nextReminders);
     setCurrentSemesterId(nextId);
+
+    persistMeta(nextId, nextSemesters);
+    persistSubjects(nextSubjects);
+    persistTimetables(nextTimetables);
+    persistReminders(nextReminders);
   }
 
   // ── SUBJECTS ───────────────────────────────────────────────────────────────
@@ -315,104 +243,94 @@ export function SemesterProvider({ children }) {
     const trimmedName = name?.trim();
     if (!trimmedName) return;
 
-    setSubjectsBySemester((prev) => {
-      const existing = prev[currentSemesterId] || [];
-      const base = slugifySubjectId(trimmedName);
-      let nextId = base;
-      let i = 2;
-      while (existing.some((s) => s.id === nextId)) {
-        nextId = `${base}_${i}`;
-        i++;
-      }
-      return {
-        ...prev,
-        [currentSemesterId]: [
-          ...existing,
-          { id: nextId, name: trimmedName, type: type === "lab" ? "lab" : "theory" },
-        ],
-      };
-    });
+    const existing = subjectsBySemester[currentSemesterId] || [];
+    const base = slugifySubjectId(trimmedName);
+    let nextId = base;
+    let i = 2;
+    while (existing.some((s) => s.id === nextId)) { nextId = `${base}_${i}`; i++; }
+
+    const nextSubjects = {
+      ...subjectsBySemester,
+      [currentSemesterId]: [...existing, { id: nextId, name: trimmedName, type: type === "lab" ? "lab" : "theory" }],
+    };
+    setSubjectsBySemester(nextSubjects);
+    persistSubjects(nextSubjects);
   }
 
   function removeSubject(subjectId) {
     if (!subjectId) return;
 
-    setSubjectsBySemester((prev) => ({
-      ...prev,
-      [currentSemesterId]: (prev[currentSemesterId] || []).filter((s) => s.id !== subjectId),
-    }));
+    const nextSubjects = {
+      ...subjectsBySemester,
+      [currentSemesterId]: (subjectsBySemester[currentSemesterId] || []).filter((s) => s.id !== subjectId),
+    };
 
-    setTimetablesBySemester((prev) => {
-      const cur = prev[currentSemesterId] || cloneEmptyTimetable();
-      return {
-        ...prev,
-        [currentSemesterId]: Object.fromEntries(
-          Object.entries(cur).map(([day, lecs]) => [
-            day,
-            lecs.filter((l) => l.subjectId !== subjectId),
-          ])
-        ),
-      };
-    });
+    const cur = timetablesBySemester[currentSemesterId] || cloneEmptyTimetable();
+    const nextTimetables = {
+      ...timetablesBySemester,
+      [currentSemesterId]: Object.fromEntries(
+        Object.entries(cur).map(([day, lecs]) => [day, lecs.filter((l) => l.subjectId !== subjectId)])
+      ),
+    };
 
-    setSemesters((prev) =>
-      prev.map((sem) =>
-        sem.id !== currentSemesterId
-          ? sem
-          : {
-              ...sem,
-              attendanceData: sem.attendanceData.map((day) => ({
-                ...day,
-                lectures: day.lectures.filter((l) => l.subjectId !== subjectId),
-              })),
-            }
-      )
+    const nextSemesters = semesters.map((sem) =>
+      sem.id !== currentSemesterId ? sem : {
+        ...sem,
+        attendanceData: sem.attendanceData.map((day) => ({
+          ...day,
+          lectures: day.lectures.filter((l) => l.subjectId !== subjectId),
+        })),
+      }
     );
-    markDirtyAttendance(currentSemesterId);
+
+    setSubjectsBySemester(nextSubjects);
+    setTimetablesBySemester(nextTimetables);
+    setSemesters(nextSemesters);
+
+    persistSubjects(nextSubjects);
+    persistTimetables(nextTimetables);
+    persistAttendance(currentSemesterId, nextSemesters.find((s) => s.id === currentSemesterId)?.attendanceData || []);
   }
 
-  function setSemesterSubjects(semesterId, nextSubjects = []) {
-    const normalized = Array.isArray(nextSubjects)
-      ? nextSubjects.map((s) => ({ id: s.id, name: s.name, type: s.type === "lab" ? "lab" : "theory" }))
+  function setSemesterSubjects(semesterId, nextSubjectsArr = []) {
+    const normalized = Array.isArray(nextSubjectsArr)
+      ? nextSubjectsArr.map((s) => ({ id: s.id, name: s.name, type: s.type === "lab" ? "lab" : "theory" }))
       : [];
-
     const validIds = new Set(normalized.map((s) => s.id));
 
-    setSubjectsBySemester((prev) => ({ ...prev, [semesterId]: normalized }));
+    const nextSubjects = { ...subjectsBySemester, [semesterId]: normalized };
 
-    setTimetablesBySemester((prev) => {
-      const cur = prev[semesterId] || cloneEmptyTimetable();
-      return {
-        ...prev,
-        [semesterId]: Object.fromEntries(
-          Object.entries(cur).map(([day, lecs]) => [
-            day,
-            lecs.filter((l) => validIds.has(l.subjectId)),
-          ])
-        ),
-      };
-    });
+    const cur = timetablesBySemester[semesterId] || cloneEmptyTimetable();
+    const nextTimetables = {
+      ...timetablesBySemester,
+      [semesterId]: Object.fromEntries(
+        Object.entries(cur).map(([day, lecs]) => [day, lecs.filter((l) => validIds.has(l.subjectId))])
+      ),
+    };
 
-    setSemesters((prev) =>
-      prev.map((sem) =>
-        sem.id !== semesterId
-          ? sem
-          : {
-              ...sem,
-              attendanceData: sem.attendanceData.map((day) => ({
-                ...day,
-                lectures: day.lectures.filter((l) => validIds.has(l.subjectId)),
-              })),
-            }
-      )
+    const nextSemesters = semesters.map((sem) =>
+      sem.id !== semesterId ? sem : {
+        ...sem,
+        attendanceData: sem.attendanceData.map((day) => ({
+          ...day,
+          lectures: day.lectures.filter((l) => validIds.has(l.subjectId)),
+        })),
+      }
     );
-    markDirtyAttendance(semesterId);
+
+    setSubjectsBySemester(nextSubjects);
+    setTimetablesBySemester(nextTimetables);
+    setSemesters(nextSemesters);
+
+    persistSubjects(nextSubjects);
+    persistTimetables(nextTimetables);
+    persistAttendance(semesterId, nextSemesters.find((s) => s.id === semesterId)?.attendanceData || []);
   }
 
   // ── TIMETABLE ──────────────────────────────────────────────────────────────
   function setSemesterTimetable(semesterId, timetable) {
-    setTimetablesBySemester((prev) => ({
-      ...prev,
+    const nextTimetables = {
+      ...timetablesBySemester,
       [semesterId]: {
         monday: timetable?.monday || [],
         tuesday: timetable?.tuesday || [],
@@ -420,96 +338,105 @@ export function SemesterProvider({ children }) {
         thursday: timetable?.thursday || [],
         friday: timetable?.friday || [],
       },
-    }));
+    };
+    setTimetablesBySemester(nextTimetables);
+    persistTimetables(nextTimetables);
   }
 
   // ── ATTENDANCE ─────────────────────────────────────────────────────────────
   function markDayStatus(date, status) {
     const targetDate = normalizeDateString(date);
-    setSemesters((prev) =>
-      prev.map((sem) => {
-        if (sem.id !== currentSemesterId) return sem;
+    let updatedAttendance = [];
 
-        let lectures = [];
-        let dayType = null;
+    const nextSemesters = semesters.map((sem) => {
+      if (sem.id !== currentSemesterId) return sem;
 
-        if (status === "holiday" || status === "exam") {
-          dayType = status;
-        } else {
-          lectures = buildDayLectures(targetDate, currentSemesterId, status);
-        }
+      let lectures = [];
+      let dayType = null;
+      if (status === "holiday" || status === "exam") {
+        dayType = status;
+      } else {
+        lectures = buildDayLectures(targetDate, currentSemesterId, status);
+      }
 
-        const existing = sem.attendanceData.find((d) => d.date === targetDate);
-        const newData = existing
-          ? sem.attendanceData.map((d) =>
-              d.date === targetDate ? { ...d, dayType, lectures } : d
-            )
-          : [...sem.attendanceData, { date: targetDate, dayType, lectures }];
+      const existing = sem.attendanceData.find((d) => d.date === targetDate);
+      const newData = existing
+        ? sem.attendanceData.map((d) => d.date === targetDate ? { ...d, dayType, lectures } : d)
+        : [...sem.attendanceData, { date: targetDate, dayType, lectures }];
 
-        markDirtyAttendance(sem.id);
-        return { ...sem, attendanceData: newData };
-      })
-    );
+      updatedAttendance = newData;
+      return { ...sem, attendanceData: newData };
+    });
+
+    setSemesters(nextSemesters);
+    persistAttendance(currentSemesterId, updatedAttendance);
+    persistMeta(currentSemesterId, nextSemesters);
   }
 
   function removeDayAttendance(date) {
     const targetDate = normalizeDateString(date);
-    setSemesters((prev) =>
-      prev.map((sem) => {
-        if (sem.id !== currentSemesterId) return sem;
-        markDirtyAttendance(sem.id);
-        return { ...sem, attendanceData: sem.attendanceData.filter((d) => d.date !== targetDate) };
-      })
-    );
+    let updatedAttendance = [];
+
+    const nextSemesters = semesters.map((sem) => {
+      if (sem.id !== currentSemesterId) return sem;
+      updatedAttendance = sem.attendanceData.filter((d) => d.date !== targetDate);
+      return { ...sem, attendanceData: updatedAttendance };
+    });
+
+    setSemesters(nextSemesters);
+    persistAttendance(currentSemesterId, updatedAttendance);
+    persistMeta(currentSemesterId, nextSemesters);
   }
 
   function markTodayAttendance(subjectId, status) {
     const today = getTodayDate();
     ensureDayExists(currentSemester, today, currentSemesterId);
+    let updatedAttendance = [];
 
-    setSemesters((prev) =>
-      prev.map((sem) => {
-        if (sem.id !== currentSemesterId) return sem;
-        markDirtyAttendance(sem.id);
-        return {
-          ...sem,
-          attendanceData: sem.attendanceData.map((day) =>
-            day.date === today
-              ? {
-                  ...day,
-                  lectures: day.lectures.map((l) =>
-                    l.subjectId === subjectId ? { ...l, status } : l
-                  ),
-                }
-              : day
-          ),
-        };
-      })
-    );
+    const nextSemesters = semesters.map((sem) => {
+      if (sem.id !== currentSemesterId) return sem;
+      const newData = sem.attendanceData.map((day) =>
+        day.date === today
+          ? { ...day, lectures: day.lectures.map((l) => l.subjectId === subjectId ? { ...l, status } : l) }
+          : day
+      );
+      updatedAttendance = newData;
+      return { ...sem, attendanceData: newData };
+    });
+
+    setSemesters(nextSemesters);
+    persistAttendance(currentSemesterId, updatedAttendance);
+    persistMeta(currentSemesterId, nextSemesters);
   }
 
   // ── REMINDERS ─────────────────────────────────────────────────────────────
   function addReminder(reminder) {
-    setRemindersBySemester((prev) => ({
-      ...prev,
-      [currentSemesterId]: [...(prev[currentSemesterId] || []), reminder],
-    }));
+    const nextReminders = {
+      ...remindersBySemester,
+      [currentSemesterId]: [...(remindersBySemester[currentSemesterId] || []), reminder],
+    };
+    setRemindersBySemester(nextReminders);
+    persistReminders(nextReminders);
   }
 
   function updateReminder(reminderId, updates) {
-    setRemindersBySemester((prev) => ({
-      ...prev,
-      [currentSemesterId]: (prev[currentSemesterId] || []).map((r) =>
+    const nextReminders = {
+      ...remindersBySemester,
+      [currentSemesterId]: (remindersBySemester[currentSemesterId] || []).map((r) =>
         r.id === reminderId ? { ...r, ...updates } : r
       ),
-    }));
+    };
+    setRemindersBySemester(nextReminders);
+    persistReminders(nextReminders);
   }
 
   function removeReminder(reminderId) {
-    setRemindersBySemester((prev) => ({
-      ...prev,
-      [currentSemesterId]: (prev[currentSemesterId] || []).filter((r) => r.id !== reminderId),
-    }));
+    const nextReminders = {
+      ...remindersBySemester,
+      [currentSemesterId]: (remindersBySemester[currentSemesterId] || []).filter((r) => r.id !== reminderId),
+    };
+    setRemindersBySemester(nextReminders);
+    persistReminders(nextReminders);
   }
 
   // ── CONTEXT VALUE ──────────────────────────────────────────────────────────
@@ -519,9 +446,6 @@ export function SemesterProvider({ children }) {
     currentSemesterId,
     currentTimetable,
     hasLoaded,
-    canSave,
-    isSaving,
-    saveError,
     setCurrentSemesterId,
     addSemester,
     deleteSemester,
@@ -540,7 +464,6 @@ export function SemesterProvider({ children }) {
 
   return (
     <SemesterContext.Provider value={contextValue}>
-      {/* Loading overlay while Firestore data is being fetched */}
       {!hasLoaded ? (
         <div className="fixed inset-0 z-[99999] flex items-center justify-center bg-gray-100 dark:bg-gray-900">
           <div className="text-center space-y-3">

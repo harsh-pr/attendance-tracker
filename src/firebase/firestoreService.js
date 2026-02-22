@@ -3,53 +3,28 @@ import {
   doc,
   getDoc,
   setDoc,
-  collection,
-  getDocs,
 } from "firebase/firestore";
 import { db } from "./config";
 
-// ─── CONSTANTS ───────────────────────────────────────────────────────────────
-// All data lives under a single user document.
-// If you add auth later, replace USER_ID with the real UID.
 const USER_ID = "default_user";
-
-// Firestore paths:
-//   users/{userId}/meta/app         → currentSemesterId, list of semester stubs
-//   users/{userId}/subjects/data    → subjectsBySemester
-//   users/{userId}/timetables/data  → timetablesBySemester
-//   users/{userId}/reminders/data   → remindersBySemester
-//   users/{userId}/semesters/{semId}/attendance/data  → attendanceData for that semester
-
-// ─── HELPERS ─────────────────────────────────────────────────────────────────
-function userRef() {
-  return doc(db, "users", USER_ID);
-}
 
 function metaRef() {
   return doc(db, "users", USER_ID, "meta", "app");
 }
-
 function subjectsRef() {
   return doc(db, "users", USER_ID, "subjects", "data");
 }
-
 function timetablesRef() {
   return doc(db, "users", USER_ID, "timetables", "data");
 }
-
 function remindersRef() {
   return doc(db, "users", USER_ID, "reminders", "data");
 }
-
 function attendanceRef(semesterId) {
   return doc(db, "users", USER_ID, "semesters", semesterId, "attendance", "data");
 }
 
 // ─── LOAD ALL DATA ────────────────────────────────────────────────────────────
-/**
- * Load everything from Firestore in parallel.
- * Returns { currentSemesterId, semesters, subjectsBySemester, timetablesBySemester, remindersBySemester }
- */
 export async function loadAllData() {
   const [metaSnap, subjectsSnap, timetablesSnap, remindersSnap] =
     await Promise.all([
@@ -60,73 +35,68 @@ export async function loadAllData() {
     ]);
 
   const meta = metaSnap.exists() ? metaSnap.data() : null;
-  const subjectsDoc = subjectsSnap.exists() ? subjectsSnap.data() : {};
-  const timetablesDoc = timetablesSnap.exists() ? timetablesSnap.data() : {};
-  const remindersDoc = remindersSnap.exists() ? remindersSnap.data() : {};
 
-  // If no data in Firestore yet, return null so SemesterContext uses defaults
+  // No meta doc = Firestore is empty, first time use
   if (!meta) {
+    console.log("[Firestore] No meta found — first time use");
     return null;
   }
 
+  const subjectsDoc   = subjectsSnap.exists()   ? subjectsSnap.data()   : {};
+  const timetablesDoc = timetablesSnap.exists()  ? timetablesSnap.data() : {};
+  const remindersDoc  = remindersSnap.exists()   ? remindersSnap.data()  : {};
+
+  console.log("[Firestore] meta:", meta);
+  console.log("[Firestore] subjectsDoc keys:", Object.keys(subjectsDoc));
+  console.log("[Firestore] timetablesDoc keys:", Object.keys(timetablesDoc));
+  console.log("[Firestore] remindersDoc keys:", Object.keys(remindersDoc));
+
   const semesterStubs = meta.semesters || [];
 
-  // Load attendance for each semester in parallel
+  // Load attendance per semester
   const attendanceResults = await Promise.all(
     semesterStubs.map(async (sem) => {
       const snap = await getDoc(attendanceRef(sem.id));
-      return {
-        semId: sem.id,
-        attendanceData: snap.exists() ? snap.data().records || [] : [],
-      };
+      const records = snap.exists() ? (snap.data().records || []) : [];
+      console.log(`[Firestore] attendance for ${sem.id}: ${records.length} days`);
+      return { semId: sem.id, attendanceData: records };
     })
   );
 
-  // Merge attendance into semester stubs
   const semesters = semesterStubs.map((sem) => {
     const found = attendanceResults.find((r) => r.semId === sem.id);
-    return {
-      ...sem,
-      attendanceData: found ? found.attendanceData : [],
-    };
+    return { ...sem, attendanceData: found ? found.attendanceData : [] };
   });
+
+  // Handle both possible structures the migration may have written:
+  // Old migration: { data: { sem2: [...] } }  → we read subjectsDoc.data
+  // New app saves: { data: { sem2: [...] } }   → same
+  const subjectsBySemester   = subjectsDoc.data   || subjectsDoc.subjectsBySemester || {};
+  const timetablesBySemester = timetablesDoc.data  || timetablesDoc.timetables       || {};
+  const remindersBySemester  = remindersDoc.data   || remindersDoc.reminders          || {};
+
+  console.log("[Firestore] subjectsBySemester sems:", Object.keys(subjectsBySemester));
+  console.log("[Firestore] timetablesBySemester sems:", Object.keys(timetablesBySemester));
+  console.log("[Firestore] remindersBySemester sems:", Object.keys(remindersBySemester));
 
   return {
     currentSemesterId: meta.currentSemesterId,
     semesters,
-    subjectsBySemester: subjectsDoc.data || {},
-    timetablesBySemester: timetablesDoc.data || {},
-    remindersBySemester: remindersDoc.data || {},
+    subjectsBySemester,
+    timetablesBySemester,
+    remindersBySemester,
   };
 }
 
-// ─── SAVE META (semester list + active semester) ──────────────────────────────
+// ─── SAVE META ────────────────────────────────────────────────────────────────
 export async function saveMeta(currentSemesterId, semesters) {
-  // Only store lightweight stubs in meta (no attendanceData)
   const semesterStubs = semesters.map(({ id, name }) => ({ id, name }));
   await setDoc(metaRef(), { currentSemesterId, semesters: semesterStubs });
 }
 
-// ─── SAVE ATTENDANCE (per-semester) ──────────────────────────────────────────
-/**
- * Save attendance for a single semester.
- * Called whenever attendanceData for that semester changes.
- */
+// ─── SAVE ATTENDANCE ─────────────────────────────────────────────────────────
 export async function saveAttendance(semesterId, attendanceData) {
   await setDoc(attendanceRef(semesterId), { records: attendanceData || [] });
-}
-
-// ─── SAVE ALL ATTENDANCE (batch) ─────────────────────────────────────────────
-/**
- * Save attendance for ALL semesters at once.
- * Used when semesters array changes structurally (add/delete semester).
- */
-export async function saveAllAttendance(semesters) {
-  await Promise.all(
-    semesters.map((sem) =>
-      setDoc(attendanceRef(sem.id), { records: sem.attendanceData || [] })
-    )
-  );
 }
 
 // ─── SAVE SUBJECTS ────────────────────────────────────────────────────────────

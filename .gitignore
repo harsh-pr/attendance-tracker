@@ -1,5 +1,4 @@
 data/
 .env.local
-src/firebase/
 node_modules/
 .gitignore

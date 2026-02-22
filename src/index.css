@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 /* 👇 THIS LINE IS THE KEY */
-@config "../tailwind.config.js";
+/* @config "../tailwind.config.js"; */
 
 @keyframes statusPop {
   0% {

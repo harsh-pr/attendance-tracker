@@ -1,5 +1,5 @@
 // src/components/NotificationPermissionModal.jsx
-import Modal from "./Modal";
+import Modal from "../components/Modal";
 
 export default function NotificationPermissionModal({ open, onAllow, onDismiss }) {
   return (

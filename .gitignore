@@ -1,4 +1,5 @@
+.gitignore
 data/
 .env.local
 node_modules/
-.gitignore
+serviceAccountKey.json

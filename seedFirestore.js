@@ -4,76 +4,53 @@
  *
  * Usage (from project root):
  *   node seedFirestore.js
- *
- * Requirements:
- *   npm install firebase-admin
- *   Set GOOGLE_APPLICATION_CREDENTIALS env var to your service account JSON path,
- *   OR replace the credential line below with:
- *     credential: admin.credential.cert(require('./serviceAccountKey.json'))
  */
 
 import admin from "firebase-admin";
 import { readFileSync } from "fs";
 import { fileURLToPath } from "url";
 import { dirname, join } from "path";
+import serviceAccount from "./serviceAccountKey.json" with { type: "json" };
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-
-// ── CONFIG ────────────────────────────────────────────────────────────────────
-// Option A: set env var GOOGLE_APPLICATION_CREDENTIALS=/path/to/serviceAccount.json
-// Option B: uncomment and point to your file directly:
-// import serviceAccount from "./serviceAccountKey.json" assert { type: "json" };
+const DATA_DIR  = join(__dirname, "data");
 
 admin.initializeApp({
-  credential: admin.credential.applicationDefault(),
-  // credential: admin.credential.cert(serviceAccount),  // ← Option B
+  credential: admin.credential.cert(serviceAccount),
 });
 
-const db = admin.firestore();
+const db      = admin.firestore();
 const USER_ID = "default_user";
 
-// ── READ YOUR JSON FILES ──────────────────────────────────────────────────────
-// Adjust paths if your data folder is in a different location
-const DATA_DIR = __dirname; // or wherever your json files live
-
+// ── READ JSON FILES ───────────────────────────────────────────────────────────
 const subjectsJson   = JSON.parse(readFileSync(join(DATA_DIR, "subjects.json"),   "utf8"));
 const timetablesJson = JSON.parse(readFileSync(join(DATA_DIR, "timetables.json"), "utf8"));
 const remindersJson  = JSON.parse(readFileSync(join(DATA_DIR, "reminders.json"),  "utf8"));
+const attendanceJson = JSON.parse(readFileSync(join(DATA_DIR, "attendance.json"), "utf8"));
 
-// ── DERIVE SEMESTER LIST FROM SUBJECTS ───────────────────────────────────────
-// subjects.json shape: { subjectsBySemester: { sem2: [...] } }
-const subjectsBySemester = subjectsJson.subjectsBySemester || {};
+// ── DERIVE DATA ───────────────────────────────────────────────────────────────
+const subjectsBySemester   = subjectsJson.subjectsBySemester   || {};
+const timetablesBySemester = timetablesJson.timetables         || {};
+const remindersBySemester  = remindersJson.reminders           || {};
+const attendanceSemesters  = attendanceJson.semesters          || [];
+
 const semesterIds = Object.keys(subjectsBySemester);
-
 const semesterStubs = semesterIds.map((id) => ({
   id,
-  // Capitalise "sem2" → "Semester 2" for display, adjust if you want custom names
   name: id.replace(/^sem(\d+)$/i, "Semester $1"),
 }));
+const currentSemesterId = attendanceJson.currentSemesterId || semesterStubs[0]?.id || "sem2";
 
-const currentSemesterId = semesterStubs[0]?.id ?? "sem2";
-
-// ── TIMETABLES ────────────────────────────────────────────────────────────────
-// timetables.json shape: { timetables: { sem2: { monday: [...], ... } } }
-const timetablesBySemester = timetablesJson.timetables || {};
-
-// ── REMINDERS ─────────────────────────────────────────────────────────────────
-// reminders.json shape: { reminders: { sem2: [...] } }
-const remindersBySemester = remindersJson.reminders || {};
-
-// ── WRITE TO FIRESTORE ────────────────────────────────────────────────────────
+// ── SEED ──────────────────────────────────────────────────────────────────────
 async function seed() {
   console.log("🌱 Starting Firestore seed...\n");
 
   const batch = db.batch();
 
-  // 1. META — semester list + current semester
+  // 1. META
   const metaRef = db.doc(`users/${USER_ID}/meta/app`);
-  batch.set(metaRef, {
-    currentSemesterId,
-    semesters: semesterStubs,
-  });
-  console.log(`✅ meta/app  →  currentSemesterId=${currentSemesterId}, semesters=[${semesterStubs.map(s=>s.id).join(", ")}]`);
+  batch.set(metaRef, { currentSemesterId, semesters: semesterStubs });
+  console.log(`✅ meta/app  →  currentSemesterId=${currentSemesterId}`);
 
   // 2. SUBJECTS
   const subjectsRef = db.doc(`users/${USER_ID}/subjects/data`);
@@ -90,18 +67,27 @@ async function seed() {
   batch.set(remindersRef, { data: remindersBySemester });
   console.log(`✅ reminders/data  →  ${Object.keys(remindersBySemester).join(", ")}`);
 
-  // 5. ATTENDANCE — create empty records for each semester so the app
-  //    recognises them as "known" (you can skip if you have existing attendance)
+  // 5. ATTENDANCE — import real records from attendance.json
+  for (const sem of attendanceSemesters) {
+    const records = sem.attendanceData || [];
+    const attRef  = db.doc(`users/${USER_ID}/semesters/${sem.id}/attendance/data`);
+    batch.set(attRef, { records });
+    console.log(`✅ attendance/${sem.id}  →  ${records.length} days imported`);
+  }
+
+  // Ensure any semester not in attendance.json gets an empty record
   for (const sem of semesterStubs) {
-    const attRef = db.doc(`users/${USER_ID}/semesters/${sem.id}/attendance/data`);
-    // Only set if not already there (merge:true won't overwrite existing records)
-    batch.set(attRef, { records: [] }, { merge: true });
-    console.log(`✅ attendance/${sem.id}  →  empty placeholder (existing data kept)`);
+    const alreadyHandled = attendanceSemesters.some((s) => s.id === sem.id);
+    if (!alreadyHandled) {
+      const attRef = db.doc(`users/${USER_ID}/semesters/${sem.id}/attendance/data`);
+      batch.set(attRef, { records: [] }, { merge: true });
+      console.log(`✅ attendance/${sem.id}  →  empty placeholder`);
+    }
   }
 
   await batch.commit();
-  console.log("\n🎉 Seed complete! Your data is now in Firestore.");
-  console.log("   You can now reload the app — it will read from Firebase instead of resetting.");
+  console.log("\n🎉 Seed complete! Your attendance data is now in Firestore.");
+  console.log("   Reload the app — all your data will be there.");
 }
 
 seed().catch((err) => {

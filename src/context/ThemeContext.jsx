@@ -7,12 +7,18 @@ export function ThemeProvider({ children }) {
   const [theme, setTheme] = useState(() => {
     // Read from localStorage safely on init
     try {
-      return localStorage.getItem("theme") || "dark";
+      const stored = localStorage.getItem("theme");
+      // If nothing stored yet, respect system preference
+      if (!stored) {
+        return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+      }
+      return stored;
     } catch {
       return "dark";
     }
   });
 
+  // Apply the class immediately on mount + whenever theme changes
   useEffect(() => {
     const root = document.documentElement;
     if (theme === "dark") {
@@ -23,12 +29,12 @@ export function ThemeProvider({ children }) {
     try {
       localStorage.setItem("theme", theme);
     } catch {
-      // ignore
+      // ignore storage errors
     }
   }, [theme]);
 
   function toggleTheme() {
-    setTheme((t) => (t === "dark" ? "light" : "dark"));
+    setTheme((prev) => (prev === "dark" ? "light" : "dark"));
   }
 
   return (
@@ -39,5 +45,7 @@ export function ThemeProvider({ children }) {
 }
 
 export function useTheme() {
-  return useContext(ThemeContext);
+  const ctx = useContext(ThemeContext);
+  if (!ctx) throw new Error("useTheme must be used inside <ThemeProvider>");
+  return ctx;
 }

@@ -1,6 +1,5 @@
 // src/hooks/useNotificationPermission.js
-// Usage: call requestPermissionIfNeeded() before adding a reminder
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef } from "react";
 
 export function useNotificationPermission() {
   const supported = typeof window !== "undefined" && "Notification" in window;
@@ -10,32 +9,51 @@ export function useNotificationPermission() {
   );
   const [showModal, setShowModal] = useState(false);
 
-  // Resolves true if granted, false otherwise
+  // Store the pending promise resolver in a ref (not window global)
+  const resolveRef = useRef(null);
+
+  /**
+   * Call this before scheduling a reminder.
+   * - If already granted  → resolves true immediately
+   * - If denied           → resolves false immediately
+   * - If default (unknown) → shows our custom modal first, THEN
+   *   triggers the browser prompt when user clicks "Allow"
+   */
   const requestPermissionIfNeeded = useCallback(() => {
     return new Promise((resolve) => {
-      if (!supported) { resolve(false); return; }
-      if (Notification.permission === "granted") { resolve(true); return; }
-      if (Notification.permission === "denied")  { resolve(false); return; }
-      // permission is "default" — show our modal first
+      if (!supported) {
+        resolve(false);
+        return;
+      }
+      if (Notification.permission === "granted") {
+        resolve(true);
+        return;
+      }
+      if (Notification.permission === "denied") {
+        // Can't re-ask; permission was previously denied
+        resolve(false);
+        return;
+      }
+      // permission === "default" → show our pretty modal
+      resolveRef.current = resolve;
       setShowModal(true);
-      // The modal will call onAllow or onDismiss which resolve this promise
-      window.__notifResolve = resolve;
     });
   }, [supported]);
 
   function onAllow() {
     setShowModal(false);
+    // Now trigger the real browser permission prompt
     Notification.requestPermission().then((result) => {
       setPermission(result);
-      window.__notifResolve?.(result === "granted");
-      delete window.__notifResolve;
+      resolveRef.current?.(result === "granted");
+      resolveRef.current = null;
     });
   }
 
   function onDismiss() {
     setShowModal(false);
-    window.__notifResolve?.(false);
-    delete window.__notifResolve;
+    resolveRef.current?.(false);
+    resolveRef.current = null;
   }
 
   return { permission, showModal, requestPermissionIfNeeded, onAllow, onDismiss };

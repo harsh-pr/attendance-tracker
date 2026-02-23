@@ -233,14 +233,170 @@ On mobile, open the app in Chrome/Safari and tap **"Add to Home Screen"** for an
 
 ---
 
-## 🔔 Reminders
+## 🔔 Reminders Setup (Optional)
 
-Reminders are scheduled via `setTimeout` when the app is open. For true background notifications (works even when browser is closed), Firebase Cloud Functions + FCM is set up in the `functions/` folder.
+By default, reminders only fire while the app is open in the browser.
+To enable true background notifications (works even when browser is closed),
+follow these steps to set up Firebase Cloud Functions + FCM.
 
-To deploy Cloud Functions:
+### Prerequisites
+- Firebase project upgraded to **Blaze plan** (free tier, just needs a credit card)
+- Firebase CLI installed: `npm install -g firebase-tools`
+
+### Step 1 — Initialize Cloud Functions
+```bash
+firebase login
+firebase init functions
+```
+When prompted:
+- Use existing project → select your project
+- Language → **JavaScript**
+- Use ESLint → **No**
+- Install dependencies → **Yes**
+
+### Step 2 — Install dependencies inside functions folder
+```bash
+cd functions
+npm install firebase-admin firebase-functions
+cd ..
+```
+
+### Step 3 — Get your VAPID key
+Go to Firebase Console → Project Settings → Cloud Messaging → Web Push certificates → **Generate key pair** → copy the key.
+
+Add it to your `.env`:
+```
+VITE_FIREBASE_VAPID_KEY=your_vapid_key_here
+```
+Also add it to Vercel dashboard under Environment Variables.
+
+### Step 4 — Create `public/firebase-messaging-sw.js`
+```js
+importScripts("https://www.gstatic.com/firebasejs/10.0.0/firebase-app-compat.js");
+importScripts("https://www.gstatic.com/firebasejs/10.0.0/firebase-messaging-compat.js");
+
+firebase.initializeApp({
+  apiKey: "YOUR_API_KEY",
+  authDomain: "YOUR_AUTH_DOMAIN",
+  projectId: "YOUR_PROJECT_ID",
+  storageBucket: "YOUR_STORAGE_BUCKET",
+  messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+  appId: "YOUR_APP_ID",
+});
+
+const messaging = firebase.messaging();
+messaging.onBackgroundMessage((payload) => {
+  self.registration.showNotification(payload.notification.title, {
+    body: payload.notification.body,
+    icon: "/favicon.png",
+  });
+});
+```
+Replace values with your actual Firebase config from `.env`.
+
+### Step 5 — Add FCM token saving to `src/firebase/firestoreService.js`
+```js
+import { getMessaging, getToken } from "firebase/messaging";
+import { getApp } from "firebase/app";
+
+export async function registerFCMToken() {
+  try {
+    const messaging = getMessaging(getApp());
+    const token = await getToken(messaging, {
+      vapidKey: import.meta.env.VITE_FIREBASE_VAPID_KEY,
+    });
+    if (token) {
+      await setDoc(
+        doc(db, "users", "default_user", "meta", "fcm"),
+        { token },
+        { merge: true }
+      );
+    }
+    return token;
+  } catch (err) {
+    console.error("FCM token error:", err);
+    return null;
+  }
+}
+```
+
+### Step 6 — Call it in `src/main.jsx`
+Add at the bottom of `main.jsx`:
+```js
+import { registerFCMToken } from "./firebase/firestoreService";
+registerFCMToken();
+```
+
+### Step 7 — Replace `functions/index.js`
+```js
+const { onSchedule } = require("firebase-functions/v2/scheduler");
+const { initializeApp } = require("firebase-admin/app");
+const { getFirestore } = require("firebase-admin/firestore");
+const { getMessaging } = require("firebase-admin/messaging");
+
+initializeApp();
+const db = getFirestore();
+
+exports.sendReminders = onSchedule("every 1 minutes", async () => {
+  const now = new Date();
+  const metaSnap = await db.doc("users/default_user/reminders/data").get();
+  if (!metaSnap.exists) return;
+
+  const remindersBySemester = metaSnap.data()?.data || {};
+  const tokenSnap = await db.doc("users/default_user/meta/fcm").get();
+  const token = tokenSnap.data()?.token;
+  if (!token) return;
+
+  for (const [semId, reminders] of Object.entries(remindersBySemester)) {
+    for (const reminder of reminders) {
+      if (reminder.delivered) continue;
+      const triggerAt = reminder.triggerAt ? new Date(reminder.triggerAt) : null;
+      if (!triggerAt) continue;
+      const diffMinutes = (triggerAt - now) / 1000 / 60;
+      if (diffMinutes > 1 || diffMinutes < -1) continue;
+
+      await getMessaging().send({
+        token,
+        notification: {
+          title: reminder.title,
+          body: `${reminder.date}${reminder.time ? ` at ${reminder.time}` : ""}`,
+        },
+      });
+
+      remindersBySemester[semId] = reminders.map((r) =>
+        r.id === reminder.id ? { ...r, delivered: true } : r
+      );
+    }
+  }
+
+  await db.doc("users/default_user/reminders/data").set(
+    { data: remindersBySemester },
+    { merge: true }
+  );
+});
+```
+
+### Step 8 — Deploy Cloud Functions
 ```bash
 firebase deploy --only functions
 ```
+
+### Step 9 — Commit and push
+```bash
+git add .
+git commit -m "add FCM background notifications"
+git push origin main
+```
+
+### How it works
+1. User opens app → FCM token saved to Firestore
+2. User adds a reminder for a specific date and time
+3. Every minute, the Cloud Function checks if any reminder's time matches now
+4. If yes → sends push notification directly to the device
+5. Works even when the browser is completely closed ✅
+
+> 💡 Cloud Functions are free up to 2 million calls/month on the Blaze plan.
+> For personal use you will never be charged.
 
 ---
 

@@ -460,6 +460,7 @@ export function SemesterProvider({ children }) {
     updateReminder,
     removeReminder,
     weekDays: WEEK_DAYS,
+    remindersBySemester,
   };
 
   return (

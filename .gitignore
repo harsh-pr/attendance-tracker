@@ -1,5 +1,0 @@
-.gitignore
-data/
-.env.local
-node_modules/
-serviceAccountKey.json

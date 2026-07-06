@@ -18,34 +18,32 @@ export function AuthProvider({ children }) {
 
   // 1. Session Activity Heartbeat (2-minute closed-tab auto-logout)
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
-      if (currentUser) {
-        const lastActive = localStorage.getItem("last_active_heartbeat");
-        const now = Date.now();
+    const lastActive = localStorage.getItem("last_active_heartbeat");
+    const now = Date.now();
+    let isAutoLoggingOut = false;
 
-        if (lastActive) {
-          const elapsed = now - parseInt(lastActive, 10);
-          // If elapsed time is greater than 2 minutes (120,000 ms)
-          if (elapsed > 120000) {
-            console.log("[Auth] Session inactive for > 2 mins. Logging out automatically.");
-            localStorage.removeItem("last_active_heartbeat");
+    if (lastActive) {
+      const elapsed = now - parseInt(lastActive, 10);
+      // If elapsed time is greater than 2 minutes (120,000 ms)
+      if (elapsed > 120000) {
+        console.log("[Auth] Session inactive for > 2 mins. Logging out automatically.");
+        localStorage.removeItem("last_active_heartbeat");
+        isAutoLoggingOut = true;
+        signOut(auth)
+          .catch((e) => console.error("Auto logout failed", e))
+          .finally(() => {
             setUser(null);
             setLoading(false);
-            try {
-              await signOut(auth);
-            } catch (e) {
-              console.error("Auto logout failed", e);
-            }
-            return;
-          }
-        }
-
-        setUser(currentUser);
-        localStorage.setItem("last_active_heartbeat", Date.now().toString());
-      } else {
-        setUser(null);
-        localStorage.removeItem("last_active_heartbeat");
+          });
       }
+    }
+
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      // Ignore initial logged-in state if we are currently signing out due to inactivity
+      if (currentUser && isAutoLoggingOut) {
+        return;
+      }
+      setUser(currentUser);
       setLoading(false);
     });
 

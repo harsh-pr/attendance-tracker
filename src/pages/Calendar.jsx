@@ -368,7 +368,7 @@ export default function Calendar() {
         
         if (crossingRow) {
           // Adjust sliceHeight to split right before the crossing row
-          const splitYDom = crossingRow.top - 2; // split 2px above the row
+          const splitYDom = crossingRow.top - 12; // split 12px above the row for safe margin
           const splitY = splitYDom * scale;
           
           // Ensure splitY is valid and doesn't cause infinite loop
@@ -723,8 +723,8 @@ export default function Calendar() {
                 ) : (
                   loggedDays.map((row, idx) => (
                     <tr key={idx} className="export-log-row" style={{ borderBottom: idx === (loggedDays.length - 1) ? "0" : `1px solid ${exportPalette.border}50` }}>
-                      <td style={{ padding: "12px", fontWeight: "600", color: "#e5e7eb" }}>{row.dateStr}</td>
-                      <td style={{ padding: "12px" }}>
+                      <td style={{ padding: "12px", fontWeight: "600", color: "#e5e7eb", verticalAlign: "top" }}>{row.dateStr}</td>
+                      <td style={{ padding: "12px", verticalAlign: "top" }}>
                         <span style={{
                           display: "inline-flex",
                           alignItems: "center",
@@ -740,7 +740,7 @@ export default function Calendar() {
                           {row.statusLabel}
                         </span>
                       </td>
-                      <td style={{ padding: "12px", color: "#9ca3af", lineHeight: "1.5" }}>{row.subjectsText}</td>
+                      <td style={{ padding: "12px", color: "#9ca3af", lineHeight: "1.5", verticalAlign: "top" }}>{row.subjectsText}</td>
                     </tr>
                   ))
                 )}

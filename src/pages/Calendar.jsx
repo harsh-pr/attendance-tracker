@@ -1,5 +1,5 @@
 import Modal from "../components/Modal";
-import NotificationPermissionModal from "../hooks/NotificationPermissionModal";
+import NotificationPermissionModal from "../components/NotificationPermissionModal";
 import { useNotificationPermission } from "../hooks/useNotificationPermission";
 import { useSemester } from "../context/SemesterContext";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";

@@ -138,8 +138,7 @@ export default function Calendar() {
   const [editDayOpen,       setEditDayOpen]       = useState(false);
   const [partialMarkOpen,   setPartialMarkOpen]   = useState(false);
   const [partialSelection,  setPartialSelection]  = useState({});
-  const exportPage1Ref = useRef(null);
-  const exportPage2Ref = useRef(null);
+  const exportRef = useRef(null);
 
   const [reminderForm, setReminderForm] = useState({ title: "", date: "", time: "" });
 
@@ -327,30 +326,80 @@ export default function Calendar() {
   };
 
   const handleExportMonth = async () => {
-    if (!exportPage1Ref.current || !exportPage2Ref.current) return;
+    if (!exportRef.current) return;
     const html2canvas = window.html2canvas;
     const jsPDF       = window.jspdf?.jsPDF;
     if (!html2canvas || !jsPDF) return;
 
-    // Take screenshot of page 1
-    const canvas1 = await html2canvas(exportPage1Ref.current, { scale: 2, useCORS: true, backgroundColor: exportPalette.surface });
-    // Take screenshot of page 2
-    const canvas2 = await html2canvas(exportPage2Ref.current, { scale: 2, useCORS: true, backgroundColor: exportPalette.surface });
-
+    const scale = 2;
+    const canvas = await html2canvas(exportRef.current, { scale, useCORS: true, backgroundColor: exportPalette.surface });
     const pdf = new jsPDF({ orientation: "portrait", unit: "pt", format: "a4" });
     const pageWidth = pdf.internal.pageSize.getWidth();
     const pageHeight = pdf.internal.pageSize.getHeight();
 
-    // Add page 1
-    pdf.setFillColor(exportPalette.surface);
-    pdf.rect(0, 0, pageWidth, pageHeight, "F");
-    pdf.addImage(canvas1.toDataURL("image/png"), "PNG", 0, 0, pageWidth, pageHeight);
+    // Scale calculations
+    const pdfScale = pageWidth / canvas.width;
+    const pageHeightPx = pageHeight / pdfScale;
 
-    // Add page 2
-    pdf.addPage();
-    pdf.setFillColor(exportPalette.surface);
-    pdf.rect(0, 0, pageWidth, pageHeight, "F");
-    pdf.addImage(canvas2.toDataURL("image/png"), "PNG", 0, 0, pageWidth, pageHeight);
+    // Get the Y position boundaries of all rows relative to exportRef container
+    const rows = Array.from(exportRef.current.querySelectorAll(".export-log-row"));
+    const parentRect = exportRef.current.getBoundingClientRect();
+    const rowPositions = rows.map(row => {
+      const rect = row.getBoundingClientRect();
+      return {
+        top: rect.top - parentRect.top,
+        bottom: rect.bottom - parentRect.top
+      };
+    });
+
+    let currentY = 0; // in canvas pixels
+    const canvasHeight = canvas.height;
+
+    while (currentY < canvasHeight) {
+      let sliceHeight = pageHeightPx;
+      const targetY = currentY + pageHeightPx;
+
+      // If we are not on the last page, find if we cross any row
+      if (targetY < canvasHeight) {
+        const targetYDom = targetY / scale;
+        
+        // Find if a row crosses the target Y boundary
+        const crossingRow = rowPositions.find(row => row.top < targetYDom && row.bottom > targetYDom);
+        
+        if (crossingRow) {
+          // Adjust sliceHeight to split right before the crossing row
+          const splitYDom = crossingRow.top - 2; // split 2px above the row
+          const splitY = splitYDom * scale;
+          
+          // Ensure splitY is valid and doesn't cause infinite loop
+          if (splitY > currentY) {
+            sliceHeight = splitY - currentY;
+          }
+        }
+      } else {
+        sliceHeight = canvasHeight - currentY;
+      }
+
+      // Create page canvas and copy the slice
+      const pageCanvas = document.createElement("canvas");
+      pageCanvas.width = canvas.width;
+      pageCanvas.height = sliceHeight;
+      const ctx = pageCanvas.getContext("2d");
+      if (!ctx) return;
+      ctx.fillStyle = exportPalette.surface;
+      ctx.fillRect(0, 0, pageCanvas.width, pageCanvas.height);
+      ctx.drawImage(canvas, 0, currentY, canvas.width, sliceHeight, 0, 0, canvas.width, sliceHeight);
+
+      // Add page to PDF
+      if (currentY > 0) pdf.addPage();
+      pdf.setFillColor(exportPalette.surface);
+      pdf.rect(0, 0, pageWidth, pageHeight, "F");
+
+      const renderedHeight = sliceHeight * pdfScale;
+      pdf.addImage(pageCanvas.toDataURL("image/png"), "PNG", 0, 0, pageWidth, renderedHeight);
+
+      currentY += sliceHeight;
+    }
 
     pdf.save(`attendance-${year}-${String(monthIndex + 1).padStart(2, "0")}.pdf`);
   };
@@ -499,25 +548,25 @@ export default function Calendar() {
         onDismiss={onDismiss}
       />
 
-      {/* ── OFF-SCREEN PDF EXPORT PAGE 1 ── */}
+      {/* ── OFF-SCREEN PDF EXPORT ── */}
       <div
-        ref={exportPage1Ref}
+        ref={exportRef}
         style={{
           position: "fixed",
           left: "-9999px",
           top: "0",
           width: "800px",
-          height: "1130px",
           backgroundColor: exportPalette.surface,
           color: "#f9fafb",
           padding: "24px",
           boxSizing: "border-box",
           display: "flex",
           flexDirection: "column",
+          gap: "24px",
           fontFamily: "Inter, system-ui, -apple-system, sans-serif"
         }}
       >
-        <div style={{ display: "flex", flexDirection: "column", gap: "4px", marginBottom: "20px" }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
           <p style={{ fontSize: "11px", fontWeight: "600", textTransform: "uppercase", letterSpacing: "0.2em", color: exportPalette.muted, margin: 0 }}>
             Attendance Summary
           </p>
@@ -527,8 +576,7 @@ export default function Calendar() {
           border: `1px solid ${exportPalette.border}`,
           backgroundColor: exportPalette.surface,
           borderRadius: "16px",
-          padding: "20px",
-          marginBottom: "20px"
+          padding: "20px"
         }}>
           {/* Weekdays header */}
           <div style={{
@@ -612,8 +660,7 @@ export default function Calendar() {
         <div style={{
           display: "grid",
           gridTemplateColumns: "repeat(3, 1fr)",
-          gap: "16px",
-          marginBottom: "20px"
+          gap: "16px"
         }}>
           {[
             { label: "Total attendance", value: totalAttended },
@@ -650,10 +697,10 @@ export default function Calendar() {
           ))}
         </div>
 
-        {/* DETAILED DAILY LOGS (Page 1) */}
-        <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+        {/* DETAILED DAILY LOGS */}
+        <div style={{ display: "flex", flexDirection: "column", gap: "12px", marginTop: "8px" }}>
           <p style={{ fontSize: "12px", fontWeight: "600", textTransform: "uppercase", letterSpacing: "0.2em", color: exportPalette.muted, margin: 0 }}>
-            Detailed Daily Logs (Days 1 - 8)
+            Detailed Daily Logs
           </p>
           <div style={{ borderRadius: "16px", overflow: "hidden", border: `1px solid ${exportPalette.border}`, backgroundColor: exportPalette.softSurface }}>
             <table style={{ width: "100%", textAlign: "left", borderCollapse: "collapse", fontSize: "11px" }}>
@@ -665,96 +712,36 @@ export default function Calendar() {
                 </tr>
               </thead>
               <tbody>
-                {loggedDays.slice(0, 8).map((row, idx) => (
-                  <tr key={idx} style={{ borderBottom: idx === 7 ? "0" : `1px solid ${exportPalette.border}50` }}>
-                    <td style={{ padding: "12px", fontWeight: "600", color: "#e5e7eb" }}>{row.dateStr}</td>
-                    <td style={{ padding: "12px" }}>
-                      <span style={{
-                        display: "inline-flex",
-                        alignItems: "center",
-                        backgroundColor: exportPalette[row.statusKey]?.background ?? exportPalette.none.background,
-                        color: exportPalette[row.statusKey]?.text ?? exportPalette.none.text,
-                        padding: "2px 8px",
-                        borderRadius: "9999px",
-                        fontSize: "9px",
-                        fontWeight: "700",
-                        textTransform: "uppercase",
-                        letterSpacing: "0.05em"
-                      }}>
-                        {row.statusLabel}
-                      </span>
+                {loggedDays.length === 0 ? (
+                  <tr>
+                    <td colSpan="3" style={{ padding: "16px", textAlign: "center", color: exportPalette.muted, fontStyle: "italic" }}>
+                      No attendance records marked for this month.
                     </td>
-                    <td style={{ padding: "12px", color: "#9ca3af", lineHeight: "1.5" }}>{row.subjectsText}</td>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-
-      {/* ── OFF-SCREEN PDF EXPORT PAGE 2 ── */}
-      <div
-        ref={exportPage2Ref}
-        style={{
-          position: "fixed",
-          left: "-9999px",
-          top: "0",
-          width: "800px",
-          height: "1130px",
-          backgroundColor: exportPalette.surface,
-          color: "#f9fafb",
-          padding: "24px",
-          boxSizing: "border-box",
-          display: "flex",
-          flexDirection: "column",
-          fontFamily: "Inter, system-ui, -apple-system, sans-serif"
-        }}
-      >
-        <div style={{ display: "flex", flexDirection: "column", gap: "4px", marginBottom: "20px" }}>
-          <p style={{ fontSize: "11px", fontWeight: "600", textTransform: "uppercase", letterSpacing: "0.2em", color: exportPalette.muted, margin: 0 }}>
-            Attendance Summary
-          </p>
-          <h2 style={{ fontSize: "24px", fontWeight: "600", margin: 0 }}>{monthLabel} (Continued)</h2>
-        </div>
-
-        {/* DETAILED DAILY LOGS (Page 2) */}
-        <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-          <p style={{ fontSize: "12px", fontWeight: "600", textTransform: "uppercase", letterSpacing: "0.2em", color: exportPalette.muted, margin: 0 }}>
-            Detailed Daily Logs (Days 9 - End)
-          </p>
-          <div style={{ borderRadius: "16px", overflow: "hidden", border: `1px solid ${exportPalette.border}`, backgroundColor: exportPalette.softSurface }}>
-            <table style={{ width: "100%", textAlign: "left", borderCollapse: "collapse", fontSize: "11px" }}>
-              <thead>
-                <tr style={{ borderBottom: `1px solid ${exportPalette.border}`, color: exportPalette.muted, backgroundColor: `${exportPalette.surface}80` }}>
-                  <th style={{ padding: "12px", width: "25%", fontSize: "9px", fontWeight: "600", textTransform: "uppercase", letterSpacing: "0.05em" }}>Date</th>
-                  <th style={{ padding: "12px", width: "25%", fontSize: "9px", fontWeight: "600", textTransform: "uppercase", letterSpacing: "0.05em" }}>Overall Status</th>
-                  <th style={{ padding: "12px", width: "50%", fontSize: "9px", fontWeight: "600", textTransform: "uppercase", letterSpacing: "0.05em" }}>Subject-wise Logs</th>
-                </tr>
-              </thead>
-              <tbody>
-                {loggedDays.slice(8).map((row, idx) => (
-                  <tr key={idx} style={{ borderBottom: idx === (loggedDays.length - 9) ? "0" : `1px solid ${exportPalette.border}50` }}>
-                    <td style={{ padding: "12px", fontWeight: "600", color: "#e5e7eb" }}>{row.dateStr}</td>
-                    <td style={{ padding: "12px" }}>
-                      <span style={{
-                        display: "inline-flex",
-                        alignItems: "center",
-                        backgroundColor: exportPalette[row.statusKey]?.background ?? exportPalette.none.background,
-                        color: exportPalette[row.statusKey]?.text ?? exportPalette.none.text,
-                        padding: "2px 8px",
-                        borderRadius: "9999px",
-                        fontSize: "9px",
-                        fontWeight: "700",
-                        textTransform: "uppercase",
-                        letterSpacing: "0.05em"
-                      }}>
-                        {row.statusLabel}
-                      </span>
-                    </td>
-                    <td style={{ padding: "12px", color: "#9ca3af", lineHeight: "1.5" }}>{row.subjectsText}</td>
-                  </tr>
-                ))}
+                ) : (
+                  loggedDays.map((row, idx) => (
+                    <tr key={idx} className="export-log-row" style={{ borderBottom: idx === (loggedDays.length - 1) ? "0" : `1px solid ${exportPalette.border}50` }}>
+                      <td style={{ padding: "12px", fontWeight: "600", color: "#e5e7eb" }}>{row.dateStr}</td>
+                      <td style={{ padding: "12px" }}>
+                        <span style={{
+                          display: "inline-flex",
+                          alignItems: "center",
+                          backgroundColor: exportPalette[row.statusKey]?.background ?? exportPalette.none.background,
+                          color: exportPalette[row.statusKey]?.text ?? exportPalette.none.text,
+                          padding: "2px 8px",
+                          borderRadius: "9999px",
+                          fontSize: "9px",
+                          fontWeight: "700",
+                          textTransform: "uppercase",
+                          letterSpacing: "0.05em"
+                        }}>
+                          {row.statusLabel}
+                        </span>
+                      </td>
+                      <td style={{ padding: "12px", color: "#9ca3af", lineHeight: "1.5" }}>{row.subjectsText}</td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>

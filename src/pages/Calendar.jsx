@@ -391,12 +391,14 @@ export default function Calendar() {
       ctx.drawImage(canvas, 0, currentY, canvas.width, sliceHeight, 0, 0, canvas.width, sliceHeight);
 
       // Add page to PDF
-      if (currentY > 0) pdf.addPage();
+      const isFirstPage = currentY === 0;
+      if (!isFirstPage) pdf.addPage();
       pdf.setFillColor(exportPalette.surface);
       pdf.rect(0, 0, pageWidth, pageHeight, "F");
 
+      const topMargin = isFirstPage ? 0 : 20; // 20pt breathing room on pages 2+
       const renderedHeight = sliceHeight * pdfScale;
-      pdf.addImage(pageCanvas.toDataURL("image/png"), "PNG", 0, 0, pageWidth, renderedHeight);
+      pdf.addImage(pageCanvas.toDataURL("image/png"), "PNG", 0, topMargin, pageWidth, renderedHeight);
 
       currentY += sliceHeight;
     }
@@ -606,7 +608,7 @@ export default function Calendar() {
             gap: "8px"
           }}>
             {leadingBlanks.map(blank => (
-              <div key={`export-${blank.key}`} style={{ height: "58px" }} />
+              <div key={`export-${blank.key}`} style={{ height: "64px" }} />
             ))}
             {calendarDays.map(day => (
               <div key={`export-day-${day.dayNumber}`} style={{
@@ -614,8 +616,8 @@ export default function Calendar() {
                 flexDirection: "column",
                 justifyContent: "space-between",
                 borderRadius: "8px",
-                padding: "8px",
-                height: "58px",
+                padding: "6px 8px",
+                height: "64px",
                 boxSizing: "border-box",
                 border: `1px solid ${exportPalette.border}`,
                 backgroundColor: exportPalette[day.status]?.background ?? exportPalette.none.background,
@@ -640,14 +642,14 @@ export default function Calendar() {
                   }} />
                 </div>
                 <p style={{
-                  fontSize: "8px",
-                  fontWeight: "600",
+                  fontSize: "7.5px",
+                  fontWeight: "700",
                   textTransform: "uppercase",
-                  letterSpacing: "0.05em",
+                  letterSpacing: "0.04em",
                   margin: 0,
+                  lineHeight: "1.3",
                   whiteSpace: "nowrap",
-                  overflow: "hidden",
-                  textOverflow: "ellipsis"
+                  overflow: "visible"
                 }}>
                   {statusConfig[day.status].label}
                 </p>

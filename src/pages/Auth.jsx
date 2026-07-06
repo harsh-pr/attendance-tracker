@@ -11,6 +11,13 @@ export default function Auth() {
   const [errorMsg, setErrorMsg] = useState("");
   const [loading, setLoading] = useState(false);
 
+  const isMinLength = password.length >= 8;
+  const hasUpper = /[A-Z]/.test(password);
+  const hasLower = /[a-z]/.test(password);
+  const hasDigit = /[0-9]/.test(password);
+  const hasSpecial = /[!@#$%^&*(),.?":{}|<>]/.test(password);
+  const isPasswordValid = isMinLength && hasUpper && hasLower && hasDigit && hasSpecial;
+
   async function handleGoogleSignIn() {
     setErrorMsg("");
     setLoading(true);
@@ -40,6 +47,11 @@ export default function Auth() {
       } else {
         if (!name.trim()) {
           setErrorMsg("Please enter your display name.");
+          setLoading(false);
+          return;
+        }
+        if (!isPasswordValid) {
+          setErrorMsg("Password does not meet the safety requirements.");
           setLoading(false);
           return;
         }
@@ -161,6 +173,28 @@ export default function Auth() {
               placeholder="••••••••"
               required
             />
+            {!isLoginTab && password.length > 0 && (
+              <div className="mt-2.5 p-3 rounded-xl bg-gray-50 dark:bg-slate-950/40 border border-gray-150 dark:border-slate-800/80 text-[11px] space-y-1.5 transition-all text-gray-500 dark:text-gray-400">
+                <p className="font-semibold">Password requirements:</p>
+                <div className="grid grid-cols-2 gap-x-3 gap-y-1">
+                  <div className={`flex items-center gap-1.5 ${isMinLength ? "text-green-600 dark:text-green-400 font-medium" : "text-gray-400 dark:text-gray-500"}`}>
+                    <span>{isMinLength ? "✓" : "•"}</span> 8+ characters
+                  </div>
+                  <div className={`flex items-center gap-1.5 ${hasUpper ? "text-green-600 dark:text-green-400 font-medium" : "text-gray-400 dark:text-gray-500"}`}>
+                    <span>{hasUpper ? "✓" : "•"}</span> Uppercase letter
+                  </div>
+                  <div className={`flex items-center gap-1.5 ${hasLower ? "text-green-600 dark:text-green-400 font-medium" : "text-gray-400 dark:text-gray-500"}`}>
+                    <span>{hasLower ? "✓" : "•"}</span> Lowercase letter
+                  </div>
+                  <div className={`flex items-center gap-1.5 ${hasDigit ? "text-green-600 dark:text-green-400 font-medium" : "text-gray-400 dark:text-gray-500"}`}>
+                    <span>{hasDigit ? "✓" : "•"}</span> One number
+                  </div>
+                  <div className={`flex items-center gap-1.5 ${hasSpecial ? "text-green-600 dark:text-green-400 font-medium" : "text-gray-400 dark:text-gray-500"}`}>
+                    <span>{hasSpecial ? "✓" : "•"}</span> Special char
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
 
           <button

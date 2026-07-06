@@ -37,7 +37,7 @@ export default function Navbar() {
   } = useSemester();
 
   const { theme, toggleTheme } = useTheme();
-  const { user, logout } = useAuth();
+  const { user, logout, connectGoogle } = useAuth();
 
   const [isSemesterMenuOpen, setIsSemesterMenuOpen] = useState(false);
   const [isCreateSemesterOpen, setIsCreateSemesterOpen] = useState(false);
@@ -233,9 +233,14 @@ export default function Navbar() {
 
   const { overall } = calculateOverallAttendance(currentSemester);
   const overallPercentage = overall?.percentage ?? 0;
-
-
-
+  async function handleConnectGoogle() {
+    try {
+      await connectGoogle();
+    } catch (err) {
+      console.error(err);
+      alert("Failed to connect Google account: " + err.message);
+    }
+  }
   function handleDeleteCurrentSemester() {
     if (semesters.length <= 1) {
       window.alert("At least one semester is required.");
@@ -391,7 +396,19 @@ export default function Navbar() {
                     </p>
                   </div>
 
-
+                  {user.providerData.some((p) => p.providerId === "google.com") ? (
+                    <div className="flex items-center gap-1.5 p-2 bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-100 dark:border-emerald-900/30 text-[11px] text-green-700 dark:text-green-400 font-semibold rounded-xl justify-center">
+                      ✓ Connected with Google
+                    </div>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={handleConnectGoogle}
+                      className="w-full py-2.5 flex items-center justify-center gap-2 border border-gray-200 dark:border-slate-800 hover:bg-gray-50 dark:hover:bg-slate-805/40 text-gray-700 dark:text-gray-200 bg-white dark:bg-slate-900 text-xs font-semibold rounded-xl cursor-pointer transition shadow-sm hover:shadow"
+                    >
+                      🔗 Link Google Account
+                    </button>
+                  )}
 
                   <div className="border-t border-gray-200 dark:border-slate-800" />
 

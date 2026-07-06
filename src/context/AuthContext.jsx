@@ -8,7 +8,9 @@ import {
   updateProfile,
   onAuthStateChanged,
   GoogleAuthProvider,
-  signInWithPopup,
+  signInWithRedirect,
+  getRedirectResult,
+  linkWithRedirect,
 } from "firebase/auth";
 import { auth } from "../firebase/config";
 
@@ -20,6 +22,25 @@ export function AuthProvider({ children }) {
 
   // 1. Session Activity Heartbeat (2-minute closed-tab auto-logout)
   useEffect(() => {
+    // 1. Check if we are returning from a Google authentication redirect
+    const isGoogleRedirecting = localStorage.getItem("is_google_redirecting");
+    if (isGoogleRedirecting === "true") {
+      localStorage.removeItem("is_google_redirecting");
+      localStorage.setItem("last_active_heartbeat", Date.now().toString());
+    }
+
+    // 2. Process any redirect results
+    getRedirectResult(auth)
+      .then((result) => {
+        if (result) {
+          localStorage.setItem("last_active_heartbeat", Date.now().toString());
+          setUser(result.user);
+        }
+      })
+      .catch((error) => {
+        console.error("[Auth] Redirect result error", error);
+      });
+
     const lastActive = localStorage.getItem("last_active_heartbeat");
     const now = Date.now();
     let isAutoLoggingOut = false;
@@ -118,11 +139,29 @@ export function AuthProvider({ children }) {
     setLoading(true);
     try {
       const provider = new GoogleAuthProvider();
-      const userCredential = await signInWithPopup(auth, provider);
-      localStorage.setItem("last_active_heartbeat", Date.now().toString());
-      return userCredential.user;
+      // Set the redirect flag to prevent inactivity auto-logout on return
+      localStorage.setItem("is_google_redirecting", "true");
+      await signInWithRedirect(auth, provider);
     } catch (error) {
-      console.error("[Auth] Google Sign-In error", error);
+      console.error("[Auth] Google Sign-In redirect error", error);
+      localStorage.removeItem("is_google_redirecting");
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function connectGoogle() {
+    if (!auth.currentUser) throw new Error("No user is logged in.");
+    setLoading(true);
+    try {
+      const provider = new GoogleAuthProvider();
+      // Set the redirect flag to avoid auto-logout on return
+      localStorage.setItem("is_google_redirecting", "true");
+      await linkWithRedirect(auth.currentUser, provider);
+    } catch (error) {
+      console.error("[Auth] Connect Google error", error);
+      localStorage.removeItem("is_google_redirecting");
       throw error;
     } finally {
       setLoading(false);
@@ -135,6 +174,7 @@ export function AuthProvider({ children }) {
     login,
     register,
     loginWithGoogle,
+    connectGoogle,
     logout,
   };
 

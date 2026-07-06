@@ -494,14 +494,24 @@ export default function Calendar() {
           </p>
           <h2 className="text-2xl font-semibold">{monthLabel}</h2>
         </div>
-        <div className="rounded-2xl p-4 shadow-sm" style={{ border: `1px solid ${exportPalette.border}`, backgroundColor: exportPalette.surface }}>
-          <div className="text-[10px] font-semibold uppercase tracking-wide" style={{ display: "flex", color: exportPalette.muted }}>
-            {weekDays.map(day => <div key={`export-${day}`} className="text-center" style={{ width: "14.28%" }}>{day}</div>)}
+        <div className="rounded-2xl p-4 shadow-sm" style={{ border: `1px solid ${exportPalette.border}`, backgroundColor: exportPalette.surface, clear: "both" }}>
+          {/* Weekdays header */}
+          <div style={{ color: exportPalette.muted, height: "20px", clear: "both" }}>
+            {weekDays.map(day => (
+              <div key={`export-${day}`} className="text-center" style={{ float: "left", width: "14.28%", boxSizing: "border-box", fontSize: "10px", fontWeight: "600", textTransform: "uppercase", letterSpacing: "0.05em" }}>
+                {day}
+              </div>
+            ))}
           </div>
-          <div className="mt-2" style={{ display: "flex", flexWrap: "wrap" }}>
-            {leadingBlanks.map(blank => <div key={`export-${blank.key}`} className="h-12" style={{ width: "14.28%" }} />)}
+          <div style={{ clear: "both" }} />
+
+          {/* Calendar grid */}
+          <div className="mt-2" style={{ clear: "both" }}>
+            {leadingBlanks.map(blank => (
+              <div key={`export-${blank.key}`} style={{ float: "left", width: "14.28%", height: "48px", boxSizing: "border-box" }} />
+            ))}
             {calendarDays.map(day => (
-              <div key={`export-day-${day.dayNumber}`} className="p-0.5" style={{ width: "14.28%" }}>
+              <div key={`export-day-${day.dayNumber}`} className="p-0.5" style={{ float: "left", width: "14.28%", boxSizing: "border-box" }}>
                 <div className="flex flex-col justify-between rounded-lg p-2 h-12 text-[11px] font-semibold"
                   style={{ border: `1px solid ${exportPalette.border}`, backgroundColor: exportPalette[day.status]?.background ?? exportPalette.none.background, color: exportPalette[day.status]?.text ?? exportPalette.none.text }}>
                   <div className="flex items-center justify-between text-[10px]" style={{ color: exportPalette.muted }}>
@@ -512,30 +522,42 @@ export default function Calendar() {
                 </div>
               </div>
             ))}
+            <div style={{ clear: "both" }} />
           </div>
         </div>
-        <div style={{ display: "flex", gap: "12px" }}>
+
+        {/* Stats cards row */}
+        <div className="mt-4" style={{ clear: "both", height: "70px" }}>
           {[{ label: "Total attendance", value: totalAttended }, { label: "Classes conducted", value: totalClasses }, { label: "Overall percentage", value: `${overallAttendancePct}%` }]
-            .map(item => (
-              <div key={`export-summary-${item.label}`} className="rounded-2xl p-4 text-center" style={{ border: `1px solid ${exportPalette.border}`, backgroundColor: exportPalette.softSurface, width: "33.33%" }}>
+            .map((item, index) => (
+              <div key={`export-summary-${item.label}`} className="rounded-2xl p-4 text-center"
+                style={{
+                  float: "left",
+                  width: "32%",
+                  marginRight: index === 2 ? "0" : "2%",
+                  border: `1px solid ${exportPalette.border}`,
+                  backgroundColor: exportPalette.softSurface,
+                  boxSizing: "border-box"
+                }}>
                 <p className="text-xs font-semibold uppercase tracking-wide" style={{ color: exportPalette.muted }}>{item.label}</p>
                 <p className="mt-2 text-2xl font-semibold">{item.value}</p>
               </div>
             ))}
+          <div style={{ clear: "both" }} />
         </div>
 
         {/* DETAILED DAILY LOGS */}
-        <div className="space-y-3 mt-8">
+        <div className="space-y-3 mt-8" style={{ clear: "both" }}>
           <p className="text-sm font-semibold uppercase tracking-[0.2em]" style={{ color: exportPalette.muted }}>
             Detailed Daily Logs
           </p>
           <div className="rounded-2xl overflow-hidden border" style={{ borderColor: exportPalette.border, backgroundColor: exportPalette.softSurface }}>
-            <table className="w-full text-left border-collapse text-[11px]">
+            <table className="w-full text-left border-collapse text-[11px]" style={{ width: "100%" }}>
               <thead>
                 <tr className="border-b text-[9px] uppercase tracking-wider font-semibold" style={{ borderColor: exportPalette.border, color: exportPalette.muted, backgroundColor: `${exportPalette.surface}80` }}>
-                  <th className="p-3 w-1/4">Date</th>
-                  <th className="p-3 w-1/4">Overall Status</th>
-                  <th className="p-3 w-2/4">Subject-wise Logs</th>
+                  <th className="p-3 w-1/4" style={{ width: "25%" }}>Date</th>
+                  <th className="p-3 w-1/4" style={{ width: "25%" }}>Overall Status</th>
+                  <th className="p-3 w-2/4" style={{ width: "50%" }}>Subject-wise Logs</th>
                 </tr>
               </thead>
               <tbody>
@@ -550,7 +572,13 @@ export default function Calendar() {
                     <tr key={idx} className="border-b last:border-0" style={{ borderColor: `${exportPalette.border}50` }}>
                       <td className="p-3 font-semibold" style={{ color: "#e5e7eb" }}>{row.dateStr}</td>
                       <td className="p-3">
-                        <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[9px] font-bold uppercase tracking-wide ${statusConfig[row.statusKey].badge}`}>
+                        <span className="inline-flex items-center rounded-full px-2 py-0.5 text-[9px] font-bold uppercase tracking-wide"
+                          style={{
+                            backgroundColor: exportPalette[row.statusKey]?.background ?? exportPalette.none.background,
+                            color: exportPalette[row.statusKey]?.text ?? exportPalette.none.text,
+                            padding: "2px 8px",
+                            borderRadius: "9999px"
+                          }}>
                           {row.statusLabel}
                         </span>
                       </td>

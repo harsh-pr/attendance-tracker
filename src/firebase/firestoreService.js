@@ -3,25 +3,31 @@ import {
   doc,
   getDoc,
   setDoc,
+  writeBatch,
 } from "firebase/firestore";
-import { db } from "./config";
+import { db, auth } from "./config";
 
-const USER_ID = "default_user";
+function getUserId() {
+  if (!auth.currentUser) {
+    throw new Error("No authenticated user.");
+  }
+  return auth.currentUser.uid;
+}
 
 function metaRef() {
-  return doc(db, "users", USER_ID, "meta", "app");
+  return doc(db, "users", getUserId(), "meta", "app");
 }
 function subjectsRef() {
-  return doc(db, "users", USER_ID, "subjects", "data");
+  return doc(db, "users", getUserId(), "subjects", "data");
 }
 function timetablesRef() {
-  return doc(db, "users", USER_ID, "timetables", "data");
+  return doc(db, "users", getUserId(), "timetables", "data");
 }
 function remindersRef() {
-  return doc(db, "users", USER_ID, "reminders", "data");
+  return doc(db, "users", getUserId(), "reminders", "data");
 }
 function attendanceRef(semesterId) {
-  return doc(db, "users", USER_ID, "semesters", semesterId, "attendance", "data");
+  return doc(db, "users", getUserId(), "semesters", semesterId, "attendance", "data");
 }
 
 // ─── LOAD ALL DATA ────────────────────────────────────────────────────────────
@@ -112,4 +118,112 @@ export async function saveTimetables(timetablesBySemester) {
 // ─── SAVE REMINDERS ──────────────────────────────────────────────────────────
 export async function saveReminders(remindersBySemester) {
   await setDoc(remindersRef(), { data: remindersBySemester });
+}
+
+// ─── LEGACY DATA OPERATIONS ──────────────────────────────────────────────────
+export async function checkLegacyDataExists() {
+  try {
+    const legacyMetaRef = doc(db, "users", "default_user", "meta", "app");
+    const snap = await getDoc(legacyMetaRef);
+    return snap.exists();
+  } catch (error) {
+    console.error("Error checking legacy data:", error);
+    return false;
+  }
+}
+
+export async function importLegacyData(targetUserId) {
+  try {
+    const defaultUserId = "default_user";
+    
+    // References for default_user
+    const dMetaRef = doc(db, "users", defaultUserId, "meta", "app");
+    const dSubjectsRef = doc(db, "users", defaultUserId, "subjects", "data");
+    const dTimetablesRef = doc(db, "users", defaultUserId, "timetables", "data");
+    const dRemindersRef = doc(db, "users", defaultUserId, "reminders", "data");
+    
+    // Snaps for default_user
+    const [dMetaSnap, dSubjectsSnap, dTimetablesSnap, dRemindersSnap] = await Promise.all([
+      getDoc(dMetaRef),
+      getDoc(dSubjectsRef),
+      getDoc(dTimetablesRef),
+      getDoc(dRemindersRef)
+    ]);
+    
+    if (!dMetaSnap.exists()) {
+      throw new Error("No legacy data found to import.");
+    }
+    
+    const metaData = dMetaSnap.data();
+    const subjectsData = dSubjectsSnap.exists() ? dSubjectsSnap.data() : null;
+    const timetablesData = dTimetablesSnap.exists() ? dTimetablesSnap.data() : null;
+    const remindersData = dRemindersSnap.exists() ? dRemindersSnap.data() : null;
+    
+    const batch = writeBatch(db);
+    
+    // Copy meta, subjects, timetables, reminders
+    batch.set(doc(db, "users", targetUserId, "meta", "app"), metaData);
+    if (subjectsData) {
+      batch.set(doc(db, "users", targetUserId, "subjects", "data"), subjectsData);
+    }
+    if (timetablesData) {
+      batch.set(doc(db, "users", targetUserId, "timetables", "data"), timetablesData);
+    }
+    if (remindersData) {
+      batch.set(doc(db, "users", targetUserId, "reminders", "data"), remindersData);
+    }
+    
+    // Copy semester attendance
+    const semesters = metaData.semesters || [];
+    for (const sem of semesters) {
+      const dAttRef = doc(db, "users", defaultUserId, "semesters", sem.id, "attendance", "data");
+      const dAttSnap = await getDoc(dAttRef);
+      if (dAttSnap.exists()) {
+        batch.set(doc(db, "users", targetUserId, "semesters", sem.id, "attendance", "data"), dAttSnap.data());
+      }
+    }
+    
+    await batch.commit();
+    console.log(`[Firestore] Successfully migrated default_user data to ${targetUserId}`);
+    return true;
+  } catch (error) {
+    console.error("[Firestore] Migration error:", error);
+    throw error;
+  }
+}
+
+export async function deleteLegacyData() {
+  try {
+    const defaultUserId = "default_user";
+    
+    // References for default_user
+    const dMetaRef = doc(db, "users", defaultUserId, "meta", "app");
+    const dSubjectsRef = doc(db, "users", defaultUserId, "subjects", "data");
+    const dTimetablesRef = doc(db, "users", defaultUserId, "timetables", "data");
+    const dRemindersRef = doc(db, "users", defaultUserId, "reminders", "data");
+    
+    const dMetaSnap = await getDoc(dMetaRef);
+    const batch = writeBatch(db);
+    
+    // Delete meta, subjects, timetables, reminders
+    batch.delete(dMetaRef);
+    batch.delete(dSubjectsRef);
+    batch.delete(dTimetablesRef);
+    batch.delete(dRemindersRef);
+    
+    // Delete attendance records for all semesters listed in the meta
+    if (dMetaSnap.exists()) {
+      const semesters = dMetaSnap.data().semesters || [];
+      for (const sem of semesters) {
+        batch.delete(doc(db, "users", defaultUserId, "semesters", sem.id, "attendance", "data"));
+      }
+    }
+    
+    await batch.commit();
+    console.log(`[Firestore] Successfully deleted legacy default_user data.`);
+    return true;
+  } catch (error) {
+    console.error("[Firestore] Error deleting legacy data:", error);
+    throw error;
+  }
 }

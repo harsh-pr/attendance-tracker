@@ -3,6 +3,13 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import Modal from "./Modal";
 import { useSemester } from "../context/SemesterContext";
 import { useTheme } from "../context/ThemeContext";
+import { useAuth } from "../context/AuthContext";
+import {
+  checkLegacyDataExists,
+  importLegacyData,
+  deleteLegacyData,
+} from "../firebase/firestoreService";
+import { calculateOverallAttendance } from "../utils/attendanceUtils";
 
 const DAY_LABELS = {
   monday: "Monday",
@@ -32,9 +39,11 @@ export default function Navbar() {
     setSemesterTimetable,
     setSemesterSubjects,
     weekDays,
+    reloadAllData,
   } = useSemester();
 
   const { theme, toggleTheme } = useTheme();
+  const { user, logout } = useAuth();
 
   const [isSemesterMenuOpen, setIsSemesterMenuOpen] = useState(false);
   const [isCreateSemesterOpen, setIsCreateSemesterOpen] = useState(false);
@@ -46,8 +55,17 @@ export default function Navbar() {
   const [newSubjectName, setNewSubjectName] = useState("");
   const [newSubjectType, setNewSubjectType] = useState("theory");
 
-  const menuRef = useRef(null);
+  // User Profile Dropdown Menu & Legacy Migration States
+  const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
+  const [legacyDataExists, setLegacyDataExists] = useState(false);
+  const [importing, setImporting] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [importSuccess, setImportSuccess] = useState(false);
 
+  const menuRef = useRef(null);
+  const profileMenuRef = useRef(null);
+
+  // Click outside handlers
   useEffect(() => {
     function handleOutsideClick(event) {
       if (!menuRef.current?.contains(event.target)) {
@@ -65,8 +83,31 @@ export default function Navbar() {
   }, [isSemesterMenuOpen]);
 
   useEffect(() => {
-    if (!isTimetableOpen) return;
+    function handleOutsideClick(event) {
+      if (!profileMenuRef.current?.contains(event.target)) {
+        setIsProfileMenuOpen(false);
+      }
+    }
 
+    if (isProfileMenuOpen) {
+      document.addEventListener("mousedown", handleOutsideClick);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleOutsideClick);
+    };
+  }, [isProfileMenuOpen]);
+
+  // Check if legacy (default_user) data is available in Firestore
+  useEffect(() => {
+    if (user) {
+      checkLegacyDataExists().then((exists) => {
+        setLegacyDataExists(exists);
+      });
+    }
+  }, [user]);
+
+  function openTimetableModal() {
     const semesterSubjects = (currentSemester.subjects || []).map((subject) => ({ ...subject }));
     setSubjectsDraft(semesterSubjects);
 
@@ -79,7 +120,9 @@ export default function Navbar() {
       thursday: (source.thursday || []).filter((lecture) => validIds.has(lecture.subjectId)).map((lecture) => ({ ...lecture })),
       friday: (source.friday || []).filter((lecture) => validIds.has(lecture.subjectId)).map((lecture) => ({ ...lecture })),
     });
-  }, [isTimetableOpen, currentTimetable, currentSemester.subjects]);
+    setIsTimetableOpen(true);
+    setIsSemesterMenuOpen(false);
+  }
 
   const currentSemesterName = useMemo(
     () => semesters.find((sem) => sem.id === currentSemesterId)?.name || "Select semester",
@@ -205,6 +248,39 @@ export default function Navbar() {
     }));
   }
 
+  const { overall } = calculateOverallAttendance(currentSemester);
+  const overallPercentage = overall?.percentage ?? 0;
+
+  async function handleImportLegacyData() {
+    setImporting(true);
+    try {
+      await importLegacyData(user.uid);
+      setImportSuccess(true);
+      await reloadAllData(); // reload SemesterContext state
+      alert("Legacy data imported successfully!");
+    } catch (err) {
+      alert("Failed to import data: " + err.message);
+    } finally {
+      setImporting(false);
+    }
+  }
+
+  async function handleDeleteLegacyData() {
+    if (!window.confirm("Are you sure you want to permanently delete the shared default_user data from Firestore? This cannot be undone.")) {
+      return;
+    }
+    setDeleting(true);
+    try {
+      await deleteLegacyData();
+      setLegacyDataExists(false);
+      alert("Old data deleted successfully.");
+    } catch (err) {
+      alert("Failed to delete old data: " + err.message);
+    } finally {
+      setDeleting(false);
+    }
+  }
+
   function handleDeleteCurrentSemester() {
     if (semesters.length <= 1) {
       window.alert("At least one semester is required.");
@@ -278,10 +354,7 @@ export default function Navbar() {
                 </button>
                 <button
                   type="button"
-                  onClick={() => {
-                    setIsTimetableOpen(true);
-                    setIsSemesterMenuOpen(false);
-                  }}
+                  onClick={openTimetableModal}
                   className="w-full px-4 py-2 text-left text-sm text-indigo-600 dark:text-indigo-300 hover:bg-indigo-50 dark:hover:bg-indigo-900/20"
                 >
                   ✎ Edit timetable
@@ -305,9 +378,10 @@ export default function Navbar() {
 
           <div className="flex-1" />
 
+          {/* THEME TOGGLE */}
           <button
             onClick={toggleTheme}
-            className="hidden sm:flex relative w-14 h-7 rounded-full bg-gray-300 dark:bg-gray-700 transition-colors duration-300 cursor-pointer items-center"
+            className="hidden sm:flex relative w-14 h-7 rounded-full bg-gray-300 dark:bg-gray-700 transition-colors duration-300 cursor-pointer items-center mr-2"
           >
             <span
               className={`absolute left-1 top-1 w-5 h-5 rounded-full bg-white flex items-center justify-center text-xs leading-none transition-all duration-300 ${
@@ -317,6 +391,103 @@ export default function Navbar() {
               {theme === "dark" ? "🌙" : "🌞"}
             </span>
           </button>
+
+          {/* USER PROFILE DROPDOWN */}
+          {user && (
+            <div ref={profileMenuRef} className="relative inline-block text-left ml-2">
+              <button
+                type="button"
+                onClick={() => setIsProfileMenuOpen((prev) => !prev)}
+                className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-gray-100 hover:bg-gray-200 dark:bg-slate-800 dark:hover:bg-slate-700 border border-gray-200 dark:border-slate-700 text-gray-700 dark:text-gray-200 text-sm font-medium transition cursor-pointer"
+              >
+                <div className="w-6 h-6 rounded-full bg-blue-600 text-white font-bold flex items-center justify-center text-xs">
+                  {user.displayName ? user.displayName.charAt(0).toUpperCase() : "👤"}
+                </div>
+                <span className="hidden md:inline truncate max-w-28">
+                  {user.displayName || "User"}
+                </span>
+                <span className="text-[10px]">🡣</span>
+              </button>
+
+              {isProfileMenuOpen && (
+                <div className="absolute right-0 mt-2 w-64 rounded-2xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-[0_18px_45px_rgba(0,0,0,0.15)] dark:shadow-[0_18px_45px_rgba(0,0,0,0.5)] overflow-hidden z-[100] p-4 text-gray-700 dark:text-gray-200 space-y-4">
+                  
+                  {/* Profile Header */}
+                  <div className="space-y-1">
+                    <p className="font-semibold text-gray-900 dark:text-white truncate">
+                      {user.displayName || "Attendance User"}
+                    </p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
+                      {user.email}
+                    </p>
+                  </div>
+
+                  <div className="border-t border-gray-200 dark:border-slate-800" />
+
+                  {/* Overall Attendance Display (analogous to Total Spent in Splitwise AI) */}
+                  <div className="p-3 bg-blue-50/50 dark:bg-blue-950/20 border border-blue-100 dark:border-blue-900/30 rounded-xl">
+                    <p className="text-[10px] font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider">
+                      Overall Attendance
+                    </p>
+                    <p className={`text-2xl font-extrabold mt-0.5 ${
+                      overallPercentage >= 75 ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"
+                    }`}>
+                      {overallPercentage}%
+                    </p>
+                  </div>
+
+                  {/* Legacy Data Operations */}
+                  {legacyDataExists && (
+                    <>
+                      <div className="border-t border-gray-200 dark:border-slate-800" />
+                      <div className="space-y-2">
+                        <p className="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                          Legacy Data (default_user)
+                        </p>
+                        
+                        {!importSuccess ? (
+                          <button
+                            type="button"
+                            disabled={importing}
+                            onClick={handleImportLegacyData}
+                            className="w-full py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-semibold shadow-md active:scale-95 transition-all cursor-pointer flex items-center justify-center gap-1 disabled:opacity-50"
+                          >
+                            {importing && <span className="w-3.5 h-3.5 border border-white border-t-transparent rounded-full animate-spin" />}
+                            📥 Import Previous Data
+                          </button>
+                        ) : (
+                          <div className="p-2 text-xs text-green-600 bg-green-50 dark:bg-green-950/20 rounded-lg text-center font-medium">
+                            ✓ Import Successful!
+                          </div>
+                        )}
+
+                        <button
+                          type="button"
+                          disabled={deleting}
+                          onClick={handleDeleteLegacyData}
+                          className="w-full py-2 bg-red-600/10 hover:bg-red-600/20 dark:bg-red-500/10 dark:hover:bg-red-500/20 text-red-600 dark:text-red-400 rounded-lg text-xs font-semibold active:scale-95 transition-all cursor-pointer flex items-center justify-center gap-1 disabled:opacity-50"
+                        >
+                          {deleting && <span className="w-3.5 h-3.5 border border-red-600 border-t-transparent rounded-full animate-spin" />}
+                          🗑️ Delete Old Data
+                        </button>
+                      </div>
+                    </>
+                  )}
+
+                  <div className="border-t border-gray-200 dark:border-slate-800" />
+
+                  {/* Sign Out */}
+                  <button
+                    type="button"
+                    onClick={logout}
+                    className="w-full py-2.5 bg-red-600 hover:bg-red-500 text-white rounded-xl text-xs font-bold shadow-md shadow-red-500/10 hover:shadow-red-500/20 active:scale-[0.97] transition-all cursor-pointer"
+                  >
+                    🚪 Sign Out
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </header>
 

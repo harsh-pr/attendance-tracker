@@ -13,17 +13,20 @@ function buildReminderTriggerTime(dateString, timeString) {
 }
 
 export default function ReminderScheduler() {
-  const { semesters, remindersBySemester, removeReminder, currentSemesterId } = useSemester();
+  const { semesters, remindersBySemester, removeReminder } = useSemester();
 
   // Collect ALL reminders across ALL semesters
   const allReminders = semesters.flatMap((sem) =>
     (remindersBySemester?.[sem.id] || []).map((r) => ({ ...r, semesterId: sem.id }))
   );
 
-  useEffect(() => {
-    if (!allReminders.length) return;
+  const serializedReminders = JSON.stringify(allReminders);
 
-    const timeouts = allReminders
+  useEffect(() => {
+    const remindersList = JSON.parse(serializedReminders);
+    if (!remindersList.length) return;
+
+    const timeouts = remindersList
       .filter((r) => !r.delivered)
       .map((reminder) => {
         const triggerTime = reminder.triggerAt
@@ -67,7 +70,7 @@ export default function ReminderScheduler() {
       .filter(Boolean);
 
     return () => timeouts.forEach((id) => window.clearTimeout(id));
-  }, [JSON.stringify(allReminders)]);
+  }, [serializedReminders, removeReminder]);
 
   return null; // renders nothing
 }

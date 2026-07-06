@@ -14,17 +14,11 @@ export default function Home() {
     currentSemester,
     setCurrentSemesterId,
     semesters,
-    markDayStatus,
   } = useSemester();
 
   const [quickOpen, setQuickOpen] = useState(false);
   const [overallOpen, setOverallOpen] = useState(false);
   const [allLogsOpen, setAllLogsOpen] = useState(false);
-  const [dayActionOpen, setDayActionOpen] = useState(false);
-  const [dayActionForm, setDayActionForm] = useState({
-    date: getTodayDate(),
-    status: "absent",
-  });
 
   const { theory, lab, overall } =
     calculateOverallAttendance(currentSemester);

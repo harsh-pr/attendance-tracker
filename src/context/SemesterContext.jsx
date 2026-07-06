@@ -51,39 +51,26 @@ export function SemesterProvider({ children }) {
   // isFirestoreEmpty: true if Firestore had no data (genuine first run)
   const isFirestoreEmptyRef = useRef(false);
 
-  // ── LOAD on mount ──────────────────────────────────────────────────────────
-  useEffect(() => {
-    const load = async () => {
-      try {
-        const data = await loadAllData();
+  const reloadAllData = async () => {
+    setHasLoaded(false);
+    try {
+      const data = await loadAllData();
 
-        if (data) {
-          // Firestore has real data — use it directly, no defaults merged
-          const loadedSemesters = data.semesters.map(normalizeSemester);
-          setSemesters(loadedSemesters);
-          setSubjectsBySemester(data.subjectsBySemester || {});
-          setTimetablesBySemester(data.timetablesBySemester || {});
-          setRemindersBySemester(data.remindersBySemester || {});
-          setCurrentSemesterId(
-            loadedSemesters.some((s) => s.id === data.currentSemesterId)
-              ? data.currentSemesterId
-              : loadedSemesters[0]?.id || DEFAULT_SEMESTER_ID
-          );
-        } else {
-          // Firestore is empty — first time user, load defaults
-          isFirestoreEmptyRef.current = true;
-          const defaultSemesters = DEFAULT_SEMESTERS.map(({ subjects, ...sem }) => normalizeSemester(sem));
-          const defaultSubjects = DEFAULT_SEMESTERS.reduce((acc, sem) => {
-            acc[sem.id] = sem.subjects || [];
-            return acc;
-          }, {});
-          setSemesters(defaultSemesters);
-          setSubjectsBySemester(defaultSubjects);
-          setCurrentSemesterId(DEFAULT_SEMESTER_ID);
-        }
-      } catch (err) {
-        console.error("Failed to load from Firestore:", err);
-        // On error, show defaults but don't save them (don't touch Firestore)
+      if (data) {
+        // Firestore has real data — use it directly, no defaults merged
+        const loadedSemesters = data.semesters.map(normalizeSemester);
+        setSemesters(loadedSemesters);
+        setSubjectsBySemester(data.subjectsBySemester || {});
+        setTimetablesBySemester(data.timetablesBySemester || {});
+        setRemindersBySemester(data.remindersBySemester || {});
+        setCurrentSemesterId(
+          loadedSemesters.some((s) => s.id === data.currentSemesterId)
+            ? data.currentSemesterId
+            : loadedSemesters[0]?.id || DEFAULT_SEMESTER_ID
+        );
+      } else {
+        isFirestoreEmptyRef.current = true;
+        // eslint-disable-next-line no-unused-vars
         const defaultSemesters = DEFAULT_SEMESTERS.map(({ subjects, ...sem }) => normalizeSemester(sem));
         const defaultSubjects = DEFAULT_SEMESTERS.reduce((acc, sem) => {
           acc[sem.id] = sem.subjects || [];
@@ -91,12 +78,31 @@ export function SemesterProvider({ children }) {
         }, {});
         setSemesters(defaultSemesters);
         setSubjectsBySemester(defaultSubjects);
+        setTimetablesBySemester({});
+        setRemindersBySemester({});
         setCurrentSemesterId(DEFAULT_SEMESTER_ID);
-      } finally {
-        setHasLoaded(true);
       }
-    };
-    load();
+    } catch (err) {
+      console.error("Failed to load from Firestore:", err);
+      // On error, show defaults but don't save them (don't touch Firestore)
+      // eslint-disable-next-line no-unused-vars
+      const defaultSemesters = DEFAULT_SEMESTERS.map(({ subjects, ...sem }) => normalizeSemester(sem));
+      const defaultSubjects = DEFAULT_SEMESTERS.reduce((acc, sem) => {
+        acc[sem.id] = sem.subjects || [];
+        return acc;
+      }, {});
+      setSemesters(defaultSemesters);
+      setSubjectsBySemester(defaultSubjects);
+      setTimetablesBySemester({});
+      setRemindersBySemester({});
+      setCurrentSemesterId(DEFAULT_SEMESTER_ID);
+    } finally {
+      setHasLoaded(true);
+    }
+  };
+
+  useEffect(() => {
+    reloadAllData();
   }, []);
 
   // ── EXPLICIT SAVE HELPERS ──────────────────────────────────────────────────
@@ -390,7 +396,7 @@ export function SemesterProvider({ children }) {
 
   function markTodayAttendance(subjectId, status) {
     const today = getTodayDate();
-    ensureDayExists(currentSemester, today, currentSemesterId);
+    ensureDayExists(currentSemester, today);
     let updatedAttendance = [];
 
     const nextSemesters = semesters.map((sem) => {
@@ -461,6 +467,7 @@ export function SemesterProvider({ children }) {
     removeReminder,
     weekDays: WEEK_DAYS,
     remindersBySemester,
+    reloadAllData,
   };
 
   return (

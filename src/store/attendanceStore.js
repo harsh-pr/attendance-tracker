@@ -8,7 +8,7 @@ export function getTodayDate() {
 /**
  * Ensures a date entry exists and returns it
  */
-export function ensureDayExists(semester, date, _semesterId) {
+export function ensureDayExists(semester, date) {
   let day = semester.attendanceData.find(d => d.date === date);
 
   if (!day) {
@@ -41,7 +41,7 @@ export function markTodayAttendance(
   dateOverride
 ) {
   const date = dateOverride || getTodayDate();
-  const day = ensureDayExists(semester, date, semester.id);
+  const day = ensureDayExists(semester, date);
 
   if (!day) return;
 

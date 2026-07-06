@@ -1,3 +1,4 @@
+/* global process */
 /**
  * seedFirestore.js
  * Run this ONCE to upload your local JSON data to Firestore.

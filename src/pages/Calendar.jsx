@@ -2,7 +2,7 @@ import Modal from "../components/Modal";
 import NotificationPermissionModal from "../hooks/NotificationPermissionModal";
 import { useNotificationPermission } from "../hooks/useNotificationPermission";
 import { useSemester } from "../context/SemesterContext";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { getLecturesForDate } from "../utils/timetableUtils";
 
 const weekDays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -122,8 +122,14 @@ export default function Calendar() {
   const { showModal: showNotifModal, requestPermissionIfNeeded, onAllow, onDismiss } =
     useNotificationPermission();
 
-  const attendanceData = currentSemester.attendanceData ?? [];
-  const reminders      = currentSemester.reminders ?? [];
+  const attendanceData = useMemo(
+    () => currentSemester.attendanceData ?? [],
+    [currentSemester.attendanceData]
+  );
+  const reminders = useMemo(
+    () => currentSemester.reminders ?? [],
+    [currentSemester.reminders]
+  );
 
   const [selectedDay,       setSelectedDay]       = useState(null);
   const [allRemindersOpen,  setAllRemindersOpen]  = useState(false);
@@ -136,14 +142,14 @@ export default function Calendar() {
 
   const [reminderForm, setReminderForm] = useState({ title: "", date: "", time: "" });
 
-  const initialMonthDate = (() => {
+  const initialMonthDate = useMemo(() => {
     if (!attendanceData.length) return new Date();
     return attendanceData.reduce((latest, entry) => {
       const parsed = parseDateString(entry.date);
       if (!parsed) return latest;
       return parsed > latest ? parsed : latest;
     }, new Date(0));
-  })();
+  }, [attendanceData]);
 
   const [activeMonthDate, setActiveMonthDate] = useState(
     new Date(initialMonthDate.getFullYear(), initialMonthDate.getMonth(), 1)
@@ -153,7 +159,7 @@ export default function Calendar() {
     setActiveMonthDate(
       new Date(initialMonthDate.getFullYear(), initialMonthDate.getMonth(), 1)
     );
-  }, [currentSemester.id]);
+  }, [currentSemester.id, initialMonthDate]);
 
   const monthLabel      = formatMonthLabel(activeMonthDate);
   const year            = activeMonthDate.getFullYear();
@@ -305,7 +311,7 @@ export default function Calendar() {
     if (!reminderForm.title || !reminderForm.date) return;
 
     // Show our custom permission modal if not yet granted
-    const granted = await requestPermissionIfNeeded();
+    await requestPermissionIfNeeded();
     // We proceed even if not granted — the reminder will still be saved,
     // and we'll fall back to window.alert at trigger time if needed.
 
@@ -332,7 +338,7 @@ export default function Calendar() {
     handleCloseReminderModal();
   };
 
-  const scheduleReminderNotification = (reminder) => {
+  const scheduleReminderNotification = useCallback((reminder) => {
     const triggerTime = reminder.triggerAt
       ? new Date(reminder.triggerAt)
       : buildReminderTriggerTime(reminder.date, reminder.time);
@@ -351,7 +357,7 @@ export default function Calendar() {
             } else {
               new Notification(reminder.title, { body });
             }
-          } catch (error) {
+          } catch {
             new Notification(reminder.title, { body });
           }
         } else {
@@ -362,7 +368,7 @@ export default function Calendar() {
       }
       removeReminder(reminder.id);
     }, delay);
-  };
+  }, [removeReminder]);
 
   const handleCloseReminderModal = () => {
     setReminderForm({ title: "", date: "", time: "" });
@@ -422,7 +428,7 @@ export default function Calendar() {
       .filter(r => !r.delivered)
       .map(r => scheduleReminderNotification(r));
     return () => timeouts.forEach(id => id && window.clearTimeout(id));
-  }, [reminders]);
+  }, [reminders, scheduleReminderNotification]);
 
   useEffect(() => {
     if (!selectedDay?.date) return;

@@ -87,7 +87,7 @@ async function migrateLegacySubjects() {
     }
 
     attendanceChanged = true;
-    const { subjects, ...rest } = semester;
+    const { subjects: _, ...rest } = semester;
     return rest;
   });
 

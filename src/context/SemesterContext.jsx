@@ -70,17 +70,11 @@ export function SemesterProvider({ children }) {
         );
       } else {
         isFirestoreEmptyRef.current = true;
-        // eslint-disable-next-line no-unused-vars
-        const defaultSemesters = DEFAULT_SEMESTERS.map(({ subjects, ...sem }) => normalizeSemester(sem));
-        const defaultSubjects = DEFAULT_SEMESTERS.reduce((acc, sem) => {
-          acc[sem.id] = sem.subjects || [];
-          return acc;
-        }, {});
-        setSemesters(defaultSemesters);
-        setSubjectsBySemester(defaultSubjects);
+        setSemesters([]);
+        setSubjectsBySemester({});
         setTimetablesBySemester({});
         setRemindersBySemester({});
-        setCurrentSemesterId(DEFAULT_SEMESTER_ID);
+        setCurrentSemesterId("");
       }
     } catch (err) {
       console.error("Failed to load from Firestore:", err);
@@ -193,9 +187,12 @@ export function SemesterProvider({ children }) {
     if (!trimmedName) return null;
 
     const newId = createSemesterId(semesters);
-    const sourceSubjects = options.sourceSemesterId
-      ? subjectsBySemester[options.sourceSemesterId] || []
-      : [];
+    let sourceSubjects = [];
+    if (options.sourceSemesterId) {
+      sourceSubjects = subjectsBySemester[options.sourceSemesterId] || [];
+    } else if (options.subjects) {
+      sourceSubjects = options.subjects;
+    }
 
     const newSemester = { id: newId, name: trimmedName, attendanceData: [] };
     const nextSemesters = [...semesters, newSemester];

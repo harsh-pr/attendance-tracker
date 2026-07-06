@@ -8,8 +8,9 @@ import Navbar from "./components/Navbar";
 import MobileNav from "./components/MobileNav";
 import ReminderScheduler from "./components/ReminderScheduler";
 import Auth from "./pages/Auth";
+import OnboardingSetup from "./pages/OnboardingSetup";
 
-import { SemesterProvider } from "./context/SemesterContext";
+import { SemesterProvider, useSemester } from "./context/SemesterContext";
 import { useAuth } from "./context/AuthContext";
 
 export default function App() {
@@ -34,21 +35,33 @@ export default function App() {
 
   return (
     <SemesterProvider>
-      <BrowserRouter>
-        {/* Runs on every page — schedules reminder notifications globally */}
-        <ReminderScheduler />
-
-        <Navbar />
-        <MobileNav />
-
-        <main className="pt-16 pb-20 min-h-screen bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100 transition-colors duration-300">
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/today" element={<Today />} />
-            <Route path="/calendar" element={<Calendar />} />
-          </Routes>
-        </main>
-      </BrowserRouter>
+      <AppContent />
     </SemesterProvider>
+  );
+}
+
+function AppContent() {
+  const { semesters } = useSemester();
+
+  if (semesters.length === 0) {
+    return <OnboardingSetup />;
+  }
+
+  return (
+    <BrowserRouter>
+      {/* Runs on every page — schedules reminder notifications globally */}
+      <ReminderScheduler />
+
+      <Navbar />
+      <MobileNav />
+
+      <main className="pt-16 pb-20 min-h-screen bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100 transition-colors duration-300">
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/today" element={<Today />} />
+          <Route path="/calendar" element={<Calendar />} />
+        </Routes>
+      </main>
+    </BrowserRouter>
   );
 }

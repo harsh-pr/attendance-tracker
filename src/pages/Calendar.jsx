@@ -558,13 +558,13 @@ export default function Calendar() {
               {calendarDays.map((day, index) => (
                 <button key={day.dayNumber} type="button"
                   onClick={() => setSelectedDay({ day: day.dayNumber, status: day.status, date: day.date, dayEntry: day.dayEntry })}
-                  className={`group h-12 sm:h-14 rounded-lg border border-gray-200/80 dark:border-gray-700/80 bg-white dark:bg-gray-900 p-2 text-[11px] sm:text-sm font-semibold transition ${statusConfig[day.status].tile} hover:-translate-y-1 hover:border-gray-300 hover:shadow-lg dark:hover:border-gray-600`}
+                  className={`group flex flex-col justify-between min-h-[3.25rem] sm:min-h-[3.75rem] h-auto rounded-lg border border-gray-200/80 dark:border-gray-700/80 bg-white dark:bg-gray-900 p-1.5 text-[11px] sm:text-sm font-semibold transition ${statusConfig[day.status].tile} hover:-translate-y-0.5 hover:border-gray-300 hover:shadow-lg dark:hover:border-gray-600`}
                   style={{ animation: "fadeUp 0.5s ease-out", animationDelay: `${(index % 7) * 50}ms`, animationFillMode: "both" }}>
-                  <div className="flex items-center justify-between text-[10px] sm:text-xs text-gray-500 dark:text-gray-400">
+                  <div className="w-full flex items-center justify-between text-[10px] sm:text-xs text-gray-500 dark:text-gray-400">
                     <span>{day.dayNumber}</span>
-                    <span className="h-2 w-2 rounded-full bg-current opacity-60" />
+                    <span className="h-1.5 w-1.5 rounded-full bg-current opacity-60" />
                   </div>
-                  <p className="mt-3 sm:mt-4 text-[9px] sm:text-[11px] font-semibold uppercase tracking-wide">{statusConfig[day.status].label}</p>
+                  <p className="mt-2 w-full text-center text-[8px] sm:text-[9px] font-bold uppercase tracking-wider truncate pb-0.5">{statusConfig[day.status].label}</p>
                 </button>
               ))}
             </div>

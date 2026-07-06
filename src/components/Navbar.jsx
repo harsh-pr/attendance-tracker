@@ -358,21 +358,10 @@ export default function Navbar() {
               <button
                 type="button"
                 onClick={() => setIsProfileMenuOpen((prev) => !prev)}
-                className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-gray-100 hover:bg-gray-200 dark:bg-slate-800 dark:hover:bg-slate-700 border border-gray-200 dark:border-slate-700 text-gray-700 dark:text-gray-200 text-sm font-medium transition cursor-pointer"
+                className="w-8 h-8 rounded-full bg-blue-600 hover:bg-blue-500 text-white font-bold flex items-center justify-center text-sm shadow-md hover:shadow active:scale-95 transition-all cursor-pointer"
+                aria-label="User profile menu"
               >
-                <div className="w-6 h-6 rounded-full bg-blue-600 text-white font-bold flex items-center justify-center text-xs">
-                  {user.displayName ? user.displayName.charAt(0).toUpperCase() : "👤"}
-                </div>
-                <span className="hidden md:inline truncate max-w-28">
-                  {user.displayName || "User"}
-                </span>
-                <span
-                  className={`text-lg leading-none transition-transform duration-300 ${
-                    isProfileMenuOpen ? "rotate-0" : "-rotate-180"
-                  }`}
-                >
-                  🡣
-                </span>
+                {user.displayName ? user.displayName.charAt(0).toUpperCase() : "👤"}
               </button>
 
               {isProfileMenuOpen && (

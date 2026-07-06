@@ -187,6 +187,40 @@ export default function Calendar() {
     return { dayNumber, status, date, dayEntry, isWeekend };
   });
 
+  const loggedDays = useMemo(() => {
+    return calendarDays
+      .filter((day) => day.status !== "none")
+      .map((day) => {
+        const lectures = day.dayEntry?.lectures ?? [];
+        const subjectsText = lectures
+          .map((l) => {
+            const sub = (currentSemester.subjects ?? []).find((s) => s.id === l.subjectId);
+            const subName = sub ? sub.name : l.subjectId;
+            const statusLabel =
+              l.status === "present"
+                ? "Present"
+                : l.status === "absent"
+                ? "Absent"
+                : l.status === "cancelled"
+                ? "Cancelled"
+                : l.status === "free"
+                ? "Free"
+                : "Pending";
+            return `${subName}: ${statusLabel}`;
+          })
+          .join(" | ");
+
+        return {
+          dateStr: day.date
+            ? day.date.toLocaleDateString("en-GB", { day: "2-digit", month: "short", weekday: "short" })
+            : `${day.dayNumber} ${monthLabel}`,
+          statusLabel: statusConfig[day.status].label,
+          statusKey: day.status,
+          subjectsText: subjectsText || (day.status === "holiday" ? "Holiday" : day.status === "exam" ? "Exam Day" : "No Data"),
+        };
+      });
+  }, [calendarDays, currentSemester.subjects, monthLabel]);
+
   const leadingBlanks = Array.from({ length: startWeekdayIndex }, (_, i) => ({ key: `blank-${i}`, empty: true }));
 
   const statusCounts = calendarDays.reduce(
@@ -487,6 +521,45 @@ export default function Calendar() {
                 <p className="mt-2 text-2xl font-semibold">{item.value}</p>
               </div>
             ))}
+        </div>
+
+        {/* DETAILED DAILY LOGS */}
+        <div className="space-y-3 mt-8">
+          <p className="text-sm font-semibold uppercase tracking-[0.2em]" style={{ color: exportPalette.muted }}>
+            Detailed Daily Logs
+          </p>
+          <div className="rounded-2xl overflow-hidden border" style={{ borderColor: exportPalette.border, backgroundColor: exportPalette.softSurface }}>
+            <table className="w-full text-left border-collapse text-[11px]">
+              <thead>
+                <tr className="border-b text-[9px] uppercase tracking-wider font-semibold" style={{ borderColor: exportPalette.border, color: exportPalette.muted, backgroundColor: `${exportPalette.surface}80` }}>
+                  <th className="p-3 w-1/4">Date</th>
+                  <th className="p-3 w-1/4">Overall Status</th>
+                  <th className="p-3 w-2/4">Subject-wise Logs</th>
+                </tr>
+              </thead>
+              <tbody>
+                {loggedDays.length === 0 ? (
+                  <tr>
+                    <td colSpan="3" className="p-4 text-center text-gray-500 italic" style={{ color: exportPalette.muted }}>
+                      No attendance records marked for this month.
+                    </td>
+                  </tr>
+                ) : (
+                  loggedDays.map((row, idx) => (
+                    <tr key={idx} className="border-b last:border-0" style={{ borderColor: `${exportPalette.border}50` }}>
+                      <td className="p-3 font-semibold" style={{ color: "#e5e7eb" }}>{row.dateStr}</td>
+                      <td className="p-3">
+                        <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[9px] font-bold uppercase tracking-wide ${statusConfig[row.statusKey].badge}`}>
+                          {row.statusLabel}
+                        </span>
+                      </td>
+                      <td className="p-3 leading-relaxed" style={{ color: "#9ca3af" }}>{row.subjectsText}</td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
 

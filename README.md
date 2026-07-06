@@ -12,9 +12,6 @@
 
 A modern, responsive attendance management application built with **React** and **Firebase** to help students effortlessly track attendance, monitor eligibility, and stay organized throughout the semester.
 
-### 🌐 Live Demo
-**Coming Soon**
-
 </div>
 
 ---
@@ -174,21 +171,85 @@ src/
 
 ---
 
+---
+
 # 📸 Screenshots
 
-> Replace these with your own screenshots after uploading them.
+> 🎬 **Demo GIF**
+>
+> *(Coming soon — I'll add a demo GIF here later.)*
 
-| Dashboard | Calendar |
-|-----------|----------|
-| ![](screenshots/dashboard.png) | ![](screenshots/calendar.png) |
+---
 
-| Today's Attendance | Attendance Analytics |
-|--------------------|----------------------|
-| ![](screenshots/today.png) | ![](screenshots/analytics.png) |
+## 🏠 Dashboard
 
-| Login | Timetable |
-|-------|-----------|
-| ![](screenshots/login.png) | ![](screenshots/timetable.png) |
+Shows today's lectures, overall attendance, theory/lab breakdown, attendance graph, and recent attendance logs.
+
+![Dashboard](./assets/dashboard.png)
+
+---
+
+## 📅 Calendar View
+
+Track full days, partial attendance, absences, holidays, exam days, reminders, and monthly highlights.
+
+![Calendar](./assets/calendar.png)
+
+---
+
+## ✅ Quick Attendance
+
+Mark today's attendance in just a few clicks using the popup attendance window.
+
+![Quick Attendance](./assets/quick-attendance.png)
+
+---
+
+## 📈 Overall Attendance Trend
+
+Interactive graph showing attendance progression throughout the semester.
+
+![Attendance Trend](./assets/attendance-trend.png)
+
+---
+
+## 📚 Subject-wise Attendance
+
+Detailed attendance percentage for every theory and lab subject with risk indicators.
+
+### Theory Subjects
+
+![Theory Attendance](./assets/theory-attendance.png)
+
+### Lab Subjects
+
+![Lab Attendance](./assets/lab-attendance.png)
+
+---
+
+## 🗓 Timetable Editor
+
+Create and edit your semester timetable with support for theory and lab subjects.
+
+![Timetable Editor](./assets/timetable-editor.png)
+
+![Subject Picker](./assets/subject-picker.png)
+
+---
+
+## 🔐 Authentication
+
+Secure sign up and login using Firebase Authentication.
+
+![Authentication](./assets/auth.png)
+
+---
+
+## 📄 Monthly Attendance Report
+
+Export a complete monthly attendance summary as PDF.
+
+![Monthly Report](./assets/monthly-report.png)
 
 ---
 
@@ -240,45 +301,6 @@ Optimized for:
 - 💻 Desktop
 - 📱 Mobile
 - 📟 Tablet
-
----
-
-# 🎯 Future Improvements
-
-- AI attendance prediction
-- Faculty dashboard
-- Semester CGPA tracker
-- Assignment planner
-- Exam timetable
-- Offline support (PWA)
-- Multi-user support
-
----
-
-# 🤝 Contributing
-
-Contributions are welcome!
-
-1. Fork the repository
-2. Create a feature branch
-3. Commit your changes
-4. Open a Pull Request
-
----
-
-# 📄 License
-
-This project is licensed under the MIT License.
-
----
-
-# 👨‍💻 Author
-
-**Harsh Prasad**
-
-IT Student • Full Stack Developer (Learning)
-
-GitHub: https://github.com/harsh-pr
 
 ---
 

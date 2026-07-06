@@ -7,6 +7,8 @@ import {
   signOut,
   updateProfile,
   onAuthStateChanged,
+  GoogleAuthProvider,
+  signInWithPopup,
 } from "firebase/auth";
 import { auth } from "../firebase/config";
 
@@ -112,11 +114,27 @@ export function AuthProvider({ children }) {
     }
   }
 
+  async function loginWithGoogle() {
+    setLoading(true);
+    try {
+      const provider = new GoogleAuthProvider();
+      const userCredential = await signInWithPopup(auth, provider);
+      localStorage.setItem("last_active_heartbeat", Date.now().toString());
+      return userCredential.user;
+    } catch (error) {
+      console.error("[Auth] Google Sign-In error", error);
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  }
+
   const contextValue = {
     user,
     loading,
     login,
     register,
+    loginWithGoogle,
     logout,
   };
 

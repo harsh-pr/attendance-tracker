@@ -4,11 +4,6 @@ import Modal from "./Modal";
 import { useSemester } from "../context/SemesterContext";
 import { useTheme } from "../context/ThemeContext";
 import { useAuth } from "../context/AuthContext";
-import {
-  checkLegacyDataExists,
-  importLegacyData,
-  deleteLegacyData,
-} from "../firebase/firestoreService";
 import { calculateOverallAttendance } from "../utils/attendanceUtils";
 
 const DAY_LABELS = {
@@ -39,7 +34,6 @@ export default function Navbar() {
     setSemesterTimetable,
     setSemesterSubjects,
     weekDays,
-    reloadAllData,
   } = useSemester();
 
   const { theme, toggleTheme } = useTheme();
@@ -55,12 +49,8 @@ export default function Navbar() {
   const [newSubjectName, setNewSubjectName] = useState("");
   const [newSubjectType, setNewSubjectType] = useState("theory");
 
-  // User Profile Dropdown Menu & Legacy Migration States
+  // User Profile Dropdown Menu
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
-  const [legacyDataExists, setLegacyDataExists] = useState(false);
-  const [importing, setImporting] = useState(false);
-  const [deleting, setDeleting] = useState(false);
-  const [importSuccess, setImportSuccess] = useState(false);
 
   const menuRef = useRef(null);
   const profileMenuRef = useRef(null);
@@ -98,14 +88,7 @@ export default function Navbar() {
     };
   }, [isProfileMenuOpen]);
 
-  // Check if legacy (default_user) data is available in Firestore
-  useEffect(() => {
-    if (user) {
-      checkLegacyDataExists().then((exists) => {
-        setLegacyDataExists(exists);
-      });
-    }
-  }, [user]);
+
 
   function openTimetableModal() {
     const semesterSubjects = (currentSemester.subjects || []).map((subject) => ({ ...subject }));
@@ -251,35 +234,7 @@ export default function Navbar() {
   const { overall } = calculateOverallAttendance(currentSemester);
   const overallPercentage = overall?.percentage ?? 0;
 
-  async function handleImportLegacyData() {
-    setImporting(true);
-    try {
-      await importLegacyData(user.uid);
-      setImportSuccess(true);
-      await reloadAllData(); // reload SemesterContext state
-      alert("Legacy data imported successfully!");
-    } catch (err) {
-      alert("Failed to import data: " + err.message);
-    } finally {
-      setImporting(false);
-    }
-  }
 
-  async function handleDeleteLegacyData() {
-    if (!window.confirm("Are you sure you want to permanently delete the shared default_user data from Firestore? This cannot be undone.")) {
-      return;
-    }
-    setDeleting(true);
-    try {
-      await deleteLegacyData();
-      setLegacyDataExists(false);
-      alert("Old data deleted successfully.");
-    } catch (err) {
-      alert("Failed to delete old data: " + err.message);
-    } finally {
-      setDeleting(false);
-    }
-  }
 
   function handleDeleteCurrentSemester() {
     if (semesters.length <= 1) {
@@ -436,43 +391,7 @@ export default function Navbar() {
                     </p>
                   </div>
 
-                  {/* Legacy Data Operations */}
-                  {legacyDataExists && (
-                    <>
-                      <div className="border-t border-gray-200 dark:border-slate-800" />
-                      <div className="space-y-2">
-                        <p className="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                          Legacy Data (default_user)
-                        </p>
-                        
-                        {!importSuccess ? (
-                          <button
-                            type="button"
-                            disabled={importing}
-                            onClick={handleImportLegacyData}
-                            className="w-full py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-semibold shadow-md active:scale-95 transition-all cursor-pointer flex items-center justify-center gap-1 disabled:opacity-50"
-                          >
-                            {importing && <span className="w-3.5 h-3.5 border border-white border-t-transparent rounded-full animate-spin" />}
-                            📥 Import Previous Data
-                          </button>
-                        ) : (
-                          <div className="p-2 text-xs text-green-600 bg-green-50 dark:bg-green-950/20 rounded-lg text-center font-medium">
-                            ✓ Import Successful!
-                          </div>
-                        )}
 
-                        <button
-                          type="button"
-                          disabled={deleting}
-                          onClick={handleDeleteLegacyData}
-                          className="w-full py-2 bg-red-600/10 hover:bg-red-600/20 dark:bg-red-500/10 dark:hover:bg-red-500/20 text-red-600 dark:text-red-400 rounded-lg text-xs font-semibold active:scale-95 transition-all cursor-pointer flex items-center justify-center gap-1 disabled:opacity-50"
-                        >
-                          {deleting && <span className="w-3.5 h-3.5 border border-red-600 border-t-transparent rounded-full animate-spin" />}
-                          🗑️ Delete Old Data
-                        </button>
-                      </div>
-                    </>
-                  )}
 
                   <div className="border-t border-gray-200 dark:border-slate-800" />
 

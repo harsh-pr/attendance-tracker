@@ -8,9 +8,8 @@ import {
   updateProfile,
   onAuthStateChanged,
   GoogleAuthProvider,
-  signInWithRedirect,
-  getRedirectResult,
-  linkWithRedirect,
+  signInWithPopup,
+  linkWithPopup,
 } from "firebase/auth";
 import { auth } from "../firebase/config";
 
@@ -22,25 +21,6 @@ export function AuthProvider({ children }) {
 
   // 1. Session Activity Heartbeat (2-minute closed-tab auto-logout)
   useEffect(() => {
-    // 1. Check if we are returning from a Google authentication redirect
-    const isGoogleRedirecting = localStorage.getItem("is_google_redirecting");
-    if (isGoogleRedirecting === "true") {
-      localStorage.removeItem("is_google_redirecting");
-      localStorage.setItem("last_active_heartbeat", Date.now().toString());
-    }
-
-    // 2. Process any redirect results
-    getRedirectResult(auth)
-      .then((result) => {
-        if (result) {
-          localStorage.setItem("last_active_heartbeat", Date.now().toString());
-          setUser(result.user);
-        }
-      })
-      .catch((error) => {
-        console.error("[Auth] Redirect result error", error);
-      });
-
     const lastActive = localStorage.getItem("last_active_heartbeat");
     const now = Date.now();
     let isAutoLoggingOut = false;
@@ -139,12 +119,12 @@ export function AuthProvider({ children }) {
     setLoading(true);
     try {
       const provider = new GoogleAuthProvider();
-      // Set the redirect flag to prevent inactivity auto-logout on return
-      localStorage.setItem("is_google_redirecting", "true");
-      await signInWithRedirect(auth, provider);
+      const userCredential = await signInWithPopup(auth, provider);
+      localStorage.setItem("last_active_heartbeat", Date.now().toString());
+      setUser(userCredential.user);
+      return userCredential.user;
     } catch (error) {
-      console.error("[Auth] Google Sign-In redirect error", error);
-      localStorage.removeItem("is_google_redirecting");
+      console.error("[Auth] Google Sign-In error", error);
       throw error;
     } finally {
       setLoading(false);
@@ -156,12 +136,13 @@ export function AuthProvider({ children }) {
     setLoading(true);
     try {
       const provider = new GoogleAuthProvider();
-      // Set the redirect flag to avoid auto-logout on return
-      localStorage.setItem("is_google_redirecting", "true");
-      await linkWithRedirect(auth.currentUser, provider);
+      const userCredential = await linkWithPopup(auth.currentUser, provider);
+      localStorage.setItem("last_active_heartbeat", Date.now().toString());
+      // Force user update in React state
+      setUser({ ...userCredential.user });
+      return userCredential.user;
     } catch (error) {
       console.error("[Auth] Connect Google error", error);
-      localStorage.removeItem("is_google_redirecting");
       throw error;
     } finally {
       setLoading(false);

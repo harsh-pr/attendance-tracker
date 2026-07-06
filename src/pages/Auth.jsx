@@ -17,7 +17,7 @@ export default function Auth() {
     try {
       await loginWithGoogle();
     } catch (err) {
-      let friendlyMessage = "Google Sign-In failed. Please try again.";
+      let friendlyMessage = `Google Sign-In failed: ${err.code || err.message}. Please try again.`;
       if (err.code === "auth/popup-closed-by-user") {
         friendlyMessage = "Sign-in popup was closed before completion.";
       } else if (err.code === "auth/operation-not-allowed") {

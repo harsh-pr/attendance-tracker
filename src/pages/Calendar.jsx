@@ -188,37 +188,58 @@ export default function Calendar() {
   });
 
   const loggedDays = useMemo(() => {
-    return calendarDays
-      .map((day) => {
-        const lectures = day.dayEntry?.lectures ?? [];
-        const subjectsText = lectures
-          .map((l) => {
-            const sub = (currentSemester.subjects ?? []).find((s) => s.id === l.subjectId);
-            const subName = sub ? sub.name : l.subjectId;
-            const statusLabel =
-              l.status === "present"
-                ? "Present"
-                : l.status === "absent"
-                ? "Absent"
-                : l.status === "cancelled"
-                ? "Cancelled"
-                : l.status === "free"
-                ? "Free"
-                : "Pending";
-            return `${subName}: ${statusLabel}`;
-          })
-          .join(" | ");
+    return calendarDays.map((day) => {
+      const dateKey = day.date ? formatDateKey(day.date) : "";
+      const timetableLectures = dateKey ? getLecturesForDate(dateKey, currentSemester) : [];
 
-        return {
-          dateStr: day.date
-            ? day.date.toLocaleDateString("en-GB", { day: "2-digit", month: "short", weekday: "short" })
-            : `${day.dayNumber} ${monthLabel}`,
-          statusLabel: statusConfig[day.status].label,
-          statusKey: day.status,
-          subjectsText: subjectsText || (day.status === "holiday" ? "Holiday" : day.status === "exam" ? "Exam Day" : "No Data"),
-        };
-      });
-  }, [calendarDays, currentSemester.subjects, monthLabel]);
+      let displayLectures = [];
+      if (day.dayEntry?.lectures && day.dayEntry.lectures.length > 0) {
+        displayLectures = day.dayEntry.lectures;
+      } else {
+        displayLectures = timetableLectures.map((l) => ({
+          subjectId: l.subjectId,
+          type: l.type,
+          status: "none",
+        }));
+      }
+
+      const subjectsText = displayLectures
+        .map((l) => {
+          const sub = (currentSemester.subjects ?? []).find((s) => s.id === l.subjectId);
+          const subName = sub ? sub.name : l.subjectId;
+          const statusLabel =
+            l.status === "present"
+              ? "Present"
+              : l.status === "absent"
+              ? "Absent"
+              : l.status === "cancelled"
+              ? "Cancelled"
+              : l.status === "free"
+              ? "Free"
+              : l.status === "pending"
+              ? "Pending"
+              : "No Data";
+          return `${subName}: ${statusLabel}`;
+        })
+        .join(" | ");
+
+      const defaultStatus =
+        day.status === "holiday"
+          ? "Holiday"
+          : day.status === "exam"
+          ? "Exam Day"
+          : "No Data";
+
+      return {
+        dateStr: day.date
+          ? day.date.toLocaleDateString("en-GB", { day: "2-digit", month: "short", weekday: "short" })
+          : `${day.dayNumber} ${monthLabel}`,
+        statusLabel: statusConfig[day.status].label,
+        statusKey: day.status,
+        subjectsText: subjectsText || defaultStatus,
+      };
+    });
+  }, [calendarDays, currentSemester, monthLabel]);
 
   const leadingBlanks = Array.from({ length: startWeekdayIndex }, (_, i) => ({ key: `blank-${i}`, empty: true }));
 
@@ -485,65 +506,150 @@ export default function Calendar() {
       {/* ── OFF-SCREEN PDF EXPORT ── */}
       <div
         ref={exportRef}
-        className="fixed left-[-9999px] top-0 w-[800px] space-y-6 p-6"
-        style={{ backgroundColor: exportPalette.surface, color: "#f9fafb" }}
+        style={{
+          position: "fixed",
+          left: "-9999px",
+          top: "0",
+          width: "800px",
+          backgroundColor: exportPalette.surface,
+          color: "#f9fafb",
+          padding: "24px",
+          boxSizing: "border-box",
+          display: "flex",
+          flexDirection: "column",
+          gap: "24px",
+          fontFamily: "Inter, system-ui, -apple-system, sans-serif"
+        }}
       >
-        <div className="space-y-1">
-          <p className="text-sm font-semibold uppercase tracking-[0.2em]" style={{ color: exportPalette.muted }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+          <p style={{ fontSize: "11px", fontWeight: "600", textTransform: "uppercase", letterSpacing: "0.2em", color: exportPalette.muted, margin: 0 }}>
             Attendance Summary
           </p>
-          <h2 className="text-2xl font-semibold">{monthLabel}</h2>
+          <h2 style={{ fontSize: "24px", fontWeight: "600", margin: 0 }}>{monthLabel}</h2>
         </div>
-        <div className="rounded-2xl p-4 shadow-sm" style={{ border: `1px solid ${exportPalette.border}`, backgroundColor: exportPalette.surface, clear: "both" }}>
+        <div style={{
+          border: `1px solid ${exportPalette.border}`,
+          backgroundColor: exportPalette.surface,
+          borderRadius: "16px",
+          padding: "20px"
+        }}>
           {/* Weekdays header */}
-          <div style={{ color: exportPalette.muted, height: "20px", clear: "both" }}>
+          <div style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(7, 1fr)",
+            gap: "8px",
+            color: exportPalette.muted,
+            marginBottom: "12px"
+          }}>
             {weekDays.map(day => (
-              <div key={`export-${day}`} className="text-center" style={{ float: "left", width: "14.28%", boxSizing: "border-box", fontSize: "10px", fontWeight: "600", textTransform: "uppercase", letterSpacing: "0.05em" }}>
+              <div key={`export-${day}`} style={{
+                textAlign: "center",
+                fontSize: "11px",
+                fontWeight: "600",
+                textTransform: "uppercase",
+                letterSpacing: "0.05em"
+              }}>
                 {day}
               </div>
             ))}
           </div>
-          <div style={{ clear: "both" }} />
 
           {/* Calendar grid */}
-          <div className="mt-2" style={{ clear: "both" }}>
+          <div style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(7, 1fr)",
+            gap: "8px"
+          }}>
             {leadingBlanks.map(blank => (
-              <div key={`export-${blank.key}`} style={{ float: "left", width: "14.28%", height: "48px", boxSizing: "border-box" }} />
+              <div key={`export-${blank.key}`} style={{ height: "48px" }} />
             ))}
             {calendarDays.map(day => (
-              <div key={`export-day-${day.dayNumber}`} className="p-0.5" style={{ float: "left", width: "14.28%", boxSizing: "border-box" }}>
-                <div className="flex flex-col justify-between rounded-lg p-2 h-12 text-[11px] font-semibold"
-                  style={{ border: `1px solid ${exportPalette.border}`, backgroundColor: exportPalette[day.status]?.background ?? exportPalette.none.background, color: exportPalette[day.status]?.text ?? exportPalette.none.text }}>
-                  <div className="flex items-center justify-between text-[10px]" style={{ color: exportPalette.muted }}>
-                    <span>{day.dayNumber}</span>
-                    <span className="h-1.5 w-1.5 rounded-full bg-current opacity-60" />
-                  </div>
-                  <p className="text-[8px] font-semibold uppercase tracking-wide truncate">{statusConfig[day.status].label}</p>
+              <div key={`export-day-${day.dayNumber}`} style={{
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "space-between",
+                borderRadius: "8px",
+                padding: "8px",
+                height: "48px",
+                boxSizing: "border-box",
+                border: `1px solid ${exportPalette.border}`,
+                backgroundColor: exportPalette[day.status]?.background ?? exportPalette.none.background,
+                color: exportPalette[day.status]?.text ?? exportPalette.none.text
+              }}>
+                <div style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  width: "100%",
+                  fontSize: "10px",
+                  color: exportPalette.muted
+                }}>
+                  <span style={{ color: exportPalette.muted }}>{day.dayNumber}</span>
+                  <span style={{
+                    height: "6px",
+                    width: "6px",
+                    borderRadius: "50%",
+                    backgroundColor: "currentColor",
+                    opacity: 0.6,
+                    color: exportPalette[day.status]?.text ?? exportPalette.none.text
+                  }} />
                 </div>
+                <p style={{
+                  fontSize: "8px",
+                  fontWeight: "600",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.05em",
+                  margin: 0,
+                  whiteSpace: "nowrap",
+                  overflow: "hidden",
+                  textOverflow: "ellipsis"
+                }}>
+                  {statusConfig[day.status].label}
+                </p>
               </div>
             ))}
-            <div style={{ clear: "both" }} />
           </div>
         </div>
 
         {/* Stats cards row */}
-        <div className="mt-4" style={{ clear: "both", height: "70px" }}>
-          {[{ label: "Total attendance", value: totalAttended }, { label: "Classes conducted", value: totalClasses }, { label: "Overall percentage", value: `${overallAttendancePct}%` }]
-            .map((item, index) => (
-              <div key={`export-summary-${item.label}`} className="rounded-2xl p-4 text-center"
-                style={{
-                  float: "left",
-                  width: "32%",
-                  marginRight: index === 2 ? "0" : "2%",
-                  border: `1px solid ${exportPalette.border}`,
-                  backgroundColor: exportPalette.softSurface,
-                  boxSizing: "border-box"
-                }}>
-                <p className="text-xs font-semibold uppercase tracking-wide" style={{ color: exportPalette.muted }}>{item.label}</p>
-                <p className="mt-2 text-2xl font-semibold">{item.value}</p>
-              </div>
-            ))}
-          <div style={{ clear: "both" }} />
+        <div style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(3, 1fr)",
+          gap: "16px"
+        }}>
+          {[
+            { label: "Total attendance", value: totalAttended },
+            { label: "Classes conducted", value: totalClasses },
+            { label: "Overall percentage", value: `${overallAttendancePct}%` }
+          ].map((item) => (
+            <div key={`export-summary-${item.label}`} style={{
+              borderRadius: "16px",
+              padding: "16px",
+              textAlign: "center",
+              border: `1px solid ${exportPalette.border}`,
+              backgroundColor: exportPalette.softSurface,
+              boxSizing: "border-box"
+            }}>
+              <p style={{
+                fontSize: "11px",
+                fontWeight: "600",
+                textTransform: "uppercase",
+                letterSpacing: "0.05em",
+                color: exportPalette.muted,
+                margin: "0 0 8px 0"
+              }}>
+                {item.label}
+              </p>
+              <p style={{
+                fontSize: "24px",
+                fontWeight: "600",
+                margin: 0,
+                color: "#ffffff"
+              }}>
+                {item.value}
+              </p>
+            </div>
+          ))}
         </div>
 
         {/* DETAILED DAILY LOGS */}

@@ -366,7 +366,13 @@ export default function Navbar() {
                 <span className="hidden md:inline truncate max-w-28">
                   {user.displayName || "User"}
                 </span>
-                <span className="text-[10px]">🡣</span>
+                <span
+                  className={`text-lg leading-none transition-transform duration-300 ${
+                    isProfileMenuOpen ? "rotate-0" : "-rotate-180"
+                  }`}
+                >
+                  🡣
+                </span>
               </button>
 
               {isProfileMenuOpen && (

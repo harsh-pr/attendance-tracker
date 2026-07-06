@@ -1,14 +1,12 @@
 // src/pages/OnboardingSetup.jsx
 import { useState } from "react";
 import { useSemester } from "../context/SemesterContext";
-import { DEFAULT_SEMESTERS } from "../data/defaultSemesters";
 import { useAuth } from "../context/AuthContext";
 
 export default function OnboardingSetup() {
   const { addSemester } = useSemester();
   const { logout } = useAuth();
   const [semesterName, setSemesterName] = useState("Semester 1");
-  const [useDefaults, setUseDefaults] = useState(true);
   const [loading, setLoading] = useState(false);
 
   async function handleSubmit(e) {
@@ -18,7 +16,7 @@ export default function OnboardingSetup() {
 
     setLoading(true);
     try {
-      const subjects = useDefaults ? DEFAULT_SEMESTERS[0].subjects : [];
+      const subjects = [];
       await addSemester(trimmed, { subjects });
     } catch (err) {
       console.error("Failed to setup first semester:", err);
@@ -61,19 +59,6 @@ export default function OnboardingSetup() {
             />
           </div>
 
-          <div className="flex items-start gap-3 p-4 rounded-2xl bg-blue-50/40 dark:bg-blue-950/10 border border-blue-100/50 dark:border-blue-900/20">
-            <input
-              type="checkbox"
-              id="useDefaults"
-              checked={useDefaults}
-              onChange={(e) => setUseDefaults(e.target.checked)}
-              className="mt-1 rounded border-gray-300 text-blue-600 focus:ring-blue-500 h-4.5 w-4.5 cursor-pointer"
-            />
-            <label htmlFor="useDefaults" className="text-xs text-gray-600 dark:text-gray-300 leading-normal cursor-pointer select-none">
-              <span className="font-bold block text-gray-800 dark:text-white mb-0.5">Pre-populate subjects</span>
-              Automatically load default subjects (Python, Graphics, SS & CS, etc.) to get you started quickly.
-            </label>
-          </div>
 
           <button
             type="submit"

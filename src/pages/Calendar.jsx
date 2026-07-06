@@ -138,7 +138,8 @@ export default function Calendar() {
   const [editDayOpen,       setEditDayOpen]       = useState(false);
   const [partialMarkOpen,   setPartialMarkOpen]   = useState(false);
   const [partialSelection,  setPartialSelection]  = useState({});
-  const exportRef = useRef(null);
+  const exportPage1Ref = useRef(null);
+  const exportPage2Ref = useRef(null);
 
   const [reminderForm, setReminderForm] = useState({ title: "", date: "", time: "" });
 
@@ -326,36 +327,31 @@ export default function Calendar() {
   };
 
   const handleExportMonth = async () => {
-    if (!exportRef.current) return;
+    if (!exportPage1Ref.current || !exportPage2Ref.current) return;
     const html2canvas = window.html2canvas;
     const jsPDF       = window.jspdf?.jsPDF;
     if (!html2canvas || !jsPDF) return;
-    const canvas    = await html2canvas(exportRef.current, { scale: 2, useCORS: true, backgroundColor: exportPalette.surface });
-    const pdf       = new jsPDF({ orientation: "portrait", unit: "pt", format: "a4" });
+
+    // Take screenshot of page 1
+    const canvas1 = await html2canvas(exportPage1Ref.current, { scale: 2, useCORS: true, backgroundColor: exportPalette.surface });
+    // Take screenshot of page 2
+    const canvas2 = await html2canvas(exportPage2Ref.current, { scale: 2, useCORS: true, backgroundColor: exportPalette.surface });
+
+    const pdf = new jsPDF({ orientation: "portrait", unit: "pt", format: "a4" });
     const pageWidth = pdf.internal.pageSize.getWidth();
     const pageHeight = pdf.internal.pageSize.getHeight();
-    const pageHeightPx = Math.floor((pageHeight * canvas.width) / pageWidth);
-    const overlapPx    = 2;
-    let renderedPages  = 0;
-    while (renderedPages * pageHeightPx < canvas.height) {
-      const sourceY     = renderedPages === 0 ? 0 : renderedPages * pageHeightPx - overlapPx;
-      const sliceHeight = Math.min(pageHeightPx + (renderedPages === 0 ? 0 : overlapPx), canvas.height - sourceY);
-      const pageCanvas  = document.createElement("canvas");
-      pageCanvas.width  = canvas.width;
-      pageCanvas.height = sliceHeight;
-      const ctx         = pageCanvas.getContext("2d");
-      if (!ctx) return;
-      ctx.fillStyle = exportPalette.surface;
-      ctx.fillRect(0, 0, pageCanvas.width, pageCanvas.height);
-      ctx.drawImage(canvas, 0, sourceY, canvas.width, sliceHeight, 0, 0, canvas.width, sliceHeight);
-      const imageData    = pageCanvas.toDataURL("image/png");
-      if (renderedPages > 0) pdf.addPage();
-      pdf.setFillColor(exportPalette.surface);
-      pdf.rect(0, 0, pageWidth, pageHeight, "F");
-      const renderedHeight = sliceHeight < pageHeightPx ? (sliceHeight * pageWidth) / canvas.width : pageHeight;
-      pdf.addImage(imageData, "PNG", 0, 0, pageWidth, renderedHeight);
-      renderedPages++;
-    }
+
+    // Add page 1
+    pdf.setFillColor(exportPalette.surface);
+    pdf.rect(0, 0, pageWidth, pageHeight, "F");
+    pdf.addImage(canvas1.toDataURL("image/png"), "PNG", 0, 0, pageWidth, pageHeight);
+
+    // Add page 2
+    pdf.addPage();
+    pdf.setFillColor(exportPalette.surface);
+    pdf.rect(0, 0, pageWidth, pageHeight, "F");
+    pdf.addImage(canvas2.toDataURL("image/png"), "PNG", 0, 0, pageWidth, pageHeight);
+
     pdf.save(`attendance-${year}-${String(monthIndex + 1).padStart(2, "0")}.pdf`);
   };
 
@@ -503,25 +499,25 @@ export default function Calendar() {
         onDismiss={onDismiss}
       />
 
-      {/* ── OFF-SCREEN PDF EXPORT ── */}
+      {/* ── OFF-SCREEN PDF EXPORT PAGE 1 ── */}
       <div
-        ref={exportRef}
+        ref={exportPage1Ref}
         style={{
           position: "fixed",
           left: "-9999px",
           top: "0",
           width: "800px",
+          height: "1130px",
           backgroundColor: exportPalette.surface,
           color: "#f9fafb",
           padding: "24px",
           boxSizing: "border-box",
           display: "flex",
           flexDirection: "column",
-          gap: "24px",
           fontFamily: "Inter, system-ui, -apple-system, sans-serif"
         }}
       >
-        <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: "4px", marginBottom: "20px" }}>
           <p style={{ fontSize: "11px", fontWeight: "600", textTransform: "uppercase", letterSpacing: "0.2em", color: exportPalette.muted, margin: 0 }}>
             Attendance Summary
           </p>
@@ -531,7 +527,8 @@ export default function Calendar() {
           border: `1px solid ${exportPalette.border}`,
           backgroundColor: exportPalette.surface,
           borderRadius: "16px",
-          padding: "20px"
+          padding: "20px",
+          marginBottom: "20px"
         }}>
           {/* Weekdays header */}
           <div style={{
@@ -561,7 +558,7 @@ export default function Calendar() {
             gap: "8px"
           }}>
             {leadingBlanks.map(blank => (
-              <div key={`export-${blank.key}`} style={{ height: "48px" }} />
+              <div key={`export-${blank.key}`} style={{ height: "58px" }} />
             ))}
             {calendarDays.map(day => (
               <div key={`export-day-${day.dayNumber}`} style={{
@@ -570,7 +567,7 @@ export default function Calendar() {
                 justifyContent: "space-between",
                 borderRadius: "8px",
                 padding: "8px",
-                height: "48px",
+                height: "58px",
                 boxSizing: "border-box",
                 border: `1px solid ${exportPalette.border}`,
                 backgroundColor: exportPalette[day.status]?.background ?? exportPalette.none.background,
@@ -615,7 +612,8 @@ export default function Calendar() {
         <div style={{
           display: "grid",
           gridTemplateColumns: "repeat(3, 1fr)",
-          gap: "16px"
+          gap: "16px",
+          marginBottom: "20px"
         }}>
           {[
             { label: "Total attendance", value: totalAttended },
@@ -652,46 +650,111 @@ export default function Calendar() {
           ))}
         </div>
 
-        {/* DETAILED DAILY LOGS */}
-        <div className="space-y-3 mt-8" style={{ clear: "both" }}>
-          <p className="text-sm font-semibold uppercase tracking-[0.2em]" style={{ color: exportPalette.muted }}>
-            Detailed Daily Logs
+        {/* DETAILED DAILY LOGS (Page 1) */}
+        <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+          <p style={{ fontSize: "12px", fontWeight: "600", textTransform: "uppercase", letterSpacing: "0.2em", color: exportPalette.muted, margin: 0 }}>
+            Detailed Daily Logs (Days 1 - 8)
           </p>
-          <div className="rounded-2xl overflow-hidden border" style={{ borderColor: exportPalette.border, backgroundColor: exportPalette.softSurface }}>
-            <table className="w-full text-left border-collapse text-[11px]" style={{ width: "100%" }}>
+          <div style={{ borderRadius: "16px", overflow: "hidden", border: `1px solid ${exportPalette.border}`, backgroundColor: exportPalette.softSurface }}>
+            <table style={{ width: "100%", textAlign: "left", borderCollapse: "collapse", fontSize: "11px" }}>
               <thead>
-                <tr className="border-b text-[9px] uppercase tracking-wider font-semibold" style={{ borderColor: exportPalette.border, color: exportPalette.muted, backgroundColor: `${exportPalette.surface}80` }}>
-                  <th className="p-3 w-1/4" style={{ width: "25%" }}>Date</th>
-                  <th className="p-3 w-1/4" style={{ width: "25%" }}>Overall Status</th>
-                  <th className="p-3 w-2/4" style={{ width: "50%" }}>Subject-wise Logs</th>
+                <tr style={{ borderBottom: `1px solid ${exportPalette.border}`, color: exportPalette.muted, backgroundColor: `${exportPalette.surface}80` }}>
+                  <th style={{ padding: "12px", width: "25%", fontSize: "9px", fontWeight: "600", textTransform: "uppercase", letterSpacing: "0.05em" }}>Date</th>
+                  <th style={{ padding: "12px", width: "25%", fontSize: "9px", fontWeight: "600", textTransform: "uppercase", letterSpacing: "0.05em" }}>Overall Status</th>
+                  <th style={{ padding: "12px", width: "50%", fontSize: "9px", fontWeight: "600", textTransform: "uppercase", letterSpacing: "0.05em" }}>Subject-wise Logs</th>
                 </tr>
               </thead>
               <tbody>
-                {loggedDays.length === 0 ? (
-                  <tr>
-                    <td colSpan="3" className="p-4 text-center text-gray-500 italic" style={{ color: exportPalette.muted }}>
-                      No attendance records marked for this month.
+                {loggedDays.slice(0, 8).map((row, idx) => (
+                  <tr key={idx} style={{ borderBottom: idx === 7 ? "0" : `1px solid ${exportPalette.border}50` }}>
+                    <td style={{ padding: "12px", fontWeight: "600", color: "#e5e7eb" }}>{row.dateStr}</td>
+                    <td style={{ padding: "12px" }}>
+                      <span style={{
+                        display: "inline-flex",
+                        alignItems: "center",
+                        backgroundColor: exportPalette[row.statusKey]?.background ?? exportPalette.none.background,
+                        color: exportPalette[row.statusKey]?.text ?? exportPalette.none.text,
+                        padding: "2px 8px",
+                        borderRadius: "9999px",
+                        fontSize: "9px",
+                        fontWeight: "700",
+                        textTransform: "uppercase",
+                        letterSpacing: "0.05em"
+                      }}>
+                        {row.statusLabel}
+                      </span>
                     </td>
+                    <td style={{ padding: "12px", color: "#9ca3af", lineHeight: "1.5" }}>{row.subjectsText}</td>
                   </tr>
-                ) : (
-                  loggedDays.map((row, idx) => (
-                    <tr key={idx} className="border-b last:border-0" style={{ borderColor: `${exportPalette.border}50` }}>
-                      <td className="p-3 font-semibold" style={{ color: "#e5e7eb" }}>{row.dateStr}</td>
-                      <td className="p-3">
-                        <span className="inline-flex items-center rounded-full px-2 py-0.5 text-[9px] font-bold uppercase tracking-wide"
-                          style={{
-                            backgroundColor: exportPalette[row.statusKey]?.background ?? exportPalette.none.background,
-                            color: exportPalette[row.statusKey]?.text ?? exportPalette.none.text,
-                            padding: "2px 8px",
-                            borderRadius: "9999px"
-                          }}>
-                          {row.statusLabel}
-                        </span>
-                      </td>
-                      <td className="p-3 leading-relaxed" style={{ color: "#9ca3af" }}>{row.subjectsText}</td>
-                    </tr>
-                  ))
-                )}
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      {/* ── OFF-SCREEN PDF EXPORT PAGE 2 ── */}
+      <div
+        ref={exportPage2Ref}
+        style={{
+          position: "fixed",
+          left: "-9999px",
+          top: "0",
+          width: "800px",
+          height: "1130px",
+          backgroundColor: exportPalette.surface,
+          color: "#f9fafb",
+          padding: "24px",
+          boxSizing: "border-box",
+          display: "flex",
+          flexDirection: "column",
+          fontFamily: "Inter, system-ui, -apple-system, sans-serif"
+        }}
+      >
+        <div style={{ display: "flex", flexDirection: "column", gap: "4px", marginBottom: "20px" }}>
+          <p style={{ fontSize: "11px", fontWeight: "600", textTransform: "uppercase", letterSpacing: "0.2em", color: exportPalette.muted, margin: 0 }}>
+            Attendance Summary
+          </p>
+          <h2 style={{ fontSize: "24px", fontWeight: "600", margin: 0 }}>{monthLabel} (Continued)</h2>
+        </div>
+
+        {/* DETAILED DAILY LOGS (Page 2) */}
+        <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+          <p style={{ fontSize: "12px", fontWeight: "600", textTransform: "uppercase", letterSpacing: "0.2em", color: exportPalette.muted, margin: 0 }}>
+            Detailed Daily Logs (Days 9 - End)
+          </p>
+          <div style={{ borderRadius: "16px", overflow: "hidden", border: `1px solid ${exportPalette.border}`, backgroundColor: exportPalette.softSurface }}>
+            <table style={{ width: "100%", textAlign: "left", borderCollapse: "collapse", fontSize: "11px" }}>
+              <thead>
+                <tr style={{ borderBottom: `1px solid ${exportPalette.border}`, color: exportPalette.muted, backgroundColor: `${exportPalette.surface}80` }}>
+                  <th style={{ padding: "12px", width: "25%", fontSize: "9px", fontWeight: "600", textTransform: "uppercase", letterSpacing: "0.05em" }}>Date</th>
+                  <th style={{ padding: "12px", width: "25%", fontSize: "9px", fontWeight: "600", textTransform: "uppercase", letterSpacing: "0.05em" }}>Overall Status</th>
+                  <th style={{ padding: "12px", width: "50%", fontSize: "9px", fontWeight: "600", textTransform: "uppercase", letterSpacing: "0.05em" }}>Subject-wise Logs</th>
+                </tr>
+              </thead>
+              <tbody>
+                {loggedDays.slice(8).map((row, idx) => (
+                  <tr key={idx} style={{ borderBottom: idx === (loggedDays.length - 9) ? "0" : `1px solid ${exportPalette.border}50` }}>
+                    <td style={{ padding: "12px", fontWeight: "600", color: "#e5e7eb" }}>{row.dateStr}</td>
+                    <td style={{ padding: "12px" }}>
+                      <span style={{
+                        display: "inline-flex",
+                        alignItems: "center",
+                        backgroundColor: exportPalette[row.statusKey]?.background ?? exportPalette.none.background,
+                        color: exportPalette[row.statusKey]?.text ?? exportPalette.none.text,
+                        padding: "2px 8px",
+                        borderRadius: "9999px",
+                        fontSize: "9px",
+                        fontWeight: "700",
+                        textTransform: "uppercase",
+                        letterSpacing: "0.05em"
+                      }}>
+                        {row.statusLabel}
+                      </span>
+                    </td>
+                    <td style={{ padding: "12px", color: "#9ca3af", lineHeight: "1.5" }}>{row.subjectsText}</td>
+                  </tr>
+                ))}
               </tbody>
             </table>
           </div>

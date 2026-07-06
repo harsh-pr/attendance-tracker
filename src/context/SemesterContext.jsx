@@ -64,9 +64,9 @@ export function SemesterProvider({ children }) {
         setTimetablesBySemester(data.timetablesBySemester || {});
         setRemindersBySemester(data.remindersBySemester || {});
         setCurrentSemesterId(
-          loadedSemesters.some((s) => s.id === data.currentSemesterId)
-            ? data.currentSemesterId
-            : loadedSemesters[0]?.id || DEFAULT_SEMESTER_ID
+          loadedSemesters.length > 0
+            ? loadedSemesters[loadedSemesters.length - 1].id
+            : DEFAULT_SEMESTER_ID
         );
       } else {
         isFirestoreEmptyRef.current = true;
@@ -89,7 +89,11 @@ export function SemesterProvider({ children }) {
       setSubjectsBySemester(defaultSubjects);
       setTimetablesBySemester({});
       setRemindersBySemester({});
-      setCurrentSemesterId(DEFAULT_SEMESTER_ID);
+      setCurrentSemesterId(
+        defaultSemesters.length > 0
+          ? defaultSemesters[defaultSemesters.length - 1].id
+          : DEFAULT_SEMESTER_ID
+      );
     } finally {
       setHasLoaded(true);
     }

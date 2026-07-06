@@ -251,7 +251,7 @@ Optimized for:
 - Assignment planner
 - Exam timetable
 - Offline support (PWA)
-- Multi-user classroom support
+- Multi-user support
 
 ---
 

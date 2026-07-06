@@ -495,27 +495,29 @@ export default function Calendar() {
           <h2 className="text-2xl font-semibold">{monthLabel}</h2>
         </div>
         <div className="rounded-2xl p-4 shadow-sm" style={{ border: `1px solid ${exportPalette.border}`, backgroundColor: exportPalette.surface }}>
-          <div className="grid grid-cols-7 gap-2 text-[10px] font-semibold uppercase tracking-wide" style={{ color: exportPalette.muted }}>
-            {weekDays.map(day => <div key={`export-${day}`} className="text-center">{day}</div>)}
+          <div className="flex text-[10px] font-semibold uppercase tracking-wide" style={{ color: exportPalette.muted }}>
+            {weekDays.map(day => <div key={`export-${day}`} className="w-[14.28%] text-center">{day}</div>)}
           </div>
-          <div className="mt-2 grid grid-cols-7 gap-2">
-            {leadingBlanks.map(blank => <div key={`export-${blank.key}`} className="h-12 rounded-lg" />)}
+          <div className="mt-2 flex flex-wrap">
+            {leadingBlanks.map(blank => <div key={`export-${blank.key}`} className="w-[14.28%] h-12" />)}
             {calendarDays.map(day => (
-              <div key={`export-day-${day.dayNumber}`} className="flex flex-col justify-between rounded-lg p-2 text-[11px] font-semibold"
-                style={{ border: `1px solid ${exportPalette.border}`, backgroundColor: exportPalette[day.status]?.background ?? exportPalette.none.background, color: exportPalette[day.status]?.text ?? exportPalette.none.text }}>
-                <div className="flex items-center justify-between text-[10px]" style={{ color: exportPalette.muted }}>
-                  <span>{day.dayNumber}</span>
-                  <span className="h-2 w-2 rounded-full bg-current opacity-60" />
+              <div key={`export-day-${day.dayNumber}`} className="w-[14.28%] p-0.5">
+                <div className="flex flex-col justify-between rounded-lg p-2 h-12 text-[11px] font-semibold"
+                  style={{ border: `1px solid ${exportPalette.border}`, backgroundColor: exportPalette[day.status]?.background ?? exportPalette.none.background, color: exportPalette[day.status]?.text ?? exportPalette.none.text }}>
+                  <div className="flex items-center justify-between text-[10px]" style={{ color: exportPalette.muted }}>
+                    <span>{day.dayNumber}</span>
+                    <span className="h-1.5 w-1.5 rounded-full bg-current opacity-60" />
+                  </div>
+                  <p className="text-[8px] font-semibold uppercase tracking-wide truncate">{statusConfig[day.status].label}</p>
                 </div>
-                <p className="text-[9px] font-semibold uppercase tracking-wide">{statusConfig[day.status].label}</p>
               </div>
             ))}
           </div>
         </div>
-        <div className="grid grid-cols-3 gap-3">
+        <div className="flex gap-3">
           {[{ label: "Total attendance", value: totalAttended }, { label: "Classes conducted", value: totalClasses }, { label: "Overall percentage", value: `${overallAttendancePct}%` }]
             .map(item => (
-              <div key={`export-summary-${item.label}`} className="rounded-2xl p-4 text-center" style={{ border: `1px solid ${exportPalette.border}`, backgroundColor: exportPalette.softSurface }}>
+              <div key={`export-summary-${item.label}`} className="w-1/3 rounded-2xl p-4 text-center" style={{ border: `1px solid ${exportPalette.border}`, backgroundColor: exportPalette.softSurface }}>
                 <p className="text-xs font-semibold uppercase tracking-wide" style={{ color: exportPalette.muted }}>{item.label}</p>
                 <p className="mt-2 text-2xl font-semibold">{item.value}</p>
               </div>

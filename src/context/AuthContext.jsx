@@ -18,47 +18,38 @@ export function AuthProvider({ children }) {
 
   // 1. Session Activity Heartbeat (2-minute closed-tab auto-logout)
   useEffect(() => {
-    const checkHeartbeatAndLogOut = async () => {
-      const lastActive = localStorage.getItem("last_active_heartbeat");
-      const now = Date.now();
+    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+      if (currentUser) {
+        const lastActive = localStorage.getItem("last_active_heartbeat");
+        const now = Date.now();
 
-      if (lastActive) {
-        const elapsed = now - parseInt(lastActive, 10);
-        // If elapsed time is greater than 2 minutes (120,000 ms)
-        if (elapsed > 120000) {
-          console.log("[Auth] Session inactive for > 2 mins. Logging out automatically.");
-          localStorage.removeItem("last_active_heartbeat");
-          try {
-            await signOut(auth);
-          } catch (e) {
-            console.error("Auto logout failed", e);
+        if (lastActive) {
+          const elapsed = now - parseInt(lastActive, 10);
+          // If elapsed time is greater than 2 minutes (120,000 ms)
+          if (elapsed > 120000) {
+            console.log("[Auth] Session inactive for > 2 mins. Logging out automatically.");
+            localStorage.removeItem("last_active_heartbeat");
+            setUser(null);
+            setLoading(false);
+            try {
+              await signOut(auth);
+            } catch (e) {
+              console.error("Auto logout failed", e);
+            }
+            return;
           }
-          setUser(null);
-          setLoading(false);
-          return true; // Was logged out
         }
-      }
-      return false; // Not logged out
-    };
 
-    // Run the check on initial mount
-    checkHeartbeatAndLogOut().then((wasLoggedOut) => {
-      if (wasLoggedOut) return;
-
-      // Set up authentication observer
-      const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
         setUser(currentUser);
-        setLoading(false);
-
-        if (currentUser) {
-          localStorage.setItem("last_active_heartbeat", Date.now().toString());
-        } else {
-          localStorage.removeItem("last_active_heartbeat");
-        }
-      });
-
-      return unsubscribe;
+        localStorage.setItem("last_active_heartbeat", Date.now().toString());
+      } else {
+        setUser(null);
+        localStorage.removeItem("last_active_heartbeat");
+      }
+      setLoading(false);
     });
+
+    return unsubscribe;
   }, []);
 
   // Update heartbeat continuously while logged in

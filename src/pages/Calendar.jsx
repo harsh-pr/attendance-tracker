@@ -356,8 +356,12 @@ export default function Calendar() {
     let isFirstPage = true;
 
     while (currentY < canvasHeight) {
-      let sliceHeight = Math.min(pageHeightPx, canvasHeight - currentY);
-      const targetY = currentY + pageHeightPx;
+      // Pages 2+ have a 20pt top margin, so less vertical space is available
+      const topMarginPt = isFirstPage ? 0 : 20;
+      const effectivePageHeightPx = (pageHeight - topMarginPt) / pdfScale;
+
+      let sliceHeight = Math.min(effectivePageHeightPx, canvasHeight - currentY);
+      const targetY = currentY + effectivePageHeightPx;
 
       // Only adjust if this isn't the last page
       if (targetY < canvasHeight) {
@@ -375,7 +379,7 @@ export default function Calendar() {
           const bestSplitDom = safeSplitPoints[safeSplitPoints.length - 1];
           sliceHeight = (bestSplitDom * scale) - currentY;
         }
-        // If no rows are in range (e.g., calendar/stats area), use default pageHeightPx
+        // If no rows are in range (e.g., calendar/stats area), use default
       }
 
       // Create page canvas and copy the slice
@@ -393,9 +397,8 @@ export default function Calendar() {
       pdf.setFillColor(exportPalette.surface);
       pdf.rect(0, 0, pageWidth, pageHeight, "F");
 
-      const topMargin = isFirstPage ? 0 : 20;
       const renderedHeight = sliceHeight * pdfScale;
-      pdf.addImage(pageCanvas.toDataURL("image/png"), "PNG", 0, topMargin, pageWidth, renderedHeight);
+      pdf.addImage(pageCanvas.toDataURL("image/png"), "PNG", 0, topMarginPt, pageWidth, renderedHeight);
 
       currentY += sliceHeight;
       isFirstPage = false;

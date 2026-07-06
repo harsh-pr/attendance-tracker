@@ -331,20 +331,10 @@ export default function Calendar() {
     const jsPDF       = window.jspdf?.jsPDF;
     if (!html2canvas || !jsPDF) return;
 
-    const scale = 2;
-    const canvas = await html2canvas(exportRef.current, { scale, useCORS: true, backgroundColor: exportPalette.surface });
-    const pdf = new jsPDF({ orientation: "portrait", unit: "pt", format: "a4" });
-    const pageWidth = pdf.internal.pageSize.getWidth();
-    const pageHeight = pdf.internal.pageSize.getHeight();
-
-    // Scale calculations
-    const pdfScale = pageWidth / canvas.width;
-    const pageHeightPx = pageHeight / pdfScale;
-
-    // Get the Y position boundaries of all rows relative to exportRef container
+    // Measure row positions BEFORE html2canvas to avoid any DOM interference
     const rows = Array.from(exportRef.current.querySelectorAll(".export-log-row"));
     const parentRect = exportRef.current.getBoundingClientRect();
-    const rowPositions = rows.map(row => {
+    const rowBoundaries = rows.map(row => {
       const rect = row.getBoundingClientRect();
       return {
         top: rect.top - parentRect.top,
@@ -352,32 +342,40 @@ export default function Calendar() {
       };
     });
 
-    let currentY = 0; // in canvas pixels
+    const scale = 2;
+    const canvas = await html2canvas(exportRef.current, { scale, useCORS: true, backgroundColor: exportPalette.surface });
+    const pdf = new jsPDF({ orientation: "portrait", unit: "pt", format: "a4" });
+    const pageWidth = pdf.internal.pageSize.getWidth();
+    const pageHeight = pdf.internal.pageSize.getHeight();
+
+    const pdfScale = pageWidth / canvas.width;
+    const pageHeightPx = pageHeight / pdfScale; // one A4 page in canvas pixels
+
+    let currentY = 0;
     const canvasHeight = canvas.height;
+    let isFirstPage = true;
 
     while (currentY < canvasHeight) {
-      let sliceHeight = pageHeightPx;
+      let sliceHeight = Math.min(pageHeightPx, canvasHeight - currentY);
       const targetY = currentY + pageHeightPx;
 
-      // If we are not on the last page, find if we cross any row
+      // Only adjust if this isn't the last page
       if (targetY < canvasHeight) {
-        const targetYDom = targetY / scale;
-        
-        // Find if a row crosses the target Y boundary
-        const crossingRow = rowPositions.find(row => row.top < targetYDom && row.bottom > targetYDom);
-        
-        if (crossingRow) {
-          // Adjust sliceHeight to split right before the crossing row
-          const splitYDom = crossingRow.top - 12; // split 12px above the row for safe margin
-          const splitY = splitYDom * scale;
-          
-          // Ensure splitY is valid and doesn't cause infinite loop
-          if (splitY > currentY) {
-            sliceHeight = splitY - currentY;
-          }
+        const currentYDom = currentY / scale;
+        const targetYDom  = targetY / scale;
+
+        // Find all row bottoms that fit entirely within this page slice.
+        // Each row.bottom is a safe place to split (right after a complete row).
+        const safeSplitPoints = rowBoundaries
+          .filter(row => row.bottom > currentYDom + 20 && row.bottom <= targetYDom - 5)
+          .map(row => row.bottom + 4); // 4px buffer below row
+
+        if (safeSplitPoints.length > 0) {
+          // Pick the LAST safe split point to maximize content per page
+          const bestSplitDom = safeSplitPoints[safeSplitPoints.length - 1];
+          sliceHeight = (bestSplitDom * scale) - currentY;
         }
-      } else {
-        sliceHeight = canvasHeight - currentY;
+        // If no rows are in range (e.g., calendar/stats area), use default pageHeightPx
       }
 
       // Create page canvas and copy the slice
@@ -391,16 +389,16 @@ export default function Calendar() {
       ctx.drawImage(canvas, 0, currentY, canvas.width, sliceHeight, 0, 0, canvas.width, sliceHeight);
 
       // Add page to PDF
-      const isFirstPage = currentY === 0;
       if (!isFirstPage) pdf.addPage();
       pdf.setFillColor(exportPalette.surface);
       pdf.rect(0, 0, pageWidth, pageHeight, "F");
 
-      const topMargin = isFirstPage ? 0 : 20; // 20pt breathing room on pages 2+
+      const topMargin = isFirstPage ? 0 : 20;
       const renderedHeight = sliceHeight * pdfScale;
       pdf.addImage(pageCanvas.toDataURL("image/png"), "PNG", 0, topMargin, pageWidth, renderedHeight);
 
       currentY += sliceHeight;
+      isFirstPage = false;
     }
 
     pdf.save(`attendance-${year}-${String(monthIndex + 1).padStart(2, "0")}.pdf`);

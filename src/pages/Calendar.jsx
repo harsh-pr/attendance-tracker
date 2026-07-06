@@ -189,7 +189,6 @@ export default function Calendar() {
 
   const loggedDays = useMemo(() => {
     return calendarDays
-      .filter((day) => day.status !== "none")
       .map((day) => {
         const lectures = day.dayEntry?.lectures ?? [];
         const subjectsText = lectures

@@ -32,6 +32,7 @@ export function AuthProvider({ children }) {
         signOut(auth)
           .catch((e) => console.error("Auto logout failed", e))
           .finally(() => {
+            isAutoLoggingOut = false;
             setUser(null);
             setLoading(false);
           });

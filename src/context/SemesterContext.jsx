@@ -432,7 +432,7 @@ export function SemesterProvider({ children }) {
           status: selection[l.subjectId] !== undefined ? selection[l.subjectId] : (l.status ?? "absent"),
         }));
       } else {
-        const timetableLectures = getLecturesForDate(targetDate, sem);
+        const timetableLectures = getLecturesForDate(targetDate, currentSemester);
         newLectures = timetableLectures.map((l) => ({
           subjectId: l.subjectId,
           type: l.type,

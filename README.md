@@ -380,6 +380,20 @@ npm run dev
 
 ---
 
+# 🧹 Database Maintenance
+
+### Purge Leftover Data of Deleted Users
+
+When you delete users from the Firebase Authentication Dashboard, their Firestore documents are not deleted automatically (due to decoupling). To clean up Firestore data of deleted users, run:
+
+```bash
+npm run clean-orphans
+```
+
+*Note: This script queries active UIDs using `serviceAccountKey.json` and recursively purges the Firestore documents and subcollections of any deleted users, keeping active data (and the default mock user) completely safe.*
+
+---
+
 # 📱 Responsive Design
 
 Optimized for:

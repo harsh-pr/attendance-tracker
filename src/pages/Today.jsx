@@ -1,8 +1,12 @@
+import { useState } from "react";
 import { useSemester } from "../context/SemesterContext";
 import { getSubjectWiseStatus } from "../utils/attendanceUtils";
+import SubjectCalendarModal from "../components/SubjectCalendarModal";
 
 export default function Today() {
   const { currentSemester } = useSemester();
+  const [selectedSubjectData, setSelectedSubjectData] = useState(null);
+
   const subjectData = getSubjectWiseStatus(
     currentSemester.attendanceData,
     currentSemester.subjects
@@ -24,7 +28,7 @@ export default function Today() {
           Subject-wise Attendance
         </h1>
         <p className="text-gray-600 dark:text-gray-400">
-          Theory & Lab attendance till date
+          Theory & Lab attendance till date. Click a card to view calendar dates.
         </p>
       </div>
 
@@ -33,12 +37,23 @@ export default function Today() {
         <SubjectSection
           title="Theory"
           items={theorySubjects}
+          onCardClick={setSelectedSubjectData}
         />
         <SubjectSection
           title="Labs"
           items={labSubjects}
+          onCardClick={setSelectedSubjectData}
         />
       </div>
+
+      {/* ===== CALENDAR MODAL ===== */}
+      {selectedSubjectData && (
+        <SubjectCalendarModal
+          open={Boolean(selectedSubjectData)}
+          onClose={() => setSelectedSubjectData(null)}
+          data={selectedSubjectData}
+        />
+      )}
     </div>
   );
 }
@@ -46,30 +61,32 @@ export default function Today() {
 /* =======================
    SUBJECT CARD
 ======================= */
-function SubjectCard({ data }) {
+function SubjectCard({ data, onClick }) {
   const { subject, attended, conducted, percentage, status } =
     data;
   const statusStyles = {
-    Safe: "bg-green-100 text-green-700 dark:bg-green-500/20 dark:text-green-200",
-    Risk: "bg-red-100 text-red-700 dark:bg-red-500/20 dark:text-red-200",
+    Safe: "bg-green-100 text-green-700 dark:bg-green-500/20 dark:text-green-200 border border-green-200 dark:border-green-500/30",
+    Risk: "bg-red-100 text-red-700 dark:bg-red-500/20 dark:text-red-200 border border-red-200 dark:border-red-500/30",
     "No Data":
-      "bg-gray-100 text-gray-700 dark:bg-gray-500/20 dark:text-gray-200",
+      "bg-gray-100 text-gray-700 dark:bg-gray-500/20 dark:text-gray-200 border border-gray-200 dark:border-gray-700",
   };
 
   return (
     <div
+      onClick={onClick}
       className="
         p-5 rounded-2xl
         bg-white dark:bg-gray-800
         border border-gray-200 dark:border-gray-700
+        cursor-pointer hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200
       "
     >
       <div className="flex items-start justify-between gap-3">
         <div>
-          <h2 className="font-semibold text-lg text-gray-900 dark:text-gray-100">
+          <h2 className="font-bold text-lg text-gray-900 dark:text-gray-100">
             {subject.name}
           </h2>
-          <p className="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">
+          <p className="text-xs uppercase tracking-wider font-semibold text-gray-400 dark:text-gray-500 mt-0.5">
             {subject.type}
           </p>
         </div>
@@ -104,7 +121,7 @@ function SubjectCard({ data }) {
   );
 }
 
-function SubjectSection({ title, items }) {
+function SubjectSection({ title, items, onCardClick }) {
   return (
     <section className="space-y-3">
       <div className="flex items-center justify-between">
@@ -125,6 +142,7 @@ function SubjectSection({ title, items }) {
             <SubjectCard
               key={item.subject.id}
               data={item}
+              onClick={() => onCardClick(item)}
             />
           ))}
         </div>

@@ -1,7 +1,7 @@
 import {
   ResponsiveContainer,
-  LineChart,
-  Line,
+  AreaChart,
+  Area,
   XAxis,
   YAxis,
   Tooltip,
@@ -15,13 +15,10 @@ function CustomTooltip({ active, payload, label }) {
   if (!active || !payload || !payload.length) return null;
 
   return (
-    <div className="rounded-xl px-4 py-3 bg-gray-900 text-white shadow-2xl border border-gray-700">
-      <p className="text-sm font-semibold mb-2">{label}</p>
-      <p className="text-green-400 text-sm">
-        Overall Attendance:{" "}
-        <span className="font-medium">
-          {payload[0].value}%
-        </span>
+    <div className="rounded-2xl px-4 py-3 bg-white/95 dark:bg-gray-950/90 text-gray-950 dark:text-gray-100 shadow-xl border border-gray-200/50 dark:border-gray-800/80 backdrop-blur-md">
+      <p className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">{label}</p>
+      <p className="text-emerald-600 dark:text-emerald-400 text-sm font-bold mt-1">
+        Attendance: <span className="text-lg font-extrabold">{payload[0].value}%</span>
       </p>
     </div>
   );
@@ -70,41 +67,47 @@ export default function OverallAttendanceModal({ open, onClose }) {
       </h2>
 
       <ResponsiveContainer width="100%" height={380}>
-        <LineChart data={data}>
-          <CartesianGrid strokeDasharray="3 3" opacity={0.15} />
+        <AreaChart data={data}>
+          <defs>
+            <linearGradient id="colorPercentage" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="5%" stopColor="#10b981" stopOpacity={0.3} />
+              <stop offset="95%" stopColor="#10b981" stopOpacity={0.01} />
+            </linearGradient>
+          </defs>
+          <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(156, 163, 175, 0.15)" />
 
           <XAxis
             dataKey="date"
-            tick={{ fill: "#9ca3af", fontSize: 12 }}
+            tick={{ fill: "#9ca3af", fontSize: 11 }}
             axisLine={false}
             tickLine={false}
+            dy={8}
           />
 
           <YAxis
             domain={[0, 100]}
-            tick={{ fill: "#9ca3af", fontSize: 12 }}
+            tick={{ fill: "#9ca3af", fontSize: 11 }}
             axisLine={false}
             tickLine={false}
+            dx={-8}
           />
 
-          <Tooltip content={<CustomTooltip />} />
+          <Tooltip content={<CustomTooltip />} cursor={{ stroke: "rgba(16, 185, 129, 0.2)", strokeWidth: 1.5 }} />
 
-          <Line
+          <Area
             type="monotone"
             dataKey="percentage"
-            stroke="#22c55e"
+            stroke="#10b981"
             strokeWidth={3}
-            dot={{ r: 4, fill: "#22c55e" }}
-            activeDot={{ r: 6 }}
+            fillOpacity={1}
+            fill="url(#colorPercentage)"
+            dot={{ r: 3, fill: "#10b981", stroke: "#10b981", strokeWidth: 1 }}
+            activeDot={{ r: 5, fill: "#10b981", stroke: "#fff", strokeWidth: 2 }}
             isAnimationActive
-            animationDuration={1200}
-            animationEasing="linear"
-            style={{
-              filter:
-                "drop-shadow(0 0 6px rgba(34,197,94,0.6))",
-            }}
+            animationDuration={1500}
+            animationEasing="ease-out"
           />
-        </LineChart>
+        </AreaChart>
       </ResponsiveContainer>
     </Modal>
   );

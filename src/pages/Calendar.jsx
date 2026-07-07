@@ -310,9 +310,43 @@ export default function Calendar() {
     previousStatusCounts[status]++;
   }
 
+  // Calculate streak and perfect weeks properly
+  let longestStreak = 0;
+  let currentStreak = 0;
+  calendarDays.forEach((day) => {
+    if (day.status === "full") {
+      currentStreak++;
+      if (currentStreak > longestStreak) {
+        longestStreak = currentStreak;
+      }
+    } else if (day.status === "partial" || day.status === "absent") {
+      currentStreak = 0;
+    }
+  });
+
+  const weeksMap = new Map();
+  calendarDays.forEach((day) => {
+    const d = day.date;
+    const Sunday = new Date(d.getFullYear(), d.getMonth(), d.getDate() - d.getDay());
+    const weekKey = formatDateKey(Sunday);
+    if (!weeksMap.has(weekKey)) {
+      weeksMap.set(weekKey, []);
+    }
+    weeksMap.get(weekKey).push(day);
+  });
+
+  let perfectWeeksCount = 0;
+  weeksMap.forEach((daysInWeek) => {
+    const hasFull = daysInWeek.some(d => d.status === "full");
+    const hasBunkOrAbsent = daysInWeek.some(d => d.status === "partial" || d.status === "absent");
+    if (hasFull && !hasBunkOrAbsent) {
+      perfectWeeksCount++;
+    }
+  });
+
   const monthlyHighlights = [
-    { title: "Longest streak",        value: `${Math.max(0, statusCounts.full)} days`,               detail: "Based on full-day attendance" },
-    { title: "Perfect weeks",         value: `${Math.max(0, Math.floor(statusCounts.full / 5))} weeks`, detail: "Weeks without absences" },
+    { title: "Longest streak",        value: `${longestStreak} days`,                  detail: "Days with full attendance" },
+    { title: "Perfect weeks",         value: `${perfectWeeksCount} weeks`,             detail: "Weeks without absences or bunks" },
     { title: "Attendance this month", value: `${attendanceThisMonth}%`,                               detail: `${monthOverMonthDelta >= 0 ? "+" : ""}${monthOverMonthDelta}% vs last month` },
   ];
 
@@ -1024,27 +1058,111 @@ export default function Calendar() {
 
       {/* ── EDIT DAY MODAL ── */}
       <Modal open={editDayOpen} onClose={() => setEditDayOpen(false)} size="md">
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Mark attendance for selected date</h3>
-        <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Choose full-day status or open partial presentee marking.</p>
-        <div className="mt-4 grid grid-cols-2 gap-2">
-          {[
-            { label: "Full Present", status: "present",  cls: "border-emerald-200 dark:border-emerald-500/30 bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-200" },
-            { label: "Full Absent",  status: "absent",   cls: "border-rose-200 dark:border-rose-500/30 bg-rose-50 dark:bg-rose-500/10 text-rose-700 dark:text-rose-200" },
-            { label: "Holiday",      status: "holiday",  cls: "border-sky-200 dark:border-sky-500/30 bg-sky-50 dark:bg-sky-500/10 text-sky-700 dark:text-sky-200" },
-            { label: "Exam Day",     status: "exam",     cls: "border-violet-200 dark:border-violet-500/30 bg-violet-50 dark:bg-violet-500/10 text-violet-700 dark:text-violet-200" },
-          ].map(btn => (
-            <button key={btn.status} type="button" onClick={() => handleDayStatusUpdate(btn.status)}
-              className={`rounded-xl border px-3 py-2 text-sm font-semibold ${btn.cls}`}>{btn.label}</button>
-          ))}
+        <div className="flex flex-col gap-1">
+          <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
+            <span>Mark Attendance</span>
+          </h3>
+          <p className="text-xs text-gray-500 dark:text-gray-400">Choose a quick status or update details below.</p>
         </div>
-        <button type="button" onClick={() => { setPartialSelection(selectedDayLectures.reduce((acc, l) => { acc[l.subjectId] = l.status ?? "absent"; return acc; }, {})); setPartialMarkOpen(true); }}
-          className="mt-4 w-full rounded-xl border border-amber-200 dark:border-amber-500/30 bg-amber-50 dark:bg-amber-500/10 px-3 py-2 text-sm font-semibold text-amber-700 dark:text-amber-200">
-          Partial Presentee Marking
-        </button>
-        <button type="button" onClick={() => { if (!selectedDay?.date) return; removeDayAttendance(formatDateKey(selectedDay.date)); setEditDayOpen(false); setSelectedDay(null); }}
-          className="mt-2 w-full rounded-xl border border-rose-200 dark:border-rose-500/30 bg-rose-50 dark:bg-rose-500/10 px-3 py-2 text-sm font-semibold text-rose-700 dark:text-rose-200">
-          Remove Attendance Data For This Day
-        </button>
+
+        <div className="mt-5 space-y-5">
+          {/* Full Day Options */}
+          <div>
+            <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-gray-500">Quick Full Day Status</span>
+            <div className="mt-2 grid grid-cols-2 gap-3">
+              {[
+                {
+                  label: "Full Present",
+                  status: "present",
+                  desc: "All classes attended",
+                  icon: (
+                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                    </svg>
+                  ),
+                  cls: "border-emerald-200/80 dark:border-emerald-500/20 bg-emerald-50/50 dark:bg-emerald-500/5 text-emerald-800 dark:text-emerald-300 hover:bg-emerald-100/60 dark:hover:bg-emerald-500/10"
+                },
+                {
+                  label: "Full Absent",
+                  status: "absent",
+                  desc: "Missed all classes",
+                  icon: (
+                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  ),
+                  cls: "border-rose-200/80 dark:border-rose-500/20 bg-rose-50/50 dark:bg-rose-500/5 text-rose-800 dark:text-rose-300 hover:bg-rose-100/60 dark:hover:bg-rose-500/10"
+                },
+                {
+                  label: "Holiday",
+                  status: "holiday",
+                  desc: "No classes scheduled",
+                  icon: (
+                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                  ),
+                  cls: "border-sky-200/80 dark:border-sky-500/20 bg-sky-50/50 dark:bg-sky-500/5 text-sky-800 dark:text-sky-300 hover:bg-sky-100/60 dark:hover:bg-sky-500/10"
+                },
+                {
+                  label: "Exam Day",
+                  status: "exam",
+                  desc: "Exam conducted",
+                  icon: (
+                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                    </svg>
+                  ),
+                  cls: "border-violet-200/80 dark:border-violet-500/20 bg-violet-50/50 dark:bg-violet-500/5 text-violet-800 dark:text-violet-300 hover:bg-violet-100/60 dark:hover:bg-violet-500/10"
+                },
+              ].map(btn => (
+                <button key={btn.status} type="button" onClick={() => handleDayStatusUpdate(btn.status)}
+                  className={`flex items-start gap-3 rounded-2xl border p-3 text-left transition hover:-translate-y-0.5 hover:shadow-md cursor-pointer ${btn.cls}`}>
+                  <div className="mt-0.5 rounded-lg p-1.5 bg-white/80 dark:bg-gray-800 shadow-sm flex items-center justify-center shrink-0">{btn.icon}</div>
+                  <div>
+                    <div className="font-bold text-sm leading-tight">{btn.label}</div>
+                    <div className="text-[10px] opacity-80 mt-0.5 font-normal leading-tight">{btn.desc}</div>
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Custom / Detailed marking */}
+          <div>
+            <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-gray-500">Detailed Status</span>
+            <button type="button" onClick={() => { setPartialSelection(selectedDayLectures.reduce((acc, l) => { acc[l.subjectId] = l.status ?? "absent"; return acc; }, {})); setPartialMarkOpen(true); }}
+              className="mt-2 w-full flex items-center justify-between rounded-2xl border border-amber-200/80 dark:border-amber-500/20 bg-amber-50/50 dark:bg-amber-500/5 p-3.5 text-left text-amber-800 dark:text-amber-300 transition hover:-translate-y-0.5 hover:bg-amber-100/60 dark:hover:bg-amber-500/10 hover:shadow-md cursor-pointer">
+              <div className="flex items-center gap-3">
+                <div className="rounded-lg p-2 bg-white/80 dark:bg-gray-800 shadow-sm flex items-center justify-center shrink-0">
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
+                  </svg>
+                </div>
+                <div>
+                  <div className="font-bold text-sm">Partial Presentee Marking</div>
+                  <div className="text-[10px] opacity-80 mt-0.5 font-normal">Mark attendance for each lecture individually</div>
+                </div>
+              </div>
+              <svg className="w-5 h-5 opacity-60" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
+          </div>
+
+          {/* Destructive Action */}
+          <div className="pt-2 border-t border-gray-100 dark:border-gray-800/60">
+            <button type="button" onClick={() => { if (!selectedDay?.date) return; removeDayAttendance(formatDateKey(selectedDay.date)); setEditDayOpen(false); setSelectedDay(null); }}
+              className="w-full flex items-center gap-3 rounded-2xl border border-rose-100 dark:border-rose-500/10 bg-rose-50/20 dark:bg-rose-500/5 px-4 py-3 text-left text-rose-700 dark:text-rose-400 transition hover:bg-rose-50 dark:hover:bg-rose-500/10 cursor-pointer">
+              <div className="rounded-lg p-1.5 bg-white/80 dark:bg-gray-800 shadow-sm flex items-center justify-center shrink-0">
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+              </div>
+              <div className="font-semibold text-xs uppercase tracking-wide">Remove Attendance Data For This Day</div>
+            </button>
+          </div>
+        </div>
       </Modal>
 
       {/* ── PARTIAL MARK MODAL ── */}

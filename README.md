@@ -24,6 +24,8 @@ A modern attendance management web application built with React, Firebase, and T
   <img src="./assets/demo.gif" alt="AttendanceManager Demo" width="100%">
 </p>
 
+---
+
 ## ✨ Features
 
 ### 📅 Attendance Tracking

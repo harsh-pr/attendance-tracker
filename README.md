@@ -16,6 +16,14 @@ A modern, responsive attendance management application built with **React** and 
 
 ---
 
+# AttendanceManager
+
+A modern attendance management web application built with React, Firebase, and Tailwind CSS.
+
+<p align="center">
+  <img src="./assets/demo.gif" alt="AttendanceManager Demo" width="100%">
+</p>
+
 ## ✨ Features
 
 ### 📅 Attendance Tracking

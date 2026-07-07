@@ -173,83 +173,169 @@ src/
 
 ---
 
-# 📸 Screenshots
+---
 
-> 🎬 **Demo GIF**
+# 📸 Application Preview
+
+> 🎬 **Demo**
 >
-> *(Coming soon — I'll add a demo GIF here later.)*
-
----
-
-## 🏠 Dashboard
-
-Shows today's lectures, overall attendance, theory/lab breakdown, attendance graph, and recent attendance logs.
-
-![Dashboard](./assets/dashboard.png)
-
----
-
-## 📅 Calendar View
-
-Track full days, partial attendance, absences, holidays, exam days, reminders, and monthly highlights.
-
-![Calendar](./assets/calendar.png)
-
----
-
-## ✅ Quick Attendance
-
-Mark today's attendance in just a few clicks using the popup attendance window.
-
-![Quick Attendance](./assets/quick-attendance.png)
-
----
-
-## 📈 Overall Attendance Trend
-
-Interactive graph showing attendance progression throughout the semester.
-
-![Attendance Trend](./assets/attendance-trend.png)
-
----
-
-## 📚 Subject-wise Attendance
-
-Detailed attendance percentage for every theory and lab subject with risk indicators.
-
-### Theory Subjects
-
-![Theory Attendance](./assets/theory-attendance.png)
-
-### Lab Subjects
-
-![Lab Attendance](./assets/lab-attendance.png)
-
----
-
-## 🗓 Timetable Editor
-
-Create and edit your semester timetable with support for theory and lab subjects.
-
-![Timetable Editor](./assets/timetable-editor.png)
-
-![Subject Picker](./assets/subject-picker.png)
+> *(Demo GIF coming soon.)*
 
 ---
 
 ## 🔐 Authentication
 
-Secure sign up and login using Firebase Authentication.
+Secure email/password and Google Sign-In using Firebase Authentication.
 
-![Authentication](./assets/auth.png)
+![Authentication](./assets/authentication.png)
+
+---
+
+## 🏠 Dashboard
+
+A modern dashboard with support for both **Light** and **Dark** themes.
+
+### 🌞 Light Theme
+
+![Light Dashboard](./assets/dashboard-light.png)
+
+### 🌙 Dark Theme
+
+![Dark Dashboard](./assets/dashboard-dark.png)
+
+---
+
+## 📊 Attendance Analytics
+
+Track attendance over the last 7 days with interactive graphs showing:
+
+- Lectures conducted
+- Lectures attended
+- Overall attendance percentage
+
+![Attendance Analytics](./assets/dashboard-analytics.png)
+
+---
+
+## 📚 Subject-wise Attendance
+
+Monitor every subject separately with attendance percentage, risk indicators, and detailed lecture statistics.
+
+### Theory Subjects
+
+![Theory Attendance](./assets/theory-subjects.png)
+
+### Lab Subjects
+
+![Lab Attendance](./assets/lab-subjects.png)
+
+---
+
+## 📅 Subject Attendance History
+
+Click any subject to view its complete attendance calendar with Present, Absent, Free, Cancelled, Holiday, Exam Day, and No Data statuses.
+
+![Subject History](./assets/subject-history.png)
+
+---
+
+## ⚡ Quick Today's Attendance
+
+Quickly mark attendance for all lectures scheduled on the current day without navigating through multiple screens.
+
+Supported statuses for every scheduled lecture:
+
+- ✅ Present
+- ❌ Absent
+- 🆓 Free Lecture
+- 🚫 Cancelled Lecture
+
+This makes daily attendance updates fast and effortless while keeping subject-wise statistics accurate.
+
+![Quick Today's Attendance](./assets/quick-today-attendance.png)
+
+---
+
+## 📝 Detailed Attendance Editor
+
+Need to update attendance for a previous date or correct a missed entry?
+
+The Detailed Attendance Editor allows you to mark each scheduled lecture individually with:
+
+- ✅ Present
+- ❌ Absent
+- 🆓 Free Lecture
+- 🚫 Cancelled Lecture
+
+This makes it easy to correct attendance records or fill in days that were missed earlier.
+
+![Detailed Attendance Editor](./assets/detailed-attendance-editor.png)
+
+---
+
+## 🗓 Attendance Calendar
+
+A complete semester calendar with:
+
+- Full Day
+- Partial Day
+- Absence
+- Holiday
+- Exam Day
+
+along with monthly highlights and reminders.
+
+![Calendar](./assets/calendar.png)
+
+---
+
+## ⏰ Reminder System
+
+Create reminders for lectures, labs or important attendance events.
+
+![Reminder](./assets/reminder.png)
 
 ---
 
 ## 📄 Monthly Attendance Report
 
-Export a complete monthly attendance summary as PDF.
+Export a printable attendance report containing:
+
+- Calendar summary
+- Overall attendance
+- Classes conducted
+- Detailed daily logs
 
 ![Monthly Report](./assets/monthly-report.png)
+
+---
+
+## ⚙ Timetable Management
+
+Create and edit semester timetables with separate Theory and Lab subjects.
+
+- Add/Delete subjects
+- Weekly timetable editor
+- Drag-free scheduling
+- Multiple lectures per day
+
+![Timetable Editor](./assets/timetable-editor.png)
+
+---
+
+## 📂 Subject Selection
+
+Choose any registered theory or lab subject while editing the timetable.
+
+![Subject Picker](./assets/subject-picker.png)
+
+---
+
+## 👤 User Profile
+
+View account information, attendance summary, authentication provider and securely sign out.
+
+![Profile](./assets/profile.png)
 
 ---
 

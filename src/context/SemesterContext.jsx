@@ -425,7 +425,7 @@ export function SemesterProvider({ children }) {
 
       const existingIndex = sem.attendanceData.findIndex((d) => d.date === targetDate);
       let newLectures = [];
-      if (existingIndex >= 0) {
+      if (existingIndex >= 0 && sem.attendanceData[existingIndex].lectures?.length > 0) {
         const existingDay = sem.attendanceData[existingIndex];
         newLectures = existingDay.lectures.map((l) => ({
           ...l,

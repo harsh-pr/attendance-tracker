@@ -26,7 +26,7 @@ const statusConfig = {
   holiday: {
     label: "Holiday",
     badge: "bg-sky-100 text-sky-700 dark:bg-sky-500/20 dark:text-sky-200",
-    tile:  "bg-white text-gray-500 dark:bg-gray-900 dark:text-gray-400",
+    tile:  "bg-gray-50/20 dark:bg-gray-900/10 text-gray-300 dark:text-gray-700 border-dashed opacity-40",
   },
   exam: {
     label: "Exam Day",

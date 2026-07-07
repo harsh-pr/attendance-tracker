@@ -9,42 +9,42 @@ const statusConfig = {
   present: {
     label: "Present",
     badge: "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-200",
-    tile:  "bg-emerald-50/80 text-emerald-950 dark:bg-emerald-500/15 dark:text-emerald-100 border border-emerald-200 dark:border-emerald-500/30",
+    tile:  "bg-emerald-50/80 text-emerald-900 dark:bg-emerald-500/15 dark:text-emerald-100",
   },
   absent: {
     label: "Absent",
     badge: "bg-rose-100 text-rose-700 dark:bg-rose-500/20 dark:text-rose-200",
-    tile:  "bg-rose-50/80 text-rose-950 dark:bg-rose-500/15 dark:text-rose-100 border border-rose-200 dark:border-rose-500/30",
+    tile:  "bg-rose-50/80 text-rose-900 dark:bg-rose-500/15 dark:text-rose-100",
   },
   free: {
     label: "Free",
     badge: "bg-sky-100 text-sky-700 dark:bg-sky-500/20 dark:text-sky-200",
-    tile:  "bg-sky-50/80 text-sky-950 dark:bg-sky-500/15 dark:text-sky-100 border border-sky-200 dark:border-sky-500/30",
+    tile:  "bg-sky-50/80 text-sky-900 dark:bg-sky-500/15 dark:text-sky-100",
   },
   cancelled: {
     label: "Cancelled",
     badge: "bg-gray-100 text-gray-600 dark:bg-gray-500/20 dark:text-gray-300",
-    tile:  "bg-gray-50 text-gray-700 dark:bg-gray-800 dark:text-gray-350 border border-gray-250 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400",
+    tile:  "bg-gray-50/80 text-gray-900 dark:bg-gray-500/15 dark:text-gray-100",
   },
   holiday: {
     label: "Holiday",
-    badge: "bg-sky-50 text-sky-600 dark:bg-sky-500/10 dark:text-sky-300",
-    tile:  "bg-sky-50/30 text-sky-700 dark:bg-sky-900/10 dark:text-sky-300 border border-sky-100 dark:border-sky-900/20",
+    badge: "bg-sky-100 text-sky-700 dark:bg-sky-500/20 dark:text-sky-200",
+    tile:  "bg-sky-50/80 text-sky-900 dark:bg-sky-500/15 dark:text-sky-100",
   },
   exam: {
     label: "Exam Day",
     badge: "bg-violet-100 text-violet-700 dark:bg-violet-500/20 dark:text-violet-200",
-    tile:  "bg-violet-50/80 text-violet-950 dark:bg-violet-500/15 dark:text-violet-100 border border-violet-200 dark:border-violet-500/30",
+    tile:  "bg-violet-50/80 text-violet-900 dark:bg-violet-500/15 dark:text-violet-100",
   },
   none: {
     label: "No Data",
-    badge: "bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-400",
-    tile:  "bg-white dark:bg-gray-900 text-gray-400 dark:text-gray-500 border border-dashed border-gray-200 dark:border-gray-800",
+    badge: "bg-gray-100 text-gray-600 dark:bg-gray-500/20 dark:text-gray-300",
+    tile:  "bg-white text-gray-700 dark:bg-gray-800 dark:text-gray-200",
   },
   unscheduled: {
     label: "Not in Timetable",
-    badge: "bg-gray-50 text-gray-400 dark:bg-gray-900 dark:text-gray-600",
-    tile:  "bg-gray-50/10 dark:bg-gray-900/5 text-gray-300 dark:text-gray-600 border border-gray-100/50 dark:border-gray-850 opacity-35 select-none pointer-events-none",
+    badge: "bg-gray-100/50 text-gray-400 dark:bg-gray-950/20 dark:text-gray-600",
+    tile:  "bg-gray-50/20 dark:bg-gray-900/10 text-gray-300 dark:text-gray-700 border-dashed opacity-40 select-none pointer-events-none",
   }
 };
 
@@ -138,14 +138,14 @@ export default function SubjectCalendarModal({ open, onClose, data }) {
   };
 
   return (
-    <Modal open={open} onClose={onClose} size="lg">
+    <Modal open={open} onClose={onClose} size="xl">
       <div className="flex flex-col gap-4">
         {/* Header Stats */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-gray-100 dark:border-gray-800 pb-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-gray-150 dark:border-gray-800 pb-4">
           <div>
             <div className="flex items-center gap-2">
               <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100">{subject.name}</h2>
-              <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ${statusStyles[status]}`}>{status}</span>
+              <span className={`text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full ${statusStyles[status]}`}>{status}</span>
             </div>
             <p className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mt-0.5">{subject.type} Attendance History</p>
           </div>
@@ -164,35 +164,35 @@ export default function SubjectCalendarModal({ open, onClose, data }) {
         {/* Calendar Nav */}
         <div className="flex items-center justify-between">
           <div className="space-y-0.5">
-            <h3 className="text-base font-bold text-gray-800 dark:text-gray-200">{monthLabel}</h3>
+            <h3 className="text-xl font-bold text-gray-900 dark:text-white">{monthLabel}</h3>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-5">
             <button type="button" onClick={() => setActiveMonthDate(prev => new Date(prev.getFullYear(), prev.getMonth() - 1, 1))}
-              aria-label="Previous month" className="w-8 h-8 rounded-full border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 flex items-center justify-center text-sm font-bold text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white cursor-pointer hover:shadow transition">←</button>
+              aria-label="Previous month" className="text-3xl leading-none text-gray-600 transition hover:scale-110 hover:text-gray-900 dark:text-gray-350 dark:hover:text-white cursor-pointer">←</button>
             <button type="button" onClick={() => setActiveMonthDate(prev => new Date(prev.getFullYear(), prev.getMonth() + 1, 1))}
-              aria-label="Next month" className="w-8 h-8 rounded-full border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 flex items-center justify-center text-sm font-bold text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white cursor-pointer hover:shadow transition">→</button>
+              aria-label="Next month" className="text-3xl leading-none text-gray-600 transition hover:scale-110 hover:text-gray-900 dark:text-gray-350 dark:hover:text-white cursor-pointer">→</button>
           </div>
         </div>
 
         {/* Grid Headers */}
-        <div className="grid grid-cols-7 gap-2 text-[10px] sm:text-xs font-bold uppercase tracking-wider text-gray-400 dark:text-gray-500 text-center">
+        <div className="grid grid-cols-7 gap-2 text-[10px] sm:text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400 text-center">
           {weekDays.map(day => <div key={day}>{day}</div>)}
         </div>
 
         {/* Calendar Grid */}
-        <div className="rounded-2xl border border-gray-150 dark:border-gray-800/80 bg-gray-50/50 dark:bg-gray-900/20 p-2">
-          <div className="grid grid-cols-7 gap-1.5 sm:gap-2">
-            {leadingBlanks.map(blank => <div key={blank.key} className="h-10 sm:h-12 rounded-xl border border-transparent" />)}
+        <div className="rounded-2xl border border-gray-200 dark:border-gray-700 bg-gray-100/70 dark:bg-gray-800/60 p-2">
+          <div className="grid grid-cols-7 gap-1 sm:gap-2">
+            {leadingBlanks.map(blank => <div key={blank.key} className="h-12 sm:h-14 rounded-lg border border-transparent" />)}
             {calendarDays.map((day, index) => {
               const config = statusConfig[day.status];
               return (
                 <div key={day.dayNumber}
-                  className={`group flex flex-col justify-between h-10 sm:h-12 rounded-xl p-1 text-[11px] font-semibold transition ${config.tile}`}
-                  style={{ animation: "fadeUp 0.3s ease-out", animationDelay: `${(index % 7) * 30}ms`, animationFillMode: "both" }}>
-                  <div className="w-full flex items-center justify-between text-[10px]">
-                    <span className="font-bold opacity-80">{day.dayNumber}</span>
+                  className={`group flex flex-col justify-between min-h-[3.25rem] sm:min-h-[3.75rem] h-auto rounded-lg border border-gray-200/80 dark:border-gray-700/80 bg-white dark:bg-gray-900 p-1.5 text-[11px] sm:text-sm font-semibold transition ${config.tile} hover:-translate-y-0.5 hover:border-gray-300 hover:shadow-lg dark:hover:border-gray-600`}
+                  style={{ animation: "fadeUp 0.5s ease-out", animationDelay: `${(index % 7) * 50}ms`, animationFillMode: "both" }}>
+                  <div className="w-full flex items-center justify-between text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 font-semibold">
+                    <span>{day.dayNumber}</span>
                   </div>
-                  <p className="w-full text-center text-[7px] font-extrabold uppercase tracking-wide truncate pb-0.5 select-none">{config.label}</p>
+                  <p className="mt-2 w-full text-center text-[8px] sm:text-[9px] font-bold uppercase tracking-wider truncate pb-0.5 select-none">{config.label}</p>
                 </div>
               );
             })}
@@ -200,12 +200,11 @@ export default function SubjectCalendarModal({ open, onClose, data }) {
         </div>
 
         {/* Legend */}
-        <div className="flex flex-wrap gap-2.5 pt-2 border-t border-gray-100 dark:border-gray-850 justify-center">
+        <div className="flex flex-wrap gap-2 justify-center pt-3 border-t border-gray-150 dark:border-gray-800">
           {Object.entries(statusConfig).map(([key, config]) => (
-            <div key={key} className="flex items-center gap-1.5 text-xs font-semibold text-gray-500 dark:text-gray-400">
-              <span className={`w-3.5 h-3.5 rounded-md ${config.tile} flex items-center justify-center text-[6px]`} />
-              <span>{config.label}</span>
-            </div>
+            <span key={key} className={`rounded-full px-3 py-1 text-[11px] font-bold uppercase tracking-wider ${config.badge}`}>
+              {config.label}
+            </span>
           ))}
         </div>
       </div>

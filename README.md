@@ -252,7 +252,7 @@ Supported statuses for every scheduled lecture:
 
 This makes daily attendance updates fast and effortless while keeping subject-wise statistics accurate.
 
-![Quick Today's Attendance](./assets/quick-today-attendance.png)
+![Quick Today's Attendance](./assets/quick-attendance-actions.png)
 
 ---
 

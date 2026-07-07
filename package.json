@@ -10,7 +10,8 @@
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "split:data": "node scripts/splitAttendanceData.mjs"
+    "split:data": "node scripts/splitAttendanceData.mjs",
+    "clean-orphans": "node scripts/cleanOrphanedUsers.js"
   },
   "dependencies": {
     "firebase": "^12.9.0",

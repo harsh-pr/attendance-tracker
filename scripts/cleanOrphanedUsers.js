@@ -51,11 +51,12 @@ async function cleanOrphanedUsers() {
 
   // 2. Get user document IDs from Firestore "users" collection
   console.log("👉 Fetching users from Firestore...");
-  const usersSnapshot = await db.collection("users").get();
+  const documentRefs = await db.collection("users").listDocuments();
+  console.log(`ℹ️ Found ${documentRefs.length} user documents in Firestore.`);
   
   const orphanedUids = [];
-  usersSnapshot.forEach((doc) => {
-    const id = doc.id;
+  documentRefs.forEach((docRef) => {
+    const id = docRef.id;
     if (!activeUids.has(id) && !EXEMPT_USERS.has(id)) {
       orphanedUids.push(id);
     }

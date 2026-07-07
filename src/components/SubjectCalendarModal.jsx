@@ -110,12 +110,16 @@ export default function SubjectCalendarModal({ open, onClose, data }) {
 
       let statusKey = "unscheduled";
 
-      if (dayEntry?.dayType === "holiday") {
-        statusKey = "holiday";
-      } else if (dayEntry?.dayType === "exam") {
-        statusKey = "exam";
-      } else if (loggedLecture) {
+      if (loggedLecture) {
         statusKey = loggedLecture.status || "none";
+      } else if (dayEntry?.dayType === "holiday" || dayEntry?.dayType === "exam") {
+        if (isWeekend) {
+          statusKey = "holiday";
+        } else if (isScheduled) {
+          statusKey = dayEntry.dayType;
+        } else {
+          statusKey = "unscheduled";
+        }
       } else if (isScheduled) {
         statusKey = "none";
       } else if (isWeekend) {

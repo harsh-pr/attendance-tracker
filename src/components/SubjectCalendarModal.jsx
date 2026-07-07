@@ -29,7 +29,7 @@ const statusConfig = {
   holiday: {
     label: "Holiday",
     badge: "bg-sky-100 text-sky-700 dark:bg-sky-500/20 dark:text-sky-200",
-    tile:  "bg-sky-50/80 text-sky-900 dark:bg-sky-500/15 dark:text-sky-100",
+    tile:  "bg-white text-gray-500 dark:bg-gray-900 dark:text-gray-400",
   },
   exam: {
     label: "Exam Day",
@@ -187,12 +187,18 @@ export default function SubjectCalendarModal({ open, onClose, data }) {
               const config = statusConfig[day.status];
               return (
                 <div key={day.dayNumber}
-                  className={`group flex flex-col justify-between min-h-[3.25rem] sm:min-h-[3.75rem] h-auto rounded-lg border border-gray-200/80 dark:border-gray-700/80 bg-white dark:bg-gray-900 p-1.5 text-[11px] sm:text-sm font-semibold transition ${config.tile} hover:-translate-y-0.5 hover:border-gray-300 hover:shadow-lg dark:hover:border-gray-600`}
+                  className={`group relative overflow-hidden flex flex-col justify-between min-h-[3.25rem] sm:min-h-[3.75rem] h-auto rounded-lg border border-gray-200/80 dark:border-gray-700/80 bg-white dark:bg-gray-900 p-1.5 text-[11px] sm:text-sm font-semibold transition ${config.tile} hover:-translate-y-0.5 hover:border-gray-300 hover:shadow-lg dark:hover:border-gray-600`}
                   style={{ animation: "fadeUp 0.5s ease-out", animationDelay: `${(index % 7) * 50}ms`, animationFillMode: "both" }}>
                   <div className="w-full flex items-center justify-between text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 font-semibold">
                     <span>{day.dayNumber}</span>
                   </div>
                   <p className="mt-2 w-full text-center text-[8px] sm:text-[9px] font-bold uppercase tracking-wider truncate pb-0.5 select-none">{config.label}</p>
+                  {day.status === "holiday" && (
+                    <svg className="absolute inset-0 w-full h-full pointer-events-none stroke-gray-300 dark:stroke-gray-700 opacity-60 dark:opacity-40" viewBox="0 0 100 100" preserveAspectRatio="none">
+                      <line x1="0" y1="0" x2="100" y2="100" strokeWidth="1.5" />
+                      <line x1="100" y1="0" x2="0" y2="100" strokeWidth="1.5" />
+                    </svg>
+                  )}
                 </div>
               );
             })}

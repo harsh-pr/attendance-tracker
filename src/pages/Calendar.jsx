@@ -349,7 +349,7 @@ export default function Calendar() {
     const pageHeight = pdf.internal.pageSize.getHeight();
 
     const pdfScale = pageWidth / canvas.width;
-    const pageHeightPx = pageHeight / pdfScale; // one A4 page in canvas pixels
+    // const pageHeightPx = pageHeight / pdfScale; // one A4 page in canvas pixels
 
     let currentY = 0;
     const canvasHeight = canvas.height;

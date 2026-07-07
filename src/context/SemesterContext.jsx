@@ -416,6 +416,48 @@ export function SemesterProvider({ children }) {
     persistMeta(currentSemesterId, nextSemesters);
   }
 
+  function markDayLectureStatuses(date, selection) {
+    const targetDate = normalizeDateString(date);
+    let updatedAttendance = [];
+
+    const nextSemesters = semesters.map((sem) => {
+      if (sem.id !== currentSemesterId) return sem;
+
+      const existingIndex = sem.attendanceData.findIndex((d) => d.date === targetDate);
+      let newLectures = [];
+      if (existingIndex >= 0) {
+        const existingDay = sem.attendanceData[existingIndex];
+        newLectures = existingDay.lectures.map((l) => ({
+          ...l,
+          status: selection[l.subjectId] !== undefined ? selection[l.subjectId] : (l.status ?? "absent"),
+        }));
+      } else {
+        const timetableLectures = getLecturesForDate(targetDate, sem);
+        newLectures = timetableLectures.map((l) => ({
+          subjectId: l.subjectId,
+          type: l.type,
+          status: selection[l.subjectId] !== undefined ? selection[l.subjectId] : "absent",
+        }));
+      }
+
+      let newData;
+      if (existingIndex >= 0) {
+        newData = sem.attendanceData.map((d) =>
+          d.date === targetDate ? { ...d, dayType: null, lectures: newLectures } : d
+        );
+      } else {
+        newData = [...sem.attendanceData, { date: targetDate, dayType: null, lectures: newLectures }];
+      }
+
+      updatedAttendance = newData;
+      return { ...sem, attendanceData: newData };
+    });
+
+    setSemesters(nextSemesters);
+    persistAttendance(currentSemesterId, updatedAttendance);
+    persistMeta(currentSemesterId, nextSemesters);
+  }
+
   // ── REMINDERS ─────────────────────────────────────────────────────────────
   function addReminder(reminder) {
     const nextReminders = {
@@ -462,6 +504,7 @@ export function SemesterProvider({ children }) {
     setSemesterTimetable,
     markTodayAttendance,
     markDayStatus,
+    markDayLectureStatuses,
     removeDayAttendance,
     addReminder,
     updateReminder,

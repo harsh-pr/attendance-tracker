@@ -58,7 +58,7 @@ export default function AiTimetable() {
       reader.readAsDataURL(selectedFile);
       reader.onload = async () => {
         const base64Data = reader.result.split(",")[1];
-        setStatusText("Scanning timetable with Gemini 2.5 Flash...");
+        setStatusText("Scanning timetable with Gemini 1.5 Flash...");
 
         const prompt = `Analyze the uploaded college timetable image.
 Extract the schedule details and subjects list.
@@ -97,7 +97,7 @@ Return the result strictly as a valid JSON object matching the following structu
 
         try {
           const response = await fetch(
-            `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${activeApiKey}`,
+            `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${activeApiKey}`,
             {
               method: "POST",
               headers: { "Content-Type": "application/json" },

@@ -86,7 +86,7 @@ export default function AttendanceOverviewChart() {
   return (
     <div
       className="
-        rounded-2xl p-6 transition-transform hover:scale-[1.01] overflow-hidden
+        rounded-2xl p-6 transition-transform hover:scale-[1.01] overflow-hidden w-full max-w-full
 
         /* LIGHT */
         bg-white border border-gray-200 text-gray-900
@@ -99,7 +99,7 @@ export default function AttendanceOverviewChart() {
         Attendance – Last 7 Days
       </h2>
 
-      <div className="w-full min-w-0 overflow-hidden">
+      <div className="relative w-full min-w-0 overflow-hidden">
         <ResponsiveContainer width="99%" height={320}>
           <BarChart data={data}>
 

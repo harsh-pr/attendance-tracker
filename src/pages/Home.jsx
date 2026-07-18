@@ -211,7 +211,9 @@ export default function Home() {
       </div>
 
       {/* ===== GRAPH ===== */}
-      <AttendanceOverviewChart />
+      <div className="w-full overflow-hidden">
+        <AttendanceOverviewChart />
+      </div>
 
       {/* ===== LOGS ===== */}
       <section className="space-y-4">

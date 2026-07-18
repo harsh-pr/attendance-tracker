@@ -360,7 +360,7 @@ export default function AiTimetable() {
             <td
               key="recess-break"
               rowSpan={5}
-              className="bg-slate-100/50 dark:bg-[#161821] text-blue-600 dark:text-blue-455 font-black text-center align-middle border-r border-slate-250 dark:border-slate-800 leading-normal py-4 w-[45px] min-w-[40px] lg:min-w-0"
+              className="bg-slate-100/50 dark:bg-[#161821] text-blue-600 dark:text-blue-455 font-black text-center align-middle border-r border-slate-250 dark:border-slate-800 leading-normal py-4"
             >
               <div className="flex flex-col items-center justify-center font-[Poppins] gap-1.5 select-none text-[10px]">
                 {BREAKS.recess.letters.map((l, idx) => (
@@ -379,7 +379,7 @@ export default function AiTimetable() {
             <td
               key="lunch-break"
               rowSpan={5}
-              className="bg-slate-100/50 dark:bg-[#161821] text-blue-600 dark:text-blue-455 font-black text-center align-middle border-r border-slate-250 dark:border-slate-800 leading-normal py-4 w-[45px] min-w-[40px] lg:min-w-0"
+              className="bg-slate-100/50 dark:bg-[#161821] text-blue-600 dark:text-blue-455 font-black text-center align-middle border-r border-slate-250 dark:border-slate-800 leading-normal py-4"
             >
               <div className="flex flex-col items-center justify-center font-[Poppins] gap-1.5 select-none text-[10px]">
                 {BREAKS.lunch.letters.map((l, idx) => (
@@ -457,7 +457,7 @@ export default function AiTimetable() {
           <button
             type="button"
             onClick={() => setIsEditMode(!isEditMode)}
-            className={`px-4 py-2 text-xs font-bold rounded-xl shadow-sm transition duration-150 cursor-pointer ${
+            className={`px-4 py-2 text-xs font-bold rounded-md shadow-sm transition duration-150 cursor-pointer ${
               isEditMode
                 ? "bg-amber-600 hover:bg-amber-500 text-white"
                 : "bg-blue-600 hover:bg-blue-500 text-white"
@@ -468,14 +468,14 @@ export default function AiTimetable() {
           <button
             type="button"
             onClick={() => setIsMetadataModalOpen(true)}
-            className="px-4 py-2 bg-slate-200 hover:bg-slate-350 dark:bg-slate-800 dark:hover:bg-slate-750 text-xs font-bold rounded-xl transition cursor-pointer"
+            className="px-4 py-2 bg-slate-200 hover:bg-slate-355 dark:bg-slate-800 dark:hover:bg-slate-750 text-xs font-bold rounded-md transition cursor-pointer"
           >
             ⚙️ Edit Metadata
           </button>
           <button
             type="button"
             onClick={resetToDefault}
-            className="px-4 py-2 bg-red-650 hover:bg-red-500 text-white text-xs font-bold rounded-xl transition cursor-pointer"
+            className="px-4 py-2 bg-red-650 hover:bg-red-500 text-white text-xs font-bold rounded-md transition cursor-pointer"
           >
             🔄 Reset
           </button>
@@ -483,10 +483,10 @@ export default function AiTimetable() {
       </div>
 
       {/* Tab Navigation */}
-      <div className="flex bg-slate-200/50 dark:bg-slate-900/60 p-1 rounded-2xl max-w-md border border-slate-250 dark:border-slate-800">
+      <div className="flex bg-slate-200/50 dark:bg-slate-900/60 p-1 rounded-md max-w-md border border-slate-250 dark:border-slate-800">
         <button
           onClick={() => setActiveTab("grid")}
-          className={`flex-1 py-2 rounded-xl text-xs font-bold transition cursor-pointer ${
+          className={`flex-1 py-2 rounded-md text-xs font-bold transition cursor-pointer ${
             activeTab === "grid"
               ? "bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-sm"
               : "text-slate-500 hover:text-slate-750"
@@ -496,7 +496,7 @@ export default function AiTimetable() {
         </button>
         <button
           onClick={() => setActiveTab("list")}
-          className={`flex-1 py-2 rounded-xl text-xs font-bold transition cursor-pointer ${
+          className={`flex-1 py-2 rounded-md text-xs font-bold transition cursor-pointer ${
             activeTab === "list"
               ? "bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-sm"
               : "text-slate-500 hover:text-slate-750"
@@ -506,7 +506,7 @@ export default function AiTimetable() {
         </button>
         <button
           onClick={() => setActiveTab("faculty")}
-          className={`flex-1 py-2 rounded-xl text-xs font-bold transition cursor-pointer ${
+          className={`flex-1 py-2 rounded-md text-xs font-bold transition cursor-pointer ${
             activeTab === "faculty"
               ? "bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-sm"
               : "text-slate-500 hover:text-slate-750"
@@ -518,7 +518,7 @@ export default function AiTimetable() {
 
       {/* TAB CONTENT: TABULAR GRID */}
       {activeTab === "grid" && (
-        <div className="bg-white dark:bg-[#0d0e12] border border-slate-200 dark:border-slate-800 rounded-3xl shadow-sm overflow-hidden p-1">
+        <div className="bg-white dark:bg-[#0d0e12] border border-slate-200 dark:border-slate-800 rounded-none shadow-sm overflow-hidden p-1">
           <div className="overflow-x-auto lg:overflow-x-visible">
             <table className="w-full min-w-[850px] lg:min-w-0 border-collapse text-left table-fixed">
               <thead>
@@ -532,8 +532,8 @@ export default function AiTimetable() {
                   <th className="p-4 text-xs font-bold text-slate-500 uppercase tracking-wider border-r border-slate-200 dark:border-slate-800 text-center">
                     10 AM - 11 AM
                   </th>
-                  <th className="p-4 text-xs font-black text-blue-600 dark:text-blue-450 uppercase border-r border-slate-200 dark:border-slate-800 text-center w-[45px]">
-                    Break
+                  <th className="p-4 text-xs font-bold text-slate-500 uppercase tracking-wider border-r border-slate-200 dark:border-slate-800 text-center">
+                    11 AM - 11:20 AM
                   </th>
                   <th className="p-4 text-xs font-bold text-slate-500 uppercase tracking-wider border-r border-slate-200 dark:border-slate-800 text-center">
                     11:20 AM - 12:20 PM
@@ -541,8 +541,8 @@ export default function AiTimetable() {
                   <th className="p-4 text-xs font-bold text-slate-500 uppercase tracking-wider border-r border-slate-200 dark:border-slate-800 text-center">
                     12:20 PM - 1:20 PM
                   </th>
-                  <th className="p-4 text-xs font-black text-blue-600 dark:text-blue-455 uppercase border-r border-slate-200 dark:border-slate-800 text-center w-[45px]">
-                    Break
+                  <th className="p-4 text-xs font-bold text-slate-500 uppercase tracking-wider border-r border-slate-200 dark:border-slate-800 text-center">
+                    1:20 PM - 2 PM
                   </th>
                   <th className="p-4 text-xs font-bold text-slate-500 uppercase tracking-wider border-r border-slate-200 dark:border-slate-800 text-center">
                     2 PM - 3 PM

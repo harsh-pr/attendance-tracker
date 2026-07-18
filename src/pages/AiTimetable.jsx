@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useSemester } from "../context/SemesterContext";
 import { getCollegeTimetable, saveCollegeTimetable } from "../firebase/firestoreService";
 
-// Default metadata
+// Default metadata for Semester 3
 const DEFAULT_METADATA = {
   department: "INFORMATION TECHNOLOGY",
   classAdvisor: "Mr. Ankur Chavan",
@@ -10,7 +10,7 @@ const DEFAULT_METADATA = {
   roomNo: "Room No. - 203",
 };
 
-// Default faculty database
+// Default faculty database for Semester 3
 const DEFAULT_FACULTY = [
   { abbreviation: "AC", name: "Mr. Ankur Chavan", subject: "Data Structure & Basic Algorithms Design & Lab" },
   { abbreviation: "PM", name: "Ms. Priyanka Manke", subject: "Database Systems and Design & SQL Lab" },
@@ -24,7 +24,7 @@ const DEFAULT_FACULTY = [
   { abbreviation: "AK", name: "Ms. Archana Khelurkar", subject: "Mini Project (Java)" },
 ];
 
-// Default weekly timetable structure
+// Default weekly timetable structure for Semester 3
 const DEFAULT_TIMETABLE = {
   monday: [
     { subject: "POA", teacher: "SP", room: "Room No. - 203", type: "theory", colSpan: 1 },
@@ -73,6 +73,23 @@ const DEFAULT_TIMETABLE = {
   ],
 };
 
+// Generates blank metadata template
+const makeBlankMetadata = (semName) => ({
+  department: "INFORMATION TECHNOLOGY",
+  classAdvisor: "",
+  semester: semName || "New Semester",
+  roomNo: "",
+});
+
+// Generates blank weekly grid structures
+const makeBlankTimetable = () => ({
+  monday: Array(7).fill(null).map(() => ({ subject: "", teacher: "", room: "", type: "free", colSpan: 1 })),
+  tuesday: Array(7).fill(null).map(() => ({ subject: "", teacher: "", room: "", type: "free", colSpan: 1 })),
+  wednesday: Array(7).fill(null).map(() => ({ subject: "", teacher: "", room: "", type: "free", colSpan: 1 })),
+  thursday: Array(7).fill(null).map(() => ({ subject: "", teacher: "", room: "", type: "free", colSpan: 1 })),
+  friday: Array(7).fill(null).map(() => ({ subject: "", teacher: "", room: "", type: "free", colSpan: 1 })),
+});
+
 const TIMESLOTS = [
   { label: "9 AM - 10 AM", start: "09:00", end: "10:00" },
   { label: "10 AM - 11 AM", start: "10:00", end: "11:00" },
@@ -108,6 +125,14 @@ export default function AiTimetable() {
   const [cellType, setCellType] = useState("theory");
   const [cellColSpan, setCellColSpan] = useState(1);
 
+  // Helper to identify Semester 3
+  const checkIsSemester3 = (sem) => {
+    return sem?.name?.toLowerCase().includes("sem-iii") || 
+           sem?.name?.toLowerCase().includes("semester 3") || 
+           sem?.name?.toLowerCase().includes("sem 3") || 
+           sem?.id === "sem3";
+  };
+
   // Load from Firestore
   useEffect(() => {
     async function loadData() {
@@ -119,15 +144,22 @@ export default function AiTimetable() {
         if (data.faculty) setFaculty(data.faculty);
         if (data.timetable) setTimetable(data.timetable);
       } else {
-        // Fall back to default template
-        setMetadata(DEFAULT_METADATA);
-        setFaculty(DEFAULT_FACULTY);
-        setTimetable(DEFAULT_TIMETABLE);
+        // Fallback checks
+        if (checkIsSemester3(currentSemester)) {
+          setMetadata(DEFAULT_METADATA);
+          setFaculty(DEFAULT_FACULTY);
+          setTimetable(DEFAULT_TIMETABLE);
+        } else {
+          // Initialize clean blank template for other semesters
+          setMetadata(makeBlankMetadata(currentSemester?.name));
+          setFaculty([]);
+          setTimetable(makeBlankTimetable());
+        }
       }
       setLoadingDb(false);
     }
     loadData();
-  }, [currentSemesterId]);
+  }, [currentSemesterId, currentSemester]);
 
   const saveToLocalStorage = (newMeta, newFac, newTT) => {
     localStorage.setItem("TT_METADATA", JSON.stringify(newMeta));
@@ -215,14 +247,19 @@ export default function AiTimetable() {
 
   const resetToDefault = async () => {
     if (window.confirm("Are you sure you want to reset all modifications back to default?")) {
-      setMetadata(DEFAULT_METADATA);
-      setFaculty(DEFAULT_FACULTY);
-      setTimetable(DEFAULT_TIMETABLE);
-      saveToLocalStorage(DEFAULT_METADATA, DEFAULT_FACULTY, DEFAULT_TIMETABLE);
+      const isSem3 = checkIsSemester3(currentSemester);
+      const newMeta = isSem3 ? DEFAULT_METADATA : makeBlankMetadata(currentSemester?.name);
+      const newFac = isSem3 ? DEFAULT_FACULTY : [];
+      const newTT = isSem3 ? DEFAULT_TIMETABLE : makeBlankTimetable();
+
+      setMetadata(newMeta);
+      setFaculty(newFac);
+      setTimetable(newTT);
+      saveToLocalStorage(newMeta, newFac, newTT);
       await saveCollegeTimetable(currentSemesterId, {
-        metadata: DEFAULT_METADATA,
-        faculty: DEFAULT_FACULTY,
-        timetable: DEFAULT_TIMETABLE
+        metadata: newMeta,
+        faculty: newFac,
+        timetable: newTT
       });
     }
   };
@@ -290,12 +327,6 @@ export default function AiTimetable() {
     });
     return names.join(" & ");
   };
-
-  // Safe checks for Semester 3 availability
-  const isSemester3 = currentSemester?.name?.toLowerCase().includes("sem-iii") || 
-                       currentSemester?.name?.toLowerCase().includes("semester 3") || 
-                       currentSemester?.name?.toLowerCase().includes("sem 3") || 
-                       currentSemester?.id === "sem3";
 
   const renderCell = (dayKey, index) => {
     const schedule = timetable[dayKey] || [];
@@ -423,32 +454,20 @@ export default function AiTimetable() {
     );
   }
 
-  if (!isSemester3) {
-    return (
-      <div className="max-w-2xl mx-auto p-12 mt-10 bg-white dark:bg-[#0d0e12] border border-slate-200 dark:border-slate-800 rounded-3xl text-center space-y-4 shadow-sm">
-        <div className="text-5xl">🗓️</div>
-        <h3 className="text-lg font-black text-slate-900 dark:text-white">Class Timetable Restricted</h3>
-        <p className="text-sm text-slate-550 dark:text-slate-400">
-          This custom college timetable visualizer is exclusively configured for **Semester 3**.
-          Please switch your active semester inside the Home page to Semester 3 to access this view.
-        </p>
-      </div>
-    );
-  }
-
   return (
     <div className="max-w-7xl mx-auto px-4 pt-6 pb-24 space-y-6 animate-fade-in text-gray-900 dark:text-slate-100 font-sans">
       {/* HEADER */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-slate-200 dark:border-slate-800 pb-5">
-        <div className="space-y-1">
+        <div className="space-y-1 text-left">
           <span className="text-[10px] font-bold text-blue-600 dark:text-blue-400 uppercase tracking-widest bg-blue-50 dark:bg-blue-950/40 px-2.5 py-1 rounded-md">
-            {metadata.department}
+            {metadata.department || "COLLEGE SCHEDULE"}
           </span>
           <h1 className="text-2xl font-black tracking-tight mt-2">
             🏫 {metadata.semester} Timetable
           </h1>
           <p className="text-xs text-slate-500 dark:text-slate-400">
-            Advisor: <span className="font-semibold text-slate-700 dark:text-slate-200">{metadata.classAdvisor}</span> | Room: <span className="font-semibold text-slate-700 dark:text-slate-200">{metadata.roomNo}</span>
+            {metadata.classAdvisor && <span>Advisor: <span className="font-semibold text-slate-700 dark:text-slate-200">{metadata.classAdvisor}</span> | </span>}
+            Room: <span className="font-semibold text-slate-700 dark:text-slate-200">{metadata.roomNo || "Not set"}</span>
           </p>
         </div>
 
@@ -572,19 +591,19 @@ export default function AiTimetable() {
       {activeTab === "list" && (
         <div className="space-y-4 max-w-2xl mx-auto">
           <div className="flex items-center justify-between">
-            <h3 className="text-base font-bold text-slate-800 dark:text-slate-200">
+            <h3 className="text-base font-bold text-slate-850 dark:text-slate-200">
               Today's Schedule ({todayData.dayName.toUpperCase()})
             </h3>
           </div>
 
           {todayData.isWeekend ? (
-            <div className="bg-white dark:bg-[#0d0e12] border border-slate-200 dark:border-slate-800 p-10 rounded-3xl text-center space-y-2">
+            <div className="bg-white dark:bg-[#0d0e12] border border-slate-200 dark:border-slate-800 p-10 rounded-none text-center space-y-2">
               <p className="text-3xl">🎉</p>
               <h4 className="text-sm font-bold text-slate-900 dark:text-white">Weekend Holiday</h4>
               <p className="text-xs text-slate-500">No scheduled classes today. Enjoy your day!</p>
             </div>
           ) : todayData.lectures.length === 0 ? (
-            <div className="bg-white dark:bg-[#0d0e12] border border-slate-200 dark:border-slate-800 p-10 rounded-3xl text-center space-y-2">
+            <div className="bg-white dark:bg-[#0d0e12] border border-slate-200 dark:border-slate-800 p-10 rounded-none text-center space-y-2">
               <p className="text-3xl">📭</p>
               <h4 className="text-sm font-bold text-slate-900 dark:text-white">No Lectures</h4>
               <p className="text-xs text-slate-500">There are no classes scheduled for today.</p>
@@ -594,18 +613,18 @@ export default function AiTimetable() {
               {todayData.lectures.map((lecture, i) => (
                 <div
                   key={i}
-                  className="p-5 rounded-2xl bg-white dark:bg-[#0d0e12] border border-slate-200 dark:border-slate-800 flex flex-col md:flex-row justify-between items-start md:items-center gap-3 transition-transform hover:-translate-y-0.5 duration-200"
+                  className="p-5 rounded-none bg-white dark:bg-[#0d0e12] border border-slate-200 dark:border-slate-800 flex flex-col md:flex-row justify-between items-start md:items-center gap-3 transition-transform hover:-translate-y-0.5 duration-200"
                 >
                   <div className="space-y-1 text-left">
                     <div className="flex items-center gap-2">
                       <span className={getSubjectStyle(lecture.type)}>{lecture.subject}</span>
                       {lecture.type === "lab" && (
-                        <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-indigo-50 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-400">
+                        <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-indigo-50 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-400 font-sans">
                           LAB
                         </span>
                       )}
                     </div>
-                    <p className="text-xs text-slate-500 dark:text-slate-400">
+                    <p className="text-xs text-slate-550 dark:text-slate-400">
                       👨‍🏫 Instructor: <span className="font-semibold text-slate-700 dark:text-slate-200">{getTeacherFullName(lecture.teacher)} ({lecture.teacher})</span>
                     </p>
                   </div>
@@ -643,7 +662,7 @@ export default function AiTimetable() {
             )}
           </div>
 
-          <div className="bg-white dark:bg-[#0d0e12] border border-slate-200 dark:border-slate-800 rounded-3xl overflow-hidden shadow-sm">
+          <div className="bg-white dark:bg-[#0d0e12] border border-slate-200 dark:border-slate-800 rounded-none overflow-hidden shadow-sm">
             <div className="divide-y divide-slate-100 dark:divide-slate-800/80">
               {faculty.map((f, idx) => (
                 <div
@@ -656,23 +675,23 @@ export default function AiTimetable() {
                         type="text"
                         value={f.subject}
                         onChange={(e) => handleFacultyChange(idx, "subject", e.target.value)}
-                        className="w-full px-3 py-1.5 text-xs rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-gray-900 dark:text-white"
+                        className="w-full px-3 py-1.5 text-xs rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-gray-900 dark:text-white font-sans"
                         placeholder="Subject name"
                       />
                     ) : (
                       <h4 className="font-bold text-xs text-slate-800 dark:text-slate-200">{f.subject}</h4>
                     )}
                     <p className="text-xs text-slate-500">
-                      Code Abbrev: <span className="font-extrabold text-blue-600 dark:text-blue-400">{f.abbreviation}</span>
+                      Code Abbrev: <span className="font-extrabold text-blue-600 dark:text-blue-450">{f.abbreviation}</span>
                     </p>
                   </div>
 
-                  <div className="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-end font-sans">
+                  <div className="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-end">
                     <div className="flex items-center gap-2 text-left">
                       <span className="w-8 h-8 rounded-full bg-blue-50 dark:bg-blue-900/40 text-blue-700 dark:text-blue-200 flex items-center justify-center text-xs font-black">
                         {f.abbreviation}
                       </span>
-                      <div>
+                      <div className="font-sans">
                         {isEditMode ? (
                           <div className="flex gap-2">
                             <input
@@ -703,7 +722,7 @@ export default function AiTimetable() {
                       <button
                         type="button"
                         onClick={() => removeFacultyMember(idx)}
-                        className="p-1 text-xs text-red-600 hover:text-red-500 font-semibold cursor-pointer"
+                        className="p-1 text-xs text-red-650 hover:text-red-500 font-semibold cursor-pointer"
                       >
                         ✕ Delete
                       </button>
@@ -711,6 +730,11 @@ export default function AiTimetable() {
                   </div>
                 </div>
               ))}
+              {faculty.length === 0 && (
+                <div className="p-8 text-center text-xs text-slate-500 font-medium">
+                  No teachers added yet. Click "+ Add Teacher" to populate your directory.
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -719,17 +743,17 @@ export default function AiTimetable() {
       {/* METADATA MODAL (SETTINGS) */}
       {isMetadataModalOpen && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 max-w-md w-full rounded-3xl p-6 shadow-2xl space-y-4 animate-scale-in text-gray-900 dark:text-white text-left">
+          <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 max-w-md w-full rounded-none p-6 shadow-2xl space-y-4 animate-scale-in text-gray-900 dark:text-white text-left">
             <h2 className="text-lg font-bold flex items-center gap-2">⚙️ Timetable Settings</h2>
             
-            <div className="space-y-3">
-              <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider">
+            <div className="space-y-3 font-sans">
+              <label className="block text-xs font-bold text-slate-550 uppercase tracking-wider">
                 Semester / Class Name
                 <input
                   type="text"
                   value={metadata.semester}
                   onChange={(e) => handleMetadataChange("semester", e.target.value)}
-                  className="w-full mt-1.5 px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-medium focus:outline-none text-gray-900 dark:text-white"
+                  className="w-full mt-1.5 px-3 py-2 rounded-none border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-medium focus:outline-none text-gray-900 dark:text-white"
                 />
               </label>
 
@@ -739,7 +763,7 @@ export default function AiTimetable() {
                   type="text"
                   value={metadata.department}
                   onChange={(e) => handleMetadataChange("department", e.target.value)}
-                  className="w-full mt-1.5 px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-medium focus:outline-none text-gray-900 dark:text-white"
+                  className="w-full mt-1.5 px-3 py-2 rounded-none border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-medium focus:outline-none text-gray-900 dark:text-white"
                 />
               </label>
 
@@ -749,7 +773,7 @@ export default function AiTimetable() {
                   type="text"
                   value={metadata.classAdvisor}
                   onChange={(e) => handleMetadataChange("classAdvisor", e.target.value)}
-                  className="w-full mt-1.5 px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-medium focus:outline-none text-gray-900 dark:text-white"
+                  className="w-full mt-1.5 px-3 py-2 rounded-none border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-medium focus:outline-none text-gray-900 dark:text-white"
                 />
               </label>
 
@@ -759,7 +783,7 @@ export default function AiTimetable() {
                   type="text"
                   value={metadata.roomNo}
                   onChange={(e) => handleMetadataChange("roomNo", e.target.value)}
-                  className="w-full mt-1.5 px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-medium focus:outline-none text-gray-900 dark:text-white"
+                  className="w-full mt-1.5 px-3 py-2 rounded-none border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-medium focus:outline-none text-gray-900 dark:text-white"
                 />
               </label>
             </div>
@@ -768,7 +792,7 @@ export default function AiTimetable() {
               <button
                 type="button"
                 onClick={() => setIsMetadataModalOpen(false)}
-                className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold rounded-xl cursor-pointer shadow-md"
+                className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold rounded-none cursor-pointer shadow-md"
               >
                 Close
               </button>
@@ -780,19 +804,19 @@ export default function AiTimetable() {
       {/* CELL EDIT POPUP */}
       {editingCell && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 max-w-sm w-full rounded-3xl p-6 shadow-2xl space-y-4 animate-scale-in text-gray-900 dark:text-white text-left">
+          <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 max-w-sm w-full rounded-none p-6 shadow-2xl space-y-4 animate-scale-in text-gray-900 dark:text-white text-left">
             <h2 className="text-lg font-bold flex items-center gap-2">
               ✏️ Edit Class slot ({editingCell.day.toUpperCase()}, slot {editingCell.index + 1})
             </h2>
 
-            <div className="space-y-3">
+            <div className="space-y-3 font-sans">
               <label className="block text-xs font-bold text-slate-550 uppercase tracking-wider">
                 Subject
                 <input
                   type="text"
                   value={cellSubject}
                   onChange={(e) => setCellSubject(e.target.value)}
-                  className="w-full mt-1.5 px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-semibold focus:outline-none text-gray-900 dark:text-white"
+                  className="w-full mt-1.5 px-3 py-2 rounded-none border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-semibold focus:outline-none text-gray-900 dark:text-white"
                   placeholder="e.g. POA, AT, DS&BAD"
                 />
               </label>
@@ -803,28 +827,28 @@ export default function AiTimetable() {
                   type="text"
                   value={cellTeacher}
                   onChange={(e) => setCellTeacher(e.target.value)}
-                  className="w-full mt-1.5 px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-semibold focus:outline-none text-gray-900 dark:text-white"
+                  className="w-full mt-1.5 px-3 py-2 rounded-none border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-semibold focus:outline-none text-gray-900 dark:text-white"
                   placeholder="e.g. AC, PM, SP"
                 />
               </label>
 
-              <label className="block text-xs font-bold text-slate-550 uppercase tracking-wider">
-                Room No
+              <label className="block text-xs font-bold text-slate-555 uppercase tracking-wider">
+                Room No / Lab Location
                 <input
                   type="text"
                   value={cellRoom}
                   onChange={(e) => setCellRoom(e.target.value)}
-                  className="w-full mt-1.5 px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-semibold focus:outline-none text-gray-900 dark:text-white"
+                  className="w-full mt-1.5 px-3 py-2 rounded-none border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-semibold focus:outline-none text-gray-900 dark:text-white"
                   placeholder="e.g. Room No. - 203, Lab No. - 103"
                 />
               </label>
 
-              <label className="block text-xs font-bold text-slate-550 uppercase tracking-wider">
+              <label className="block text-xs font-bold text-slate-555 uppercase tracking-wider">
                 Class Type
                 <select
                   value={cellType}
                   onChange={(e) => setCellType(e.target.value)}
-                  className="w-full mt-1.5 px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-bold focus:outline-none text-gray-900 dark:text-white font-semibold"
+                  className="w-full mt-1.5 px-3 py-2 rounded-none border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-bold focus:outline-none text-gray-900 dark:text-white font-semibold"
                 >
                   <option value="theory">Theory</option>
                   <option value="lab">Lab / Practical</option>
@@ -833,12 +857,12 @@ export default function AiTimetable() {
                 </select>
               </label>
 
-              <label className="block text-xs font-bold text-slate-550 uppercase tracking-wider">
+              <label className="block text-xs font-bold text-slate-555 uppercase tracking-wider">
                 Duration
                 <select
                   value={cellColSpan}
                   onChange={(e) => setCellColSpan(parseInt(e.target.value, 10))}
-                  className="w-full mt-1.5 px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-bold focus:outline-none text-gray-900 dark:text-white font-semibold"
+                  className="w-full mt-1.5 px-3 py-2 rounded-none border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-bold focus:outline-none text-gray-900 dark:text-white font-semibold"
                 >
                   <option value={1}>1 Hour</option>
                   <option value={2}>2 Hours (Spans across next column)</option>
@@ -850,14 +874,14 @@ export default function AiTimetable() {
               <button
                 type="button"
                 onClick={() => setEditingCell(null)}
-                className="px-4 py-2 bg-slate-200 hover:bg-slate-350 dark:bg-slate-700 dark:hover:bg-slate-650 text-slate-800 dark:text-slate-200 text-xs font-bold rounded-xl cursor-pointer shadow-sm"
+                className="px-4 py-2 bg-slate-200 hover:bg-slate-350 dark:bg-slate-700 dark:hover:bg-slate-650 text-slate-800 dark:text-slate-200 text-xs font-bold rounded-none cursor-pointer shadow-sm"
               >
                 Cancel
               </button>
               <button
                 type="button"
                 onClick={saveCellEdit}
-                className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold rounded-xl cursor-pointer shadow-md"
+                className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold rounded-none cursor-pointer shadow-md"
               >
                 Save Changes
               </button>

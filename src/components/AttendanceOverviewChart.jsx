@@ -99,8 +99,9 @@ export default function AttendanceOverviewChart() {
         Attendance – Last 7 Days
       </h2>
 
-      <ResponsiveContainer width="100%" height={320}>
-        <BarChart data={data}>
+      <div className="w-full min-w-0 overflow-hidden">
+        <ResponsiveContainer width="99%" height={320}>
+          <BarChart data={data}>
 
           {/* ===== AXES ===== */}
           <XAxis
@@ -180,6 +181,7 @@ export default function AttendanceOverviewChart() {
           />
         </BarChart>
       </ResponsiveContainer>
+      </div>
     </div>
   );
 }

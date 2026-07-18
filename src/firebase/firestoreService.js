@@ -120,6 +120,27 @@ export async function saveReminders(remindersBySemester) {
   await setDoc(remindersRef(), { data: remindersBySemester });
 }
 
+// ─── COLLEGE TIMETABLE SYNC ──────────────────────────────────────────────────
+export async function getCollegeTimetable(semesterId) {
+  try {
+    const ref = doc(db, "users", getUserId(), "college_timetable", semesterId);
+    const snap = await getDoc(ref);
+    return snap.exists() ? snap.data() : null;
+  } catch (error) {
+    console.error("[Firestore] Error reading college timetable:", error);
+    return null;
+  }
+}
+
+export async function saveCollegeTimetable(semesterId, timetableData) {
+  try {
+    const ref = doc(db, "users", getUserId(), "college_timetable", semesterId);
+    await setDoc(ref, timetableData);
+  } catch (error) {
+    console.error("[Firestore] Error saving college timetable:", error);
+  }
+}
+
 // ─── LEGACY DATA OPERATIONS ──────────────────────────────────────────────────
 export async function checkLegacyDataExists() {
   try {

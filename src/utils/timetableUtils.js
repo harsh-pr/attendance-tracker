@@ -25,7 +25,30 @@ export function getLecturesForDate(dateStr, semesterInput, semesters = []) {
     typeof semesterInput === "object"
       ? semesterInput
       : semesters.find((item) => item.id === semesterInput);
-  const timetable = semester?.timetable || EMPTY_TIMETABLE;
+  
+  const rawTimetable = semester?.rawTimetable || semester?.timetable;
+  if (!rawTimetable) return [];
+
+  let timetable = EMPTY_TIMETABLE;
+
+  if (Array.isArray(rawTimetable)) {
+    // Sort versions by startFrom ascending
+    const sorted = [...rawTimetable].sort((a, b) => {
+      const aDate = a.startFrom ? new Date(a.startFrom) : new Date(0);
+      const bDate = b.startFrom ? new Date(b.startFrom) : new Date(0);
+      return aDate - bDate;
+    });
+
+    let match = sorted[0]; // fallback to oldest
+    for (const v of sorted) {
+      if (v.startFrom && dateStr >= v.startFrom) {
+        match = v;
+      }
+    }
+    timetable = match?.timetable || EMPTY_TIMETABLE;
+  } else {
+    timetable = rawTimetable || EMPTY_TIMETABLE;
+  }
 
   return timetable[dayKey] || [];
 }

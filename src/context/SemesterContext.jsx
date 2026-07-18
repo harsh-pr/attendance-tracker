@@ -24,6 +24,19 @@ const EMPTY_TIMETABLE = { monday: [], tuesday: [], wednesday: [], thursday: [], 
 function cloneEmptyTimetable() {
   return JSON.parse(JSON.stringify(EMPTY_TIMETABLE));
 }
+function getLatestTimetable(timetableVal) {
+  if (!timetableVal) return cloneEmptyTimetable();
+  if (Array.isArray(timetableVal)) {
+    if (timetableVal.length === 0) return cloneEmptyTimetable();
+    const sorted = [...timetableVal].sort((a, b) => {
+      const aDate = a.startFrom ? new Date(a.startFrom) : new Date(0);
+      const bDate = b.startFrom ? new Date(b.startFrom) : new Date(0);
+      return aDate - bDate;
+    });
+    return sorted[sorted.length - 1].timetable || cloneEmptyTimetable();
+  }
+  return timetableVal;
+}
 function normalizeSemester(sem) {
   return { attendanceData: [], ...sem };
 }
@@ -148,7 +161,7 @@ export function SemesterProvider({ children }) {
   );
 
   const currentTimetable = useMemo(
-    () => timetablesBySemester[currentSemesterId] || cloneEmptyTimetable(),
+    () => getLatestTimetable(timetablesBySemester[currentSemesterId]),
     [timetablesBySemester, currentSemesterId]
   );
 
@@ -157,9 +170,10 @@ export function SemesterProvider({ children }) {
       ...baseCurrentSemester,
       subjects: currentSubjects,
       timetable: currentTimetable,
+      rawTimetable: timetablesBySemester[currentSemesterId],
       reminders: remindersBySemester[currentSemesterId] || [],
     }),
-    [baseCurrentSemester, currentSubjects, currentTimetable, remindersBySemester, currentSemesterId]
+    [baseCurrentSemester, currentSubjects, currentTimetable, timetablesBySemester, remindersBySemester, currentSemesterId]
   );
 
   // ── HELPERS ────────────────────────────────────────────────────────────────
@@ -273,11 +287,26 @@ export function SemesterProvider({ children }) {
     };
 
     const cur = timetablesBySemester[currentSemesterId] || cloneEmptyTimetable();
+    let nextTimetableValue;
+    if (Array.isArray(cur)) {
+      nextTimetableValue = cur.map((v) => ({
+        ...v,
+        timetable: Object.fromEntries(
+          Object.entries(v.timetable || EMPTY_TIMETABLE).map(([day, lecs]) => [
+            day,
+            lecs.filter((l) => l.subjectId !== subjectId),
+          ])
+        ),
+      }));
+    } else {
+      nextTimetableValue = Object.fromEntries(
+        Object.entries(cur).map(([day, lecs]) => [day, lecs.filter((l) => l.subjectId !== subjectId)])
+      );
+    }
+
     const nextTimetables = {
       ...timetablesBySemester,
-      [currentSemesterId]: Object.fromEntries(
-        Object.entries(cur).map(([day, lecs]) => [day, lecs.filter((l) => l.subjectId !== subjectId)])
-      ),
+      [currentSemesterId]: nextTimetableValue,
     };
 
     const nextSemesters = semesters.map((sem) =>
@@ -290,6 +319,7 @@ export function SemesterProvider({ children }) {
       }
     );
 
+    setSubjectsDraftAction(currentSemesterId, nextSubjects[currentSemesterId]);
     setSubjectsBySemester(nextSubjects);
     setTimetablesBySemester(nextTimetables);
     setSemesters(nextSemesters);
@@ -297,6 +327,10 @@ export function SemesterProvider({ children }) {
     persistSubjects(nextSubjects);
     persistTimetables(nextTimetables);
     persistAttendance(currentSemesterId, nextSemesters.find((s) => s.id === currentSemesterId)?.attendanceData || []);
+  }
+
+  function setSubjectsDraftAction(semesterId, subjectsArr) {
+    // dummy check in case Navbar is mounted, subjectsDraft will sync automatically next time openTimetableModal is called.
   }
 
   function setSemesterSubjects(semesterId, nextSubjectsArr = []) {
@@ -308,11 +342,26 @@ export function SemesterProvider({ children }) {
     const nextSubjects = { ...subjectsBySemester, [semesterId]: normalized };
 
     const cur = timetablesBySemester[semesterId] || cloneEmptyTimetable();
+    let nextTimetableValue;
+    if (Array.isArray(cur)) {
+      nextTimetableValue = cur.map((v) => ({
+        ...v,
+        timetable: Object.fromEntries(
+          Object.entries(v.timetable || EMPTY_TIMETABLE).map(([day, lecs]) => [
+            day,
+            lecs.filter((l) => validIds.has(l.subjectId)),
+          ])
+        ),
+      }));
+    } else {
+      nextTimetableValue = Object.fromEntries(
+        Object.entries(cur).map(([day, lecs]) => [day, lecs.filter((l) => validIds.has(l.subjectId))])
+      );
+    }
+
     const nextTimetables = {
       ...timetablesBySemester,
-      [semesterId]: Object.fromEntries(
-        Object.entries(cur).map(([day, lecs]) => [day, lecs.filter((l) => validIds.has(l.subjectId))])
-      ),
+      [semesterId]: nextTimetableValue,
     };
 
     const nextSemesters = semesters.map((sem) =>
@@ -336,15 +385,42 @@ export function SemesterProvider({ children }) {
 
   // ── TIMETABLE ──────────────────────────────────────────────────────────────
   function setSemesterTimetable(semesterId, timetable) {
+    const rawVal = timetablesBySemester[semesterId];
+    const todayStr = getTodayDate();
+    let nextVal;
+
+    const cleanedTimetable = {
+      monday: timetable?.monday || [],
+      tuesday: timetable?.tuesday || [],
+      wednesday: timetable?.wednesday || [],
+      thursday: timetable?.thursday || [],
+      friday: timetable?.friday || [],
+    };
+
+    let versions = [];
+    if (Array.isArray(rawVal)) {
+      versions = [...rawVal];
+    } else if (rawVal && typeof rawVal === "object" && Object.keys(rawVal).length > 0) {
+      versions = [{ startFrom: "1970-01-01", timetable: rawVal }];
+    }
+
+    const existingIndex = versions.findIndex((v) => v.startFrom === todayStr);
+    if (existingIndex >= 0) {
+      versions[existingIndex] = {
+        ...versions[existingIndex],
+        timetable: cleanedTimetable,
+      };
+    } else {
+      if (versions.length === 0) {
+        versions.push({ startFrom: "1970-01-01", timetable: cleanedTimetable });
+      } else {
+        versions.push({ startFrom: todayStr, timetable: cleanedTimetable });
+      }
+    }
+
     const nextTimetables = {
       ...timetablesBySemester,
-      [semesterId]: {
-        monday: timetable?.monday || [],
-        tuesday: timetable?.tuesday || [],
-        wednesday: timetable?.wednesday || [],
-        thursday: timetable?.thursday || [],
-        friday: timetable?.friday || [],
-      },
+      [semesterId]: versions,
     };
     setTimetablesBySemester(nextTimetables);
     persistTimetables(nextTimetables);

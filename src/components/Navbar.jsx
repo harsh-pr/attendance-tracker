@@ -48,6 +48,8 @@ export default function Navbar() {
   const [subjectsDraft, setSubjectsDraft] = useState([]);
   const [newSubjectName, setNewSubjectName] = useState("");
   const [newSubjectType, setNewSubjectType] = useState("theory");
+  const [editingSubjectId, setEditingSubjectId] = useState(null);
+  const [editingSubjectName, setEditingSubjectName] = useState("");
 
   // User Profile Dropdown Menu
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
@@ -507,17 +509,66 @@ export default function Navbar() {
                     key={subject.id}
                     className="flex items-center justify-between rounded-lg bg-gray-100 dark:bg-gray-800 px-3 py-2"
                   >
-                    <div className="text-sm">
-                      {subject.name}
-                      <span className="ml-2 text-xs text-gray-500 dark:text-gray-400">{subject.type}</span>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => removeDraftSubject(subject.id)}
-                      className="text-xs px-2 py-1 rounded bg-red-600 text-white"
-                    >
-                      Delete
-                    </button>
+                    {editingSubjectId === subject.id ? (
+                      <div className="flex items-center gap-2 w-full">
+                        <input
+                          type="text"
+                          value={editingSubjectName}
+                          onChange={(e) => setEditingSubjectName(e.target.value)}
+                          className="flex-1 px-2 py-1 text-sm rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          placeholder="Subject name"
+                          autoFocus
+                        />
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const trimmed = editingSubjectName.trim();
+                            if (trimmed) {
+                              setSubjectsDraft((prev) =>
+                                prev.map((s) => (s.id === subject.id ? { ...s, name: trimmed } : s))
+                              );
+                              setEditingSubjectId(null);
+                            }
+                          }}
+                          className="text-xs px-2.5 py-1.5 rounded-md bg-green-600 hover:bg-green-500 text-white font-semibold transition cursor-pointer"
+                        >
+                          Save
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setEditingSubjectId(null)}
+                          className="text-xs px-2.5 py-1.5 rounded-md bg-gray-300 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 font-semibold transition cursor-pointer"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    ) : (
+                      <>
+                        <div className="text-sm font-medium">
+                          {subject.name}
+                          <span className="ml-2 text-xs font-normal text-gray-500 dark:text-gray-400">({subject.type})</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setEditingSubjectId(subject.id);
+                              setEditingSubjectName(subject.name);
+                            }}
+                            className="text-xs px-2.5 py-1.5 rounded-md bg-blue-600 hover:bg-blue-500 text-white font-semibold transition cursor-pointer"
+                          >
+                            Rename
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => removeDraftSubject(subject.id)}
+                            className="text-xs px-2.5 py-1.5 rounded-md bg-red-600 hover:bg-red-500 text-white font-semibold transition cursor-pointer"
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      </>
+                    )}
                   </div>
                 ))}
               </div>

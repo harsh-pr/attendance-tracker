@@ -97,7 +97,7 @@ Return the result strictly as a valid JSON object matching the following structu
 
         try {
           const response = await fetch(
-            `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
+            `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${activeApiKey}`,
             {
               method: "POST",
               headers: { "Content-Type": "application/json" },

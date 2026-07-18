@@ -1,117 +1,8 @@
 import { useState, useEffect } from "react";
 
-const DEMO_TIMETABLE = {
-  department: "INFORMATION TECHNOLOGY",
-  classAdvisor: "Mr. Ankur Chavan",
-  semester: "SEIT SEM-III Div-B",
-  roomNo: "203",
-  subjects: [
-    {
-      id: "ds_bad",
-      name: "Data Structure & Basic Algorithms Design & Lab",
-      abbreviation: "DS&BAD",
-      teacher: "Mr. Ankur Chavan",
-      teacherInitials: "AC"
-    },
-    {
-      id: "dbs",
-      name: "Database Systems and Design & SQL Lab",
-      abbreviation: "DBS",
-      teacher: "Ms. Priyanka Manke",
-      teacherInitials: "PM"
-    },
-    {
-      id: "at",
-      name: "Automata Theory",
-      abbreviation: "AT",
-      teacher: "Mr. Nilesh Mali",
-      teacherInitials: "NM"
-    },
-    {
-      id: "sds",
-      name: "Statistics for Data Science",
-      abbreviation: "SDS",
-      teacher: "Ms. Tejaswini Nehe",
-      teacherInitials: "TN"
-    },
-    {
-      id: "poa",
-      name: "Processor Organization & Architecture",
-      abbreviation: "POA",
-      teacher: "Dr. Sonali Pakhmode",
-      teacherInitials: "SP"
-    },
-    {
-      id: "python",
-      name: "Modern Programming Practices using Python",
-      abbreviation: "Python",
-      teacher: "Ms. Mayuri Lohar / Mr. Kiran Deshmukh",
-      teacherInitials: "ML/KD"
-    },
-    {
-      id: "ed",
-      name: "Entrepreneurship Development",
-      abbreviation: "ED",
-      teacher: "Dr. Neeraj Sharma",
-      teacherInitials: "NS"
-    },
-    {
-      id: "es",
-      name: "Environmental Science",
-      abbreviation: "ES",
-      teacher: "APS",
-      teacherInitials: "APS"
-    },
-    {
-      id: "mini_proj",
-      name: "Mini Project (Java)",
-      abbreviation: "Mini Proj",
-      teacher: "Mr. Ankur Chavan / Ms. Archana Khelurkar",
-      teacherInitials: "AC/AK"
-    }
-  ],
-  timetable: {
-    monday: [
-      { time: "09:00 to 10:00", subjectAbbr: "POA", teacherInitials: "SP", room: "R.N 203", type: "theory" },
-      { time: "10:00 to 11:00", subjectAbbr: "AT", teacherInitials: "NM", room: "R.N 203", type: "theory" },
-      { time: "11:20 to 12:20", subjectAbbr: "DS&BAD", teacherInitials: "AC", room: "R.N 203", type: "theory" },
-      { time: "12:20 to 13:20", subjectAbbr: "DBS", teacherInitials: "PM", room: "R.N 203", type: "theory" },
-      { time: "14:00 to 15:00", subjectAbbr: "ADSL(A) / SQL(B) / ED(C)", teacherInitials: "AC/PM/NS", room: "Lab 103/107/105", type: "lab" }
-    ],
-    tuesday: [
-      { time: "09:00 to 10:00", subjectAbbr: "SDS", teacherInitials: "TN", room: "R.N 203", type: "theory" },
-      { time: "10:00 to 11:00", subjectAbbr: "AT", teacherInitials: "NM", room: "R.N 203", type: "theory" },
-      { time: "11:20 to 12:20", subjectAbbr: "DS&BAD", teacherInitials: "AC", room: "R.N 203", type: "theory" },
-      { time: "12:20 to 13:20", subjectAbbr: "SDS", teacherInitials: "TN", room: "R.N 203", type: "theory" },
-      { time: "14:00 to 15:00", subjectAbbr: "Python1(A) / ADSL(B) / Mini Proj(C)", teacherInitials: "ML/AC/AK", room: "Lab 102/103/112", type: "lab" },
-      { time: "16:00 to 17:00", subjectAbbr: "MENTOR-MENTEE", teacherInitials: "AC", room: "R.N 203", type: "session" }
-    ],
-    wednesday: [
-      { time: "09:00 to 10:00", subjectAbbr: "MENTOR-MENTEE", teacherInitials: "AC", room: "R.N 203", type: "session" },
-      { time: "10:00 to 11:00", subjectAbbr: "POA", teacherInitials: "SP", room: "R.N 203", type: "theory" },
-      { time: "11:20 to 12:20", subjectAbbr: "ED(A) / ES(B) / SQL(C)", teacherInitials: "NS/APS/PM", room: "Lab 112/102/107", type: "lab" },
-      { time: "14:00 to 15:00", subjectAbbr: "Mini Proj(A) / Python1(B) / Python1(C)", teacherInitials: "AC/ML/AK", room: "Lab 101/107/103", type: "lab" }
-    ],
-    thursday: [
-      { time: "09:00 to 10:00", subjectAbbr: "POA", teacherInitials: "SP", room: "R.N 203", type: "theory" },
-      { time: "10:00 to 11:00", subjectAbbr: "AT", teacherInitials: "NM", room: "R.N 203", type: "theory" },
-      { time: "11:20 to 12:20", subjectAbbr: "DS&BAD", teacherInitials: "AC", room: "R.N 203", type: "theory" },
-      { time: "12:20 to 13:20", subjectAbbr: "DBS", teacherInitials: "PM", room: "R.N 203", type: "theory" },
-      { time: "14:00 to 15:00", subjectAbbr: "ES(A) / Python2(B) / Python2(C)", teacherInitials: "APS/ML/AK", room: "Lab 101/107/103", type: "lab" }
-    ],
-    friday: [
-      { time: "09:00 to 10:00", subjectAbbr: "SDS-TUT", teacherInitials: "TN", room: "R.N 203", type: "theory" },
-      { time: "10:00 to 11:00", subjectAbbr: "DBS", teacherInitials: "PM", room: "R.N 203", type: "theory" },
-      { time: "11:20 to 12:20", subjectAbbr: "SQL(A) / Mini Proj(B) / ES(C)", teacherInitials: "PM/NF/APS", room: "Lab 107/101/103", type: "lab" },
-      { time: "14:00 to 15:00", subjectAbbr: "Python2(A) / ED(B) / ADSL(C)", teacherInitials: "ML/NS/AC", room: "Lab 112/101/105", type: "lab" }
-    ]
-  }
-};
-
 const WEEKDAYS = ["monday", "tuesday", "wednesday", "thursday", "friday"];
 
 export default function AiTimetable() {
-  const [apiKey, setApiKey] = useState("");
   const [selectedFile, setSelectedFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -121,11 +12,6 @@ export default function AiTimetable() {
   const [selectedDayGrid, setSelectedDayGrid] = useState("monday");
 
   useEffect(() => {
-    const savedKey = localStorage.getItem("GEMINI_API_KEY") || 
-                     import.meta.env?.VITE_GEMINI_API_KEY || 
-                     import.meta.env?.GEMINI_API_KEY;
-    if (savedKey) setApiKey(savedKey);
-
     const savedData = localStorage.getItem("PARSED_TIMETABLE_DATA");
     if (savedData) {
       try {
@@ -136,23 +22,12 @@ export default function AiTimetable() {
     }
   }, []);
 
-  const handleSaveKey = (e) => {
-    const val = e.target.value;
-    setApiKey(val);
-    localStorage.setItem("GEMINI_API_KEY", val);
-  };
-
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
       setSelectedFile(file);
       setPreviewUrl(URL.createObjectURL(file));
     }
-  };
-
-  const loadDemoData = () => {
-    setData(DEMO_TIMETABLE);
-    localStorage.setItem("PARSED_TIMETABLE_DATA", JSON.stringify(DEMO_TIMETABLE));
   };
 
   const resetData = () => {
@@ -167,8 +42,11 @@ export default function AiTimetable() {
       alert("Please select a timetable image first.");
       return;
     }
-    if (!apiKey) {
-      alert("Please provide a Gemini API Key to perform AI scanning.");
+    const activeApiKey = import.meta.env?.VITE_GEMINI_API_KEY || 
+                         import.meta.env?.GEMINI_API_KEY || 
+                         localStorage.getItem("GEMINI_API_KEY");
+    if (!activeApiKey) {
+      alert("Please configure VITE_GEMINI_API_KEY in your Vercel Environment Variables.");
       return;
     }
 
@@ -320,93 +198,52 @@ Return the result strictly as a valid JSON object matching the following structu
         <p className="text-gray-600 dark:text-gray-400 max-w-2xl">
           Scan image timetables to generate visual weekly agendas, teacher databases, and quick lecture lookups.
         </p>
-      </div>
+      </div>      {!data ? (
+        /* UPLOAD STATE */
+        <div className="max-w-2xl mx-auto bg-white dark:bg-gray-800 border border-gray-250 dark:border-gray-700 p-8 rounded-3xl shadow-sm flex flex-col items-center justify-center min-h-[300px] space-y-6">
+          <h2 className="text-xl font-bold text-gray-900 dark:text-white w-full text-left">
+            📸 Upload Timetable
+          </h2>
 
-      {!data ? (
-        /* SETUP / UPLOAD STATE */
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
-          {/* Settings and Key Card */}
-          <div className="md:col-span-5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 p-6 rounded-2xl shadow-sm space-y-6">
-            <h2 className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
-              ⚙️ Setup Scanner
-            </h2>
-
-            <div className="space-y-2">
-              <label className="block text-xs font-semibold text-gray-550 uppercase tracking-wider">
-                Gemini API Key
-              </label>
-              <input
-                type="password"
-                value={apiKey}
-                onChange={handleSaveKey}
-                className="w-full px-4 py-2.5 rounded-xl border border-gray-250 dark:border-gray-700 bg-white dark:bg-gray-900 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/40"
-                placeholder="Enter Gemini API Key..."
-              />
-              <p className="text-[10px] text-gray-500">
-                Your key is stored locally in your browser. Get a free API Key from Google AI Studio.
-              </p>
-            </div>
-
-            <div className="border-t border-gray-150 dark:border-gray-700 pt-4 space-y-3">
-              <p className="text-xs font-medium text-gray-600 dark:text-gray-300">
-                Or try the scanner instantly using the pre-scanned timetable data:
-              </p>
+          {previewUrl ? (
+            <div className="relative w-full max-h-72 overflow-hidden rounded-2xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 flex justify-center">
+              <img src={previewUrl} alt="Timetable preview" className="object-contain h-72" />
               <button
                 type="button"
-                onClick={loadDemoData}
-                className="w-full py-2.5 bg-blue-600 hover:bg-blue-550 text-white rounded-xl text-xs font-bold shadow-md hover:scale-[0.98] transition cursor-pointer"
+                onClick={() => { setSelectedFile(null); setPreviewUrl(null); }}
+                className="absolute top-2 right-2 bg-red-600 hover:bg-red-550 text-white w-8 h-8 rounded-full flex items-center justify-center shadow-lg cursor-pointer"
               >
-                🚀 Load Demo Timetable
+                ✕
               </button>
             </div>
-          </div>
+          ) : (
+            <label className="w-full flex-1 flex flex-col items-center justify-center border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-2xl p-8 cursor-pointer hover:border-blue-500 transition-colors">
+              <span className="text-4xl mb-2">📁</span>
+              <span className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+                Click to choose or drop image file
+              </span>
+              <span className="text-xs text-gray-500 mt-1">PNG, JPG, JPEG up to 5MB</span>
+              <input type="file" accept="image/*" className="hidden" onChange={handleFileChange} />
+            </label>
+          )}
 
-          {/* Upload Card */}
-          <div className="md:col-span-7 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 p-6 rounded-2xl shadow-sm flex flex-col items-center justify-center min-h-[300px] space-y-4">
-            <h2 className="text-lg font-bold text-gray-900 dark:text-white w-full text-left">
-              📸 Upload Timetable
-            </h2>
-
-            {previewUrl ? (
-              <div className="relative w-full max-h-60 overflow-hidden rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 flex justify-center">
-                <img src={previewUrl} alt="Timetable preview" className="object-contain h-60" />
-                <button
-                  type="button"
-                  onClick={() => { setSelectedFile(null); setPreviewUrl(null); }}
-                  className="absolute top-2 right-2 bg-red-600 hover:bg-red-550 text-white w-7 h-7 rounded-full flex items-center justify-center shadow-lg cursor-pointer"
-                >
-                  ✕
-                </button>
-              </div>
+          <button
+            type="button"
+            onClick={scanTimetable}
+            disabled={loading || !selectedFile}
+            className="w-full py-3.5 bg-emerald-600 hover:bg-emerald-550 disabled:opacity-50 text-white rounded-xl text-sm font-bold shadow-lg shadow-emerald-600/10 cursor-pointer flex items-center justify-center gap-2 animate-pulse-subtle"
+          >
+            {loading ? (
+              <>
+                <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                <span>{statusText}</span>
+              </>
             ) : (
-              <label className="w-full flex-1 flex flex-col items-center justify-center border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-2xl p-6 cursor-pointer hover:border-blue-500 transition-colors">
-                <span className="text-3xl mb-2">📁</span>
-                <span className="text-sm font-semibold text-gray-700 dark:text-gray-300">
-                  Click to choose or drop image file
-                </span>
-                <span className="text-xs text-gray-500 mt-1">PNG, JPG, JPEG up to 5MB</span>
-                <input type="file" accept="image/*" className="hidden" onChange={handleFileChange} />
-              </label>
+              <>
+                <span>✨ Scan Timetable with AI</span>
+              </>
             )}
-
-            <button
-              type="button"
-              onClick={scanTimetable}
-              disabled={loading || !selectedFile}
-              className="w-full py-3 bg-emerald-600 hover:bg-emerald-550 disabled:opacity-50 text-white rounded-xl text-sm font-bold shadow-lg shadow-emerald-600/10 cursor-pointer flex items-center justify-center gap-2"
-            >
-              {loading ? (
-                <>
-                  <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                  <span>{statusText}</span>
-                </>
-              ) : (
-                <>
-                  <span>✨ Scan Timetable with AI</span>
-                </>
-              )}
-            </button>
-          </div>
+          </button>
         </div>
       ) : (
         /* VISUALIZATION DASHBOARD */

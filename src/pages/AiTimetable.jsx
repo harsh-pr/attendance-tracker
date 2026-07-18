@@ -129,7 +129,8 @@ Return the result strictly as a valid JSON object matching the following structu
           localStorage.setItem("PARSED_TIMETABLE_DATA", JSON.stringify(parsedData));
         } catch (error) {
           console.error("AI scanning failed", error);
-          alert("AI extraction failed. Please ensure the API key is correct and try again. Error: " + error.message);
+          const keySnippet = activeApiKey ? `${activeApiKey.substring(0, 6)}... (length: ${activeApiKey.length})` : "None";
+          alert(`AI extraction failed. Please ensure the API key is correct and try again.\nKey Used: ${keySnippet}\nError: ${error.message}`);
         } finally {
           setLoading(false);
           setStatusText("");

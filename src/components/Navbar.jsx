@@ -336,6 +336,7 @@ export default function Navbar() {
             <NavItem to="/">Home</NavItem>
             <NavItem to="/today">Detailed</NavItem>
             <NavItem to="/calendar">Calendar</NavItem>
+            <NavItem to="/ai-timetable">AI Timetable</NavItem>
           </nav>
 
           <div className="flex-1" />

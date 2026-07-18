@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Home from "./pages/Home";
 import Today from "./pages/Today";
 import Calendar from "./pages/Calendar";
+import AiTimetable from "./pages/AiTimetable";
 
 import Navbar from "./components/Navbar";
 import MobileNav from "./components/MobileNav";
@@ -60,6 +61,7 @@ function AppContent() {
           <Route path="/" element={<Home />} />
           <Route path="/today" element={<Today />} />
           <Route path="/calendar" element={<Calendar />} />
+          <Route path="/ai-timetable" element={<AiTimetable />} />
         </Routes>
       </main>
     </BrowserRouter>

@@ -88,29 +88,28 @@ function SubjectCard({ data, onClick }) {
   const { subject, attended, conducted, percentage, status } =
     data;
   const statusStyles = {
-    Safe: "bg-green-100 text-green-700 dark:bg-green-500/20 dark:text-green-200 border border-green-200 dark:border-green-500/30",
-    Risk: "bg-red-100 text-red-700 dark:bg-red-500/20 dark:text-red-200 border border-red-200 dark:border-red-500/30",
+    Safe: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20",
+    Risk: "bg-red-500/10 text-red-600 dark:text-red-400 border border-red-500/20",
     "No Data":
-      "bg-gray-100 text-gray-700 dark:bg-gray-500/20 dark:text-gray-200 border border-gray-200 dark:border-gray-700",
+      "bg-zinc-500/10 text-zinc-600 dark:text-zinc-400 border border-zinc-500/20",
   };
 
   return (
     <motion.div
-      variants={cardVariants}
-      whileHover={{ y: -4, scale: 1.02 }}
-      whileTap={{ scale: 0.97 }}
+      whileHover={{ y: -3, scale: 1.01 }}
+      whileTap={{ scale: 0.98 }}
       transition={{ type: "spring", stiffness: 400, damping: 25 }}
       onClick={onClick}
       className="
-        p-5 rounded-2xl
-        bg-white dark:bg-gray-800
-        border border-gray-200 dark:border-gray-700
-        cursor-pointer shadow-sm hover:shadow-xl transition-shadow
+        p-5 rounded-3xl
+        bg-white dark:bg-zinc-900
+        border border-zinc-200 dark:border-zinc-800
+        cursor-pointer shadow-sm hover:shadow-lg transition-shadow duration-200
       "
     >
       <div className="flex items-start justify-between gap-3">
         <div>
-          <h2 className="font-bold text-lg text-gray-900 dark:text-gray-100">
+          <h2 className="font-bold text-base text-zinc-900 dark:text-zinc-100">
             {subject.name}
           </h2>
           <p className="text-xs uppercase tracking-wider font-semibold text-gray-400 dark:text-gray-500 mt-0.5">

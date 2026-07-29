@@ -408,7 +408,9 @@ export default function Navbar() {
                       <div className="space-y-1 text-xs font-semibold">
                         <div className="flex items-center justify-between px-3 py-2 rounded-xl hover:bg-zinc-100 dark:hover:bg-zinc-800/60 transition-colors">
                           <span className="flex items-center gap-2">👤 Profile</span>
-                          <span className="text-[10px] text-zinc-400 font-mono">User</span>
+                          <span className="text-xs text-zinc-700 dark:text-zinc-300 font-bold truncate max-w-[120px]">
+                            {user?.displayName || user?.email?.split("@")[0] || "User"}
+                          </span>
                         </div>
 
                         <div className="flex items-center justify-between px-3 py-2 rounded-xl hover:bg-zinc-100 dark:hover:bg-zinc-800/60 transition-colors">

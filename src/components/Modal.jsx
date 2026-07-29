@@ -33,42 +33,43 @@ export default function Modal({
     <AnimatePresence>
       {open && (
         <div className="fixed inset-0 z-[9999] flex items-end sm:items-center justify-center p-0 sm:p-4">
-          {/* Backdrop Blur */}
+          {/* Backdrop */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.25 }}
+            transition={{ duration: 0.2 }}
             onClick={onClose}
-            className="fixed inset-0 bg-black/60 backdrop-blur-md"
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm"
           />
 
-          {/* Smooth Bottom Drawer / Floating Card */}
+          {/* Smooth Bottom Drawer / Card */}
           <motion.div
-            initial={{ y: "100%", opacity: 0.8 }}
+            initial={{ y: "100%", opacity: 0.9 }}
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: "100%", opacity: 0 }}
             transition={{
               type: "spring",
-              stiffness: 300,
-              damping: 30,
+              stiffness: 350,
+              damping: 32,
             }}
             className={`
               relative z-10 w-full ${SIZE_CLASSES[size] || SIZE_CLASSES.md}
               rounded-t-3xl sm:rounded-3xl
-              bg-zinc-900/95 dark:bg-zinc-900/95 text-zinc-100
-              border border-zinc-800/80
-              p-6 shadow-2xl backdrop-blur-xl
+              bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100
+              border border-zinc-200 dark:border-zinc-800
+              p-5 sm:p-6 shadow-2xl
               max-h-[88vh] sm:max-h-[85vh] flex flex-col overflow-hidden
+              will-change-transform
             `}
           >
             {/* Kokonut UI Drawer Drag Handle Bar */}
-            <div className="w-12 h-1.5 bg-zinc-700/60 rounded-full mx-auto mb-4 shrink-0 cursor-grab active:cursor-grabbing" />
+            <div className="w-12 h-1.5 bg-zinc-300 dark:bg-zinc-700 rounded-full mx-auto mb-4 shrink-0 cursor-grab" />
 
             {/* Optional Header Title */}
             {title && (
-              <div className="mb-4 pb-3 border-b border-zinc-800 flex items-center justify-between">
-                <h3 className="text-lg font-bold text-white">{title}</h3>
+              <div className="mb-4 pb-3 border-b border-zinc-200 dark:border-zinc-800 flex items-center justify-between">
+                <h3 className="text-lg font-bold text-zinc-900 dark:text-white">{title}</h3>
               </div>
             )}
 
@@ -79,17 +80,16 @@ export default function Modal({
 
             {/* Bottom Actions Footer */}
             {showCloseButton && (
-              <div className="mt-5 pt-3 border-t border-zinc-800/80 flex justify-end shrink-0">
+              <div className="mt-5 pt-3 border-t border-zinc-200 dark:border-zinc-800 flex justify-end shrink-0">
                 <motion.button
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.95 }}
                   onClick={onClose}
                   className="
                     px-5 py-2.5 rounded-xl
-                    bg-zinc-800 hover:bg-zinc-750 text-zinc-200
-                    text-xs font-semibold
-                    border border-zinc-700/60 shadow-sm
-                    cursor-pointer transition-all duration-200
+                    bg-zinc-900 text-white dark:bg-zinc-800 dark:hover:bg-zinc-700 dark:text-zinc-200
+                    text-xs font-bold shadow-sm
+                    cursor-pointer transition-all duration-150
                   "
                 >
                   Close

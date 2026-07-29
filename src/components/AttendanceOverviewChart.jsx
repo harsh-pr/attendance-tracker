@@ -86,16 +86,12 @@ export default function AttendanceOverviewChart() {
   return (
     <div
       className="
-        rounded-2xl p-6 transition-transform hover:scale-[1.01] overflow-hidden w-full max-w-full
-
-        /* LIGHT */
-        bg-white border border-gray-200 text-gray-900
-
-        /* DARK */
-        dark:bg-gray-800 dark:border-gray-700 dark:text-gray-100
+        rounded-3xl p-6 transition-transform overflow-hidden w-full max-w-full
+        bg-white border border-zinc-200 text-zinc-900
+        dark:bg-zinc-900 dark:border-zinc-800 dark:text-zinc-100 shadow-sm
       "
     >
-      <h2 className="text-lg font-semibold mb-4">
+      <h2 className="text-lg font-bold mb-4">
         Attendance – Last 7 Days
       </h2>
 

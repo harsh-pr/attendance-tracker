@@ -262,29 +262,38 @@ export default function Navbar() {
     setIsSemesterMenuOpen(false);
   }
 
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
   return (
     <>
-      <header className="fixed top-0 left-0 right-0 z-50 px-3 sm:px-6 pt-2 pb-1 bg-gradient-to-b from-white/90 via-white/80 to-transparent dark:from-zinc-950/90 dark:via-zinc-950/80 dark:to-transparent backdrop-blur-md">
-        <div className="max-w-6xl mx-auto h-14 px-4 rounded-2xl bg-white/80 dark:bg-zinc-900/80 border border-zinc-200/80 dark:border-zinc-800/80 shadow-lg shadow-black/5 dark:shadow-black/20 flex items-center justify-between backdrop-blur-xl">
+      <header className="fixed top-0 left-0 right-0 z-50 px-3 sm:px-6 pt-3 pb-2 bg-gradient-to-b from-zinc-50/90 via-zinc-50/60 to-transparent dark:from-zinc-950/90 dark:via-zinc-950/60 dark:to-transparent backdrop-blur-md">
+        <div className="max-w-6xl mx-auto h-14 px-3.5 sm:px-5 rounded-full bg-white/80 dark:bg-zinc-900/80 border border-zinc-200/80 dark:border-zinc-800/80 shadow-[0_8px_30px_rgb(0,0,0,0.08)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.4)] flex items-center justify-between backdrop-blur-2xl transition-all duration-300">
           
-          {/* Logo / Title */}
-          <div className="flex items-center gap-3">
-            <h1 className="text-lg sm:text-xl font-black tracking-tight text-zinc-900 dark:text-white font-[Poppins] flex items-center gap-1.5">
-              <span className="w-2.5 h-2.5 rounded-full bg-blue-500 animate-pulse" />
-              AttendanceManager
-            </h1>
+          {/* Logo & Semester Selector */}
+          <div className="flex items-center gap-2.5 sm:gap-3">
+            <NavLink to="/" className="flex items-center gap-2 group cursor-pointer select-none">
+              <div className="relative flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-tr from-blue-600 via-indigo-600 to-violet-600 shadow-md shadow-blue-500/20 group-hover:scale-105 transition-transform duration-300">
+                <span className="text-white font-black text-xs tracking-wider">AM</span>
+                <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald-400 border-2 border-white dark:border-zinc-900 animate-pulse" />
+              </div>
+              <span className="text-sm sm:text-base font-black tracking-tight font-[Poppins] bg-gradient-to-r from-zinc-900 via-zinc-700 to-zinc-900 dark:from-white dark:via-zinc-100 dark:to-zinc-300 bg-clip-text text-transparent hidden min-[400px]:inline">
+                AttendanceManager
+              </span>
+            </NavLink>
 
-            {/* Semester Selector Menu */}
-            <div ref={menuRef} className="relative hidden sm:block ml-2">
+            {/* Semester Selector Pill Dropdown */}
+            <div ref={menuRef} className="relative">
               <motion.button
+                whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.96 }}
                 type="button"
                 onClick={() => setIsSemesterMenuOpen((prev) => !prev)}
-                className="px-3 py-1.5 rounded-xl bg-zinc-100 dark:bg-zinc-800/80 text-zinc-800 dark:text-zinc-200 text-xs font-semibold inline-flex items-center gap-2 border border-zinc-200 dark:border-zinc-700/60 cursor-pointer hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors"
+                className="px-3 py-1.5 rounded-full bg-zinc-100/90 dark:bg-zinc-800/70 text-zinc-800 dark:text-zinc-200 text-xs font-bold inline-flex items-center gap-1.5 border border-zinc-200/80 dark:border-zinc-700/50 cursor-pointer hover:bg-zinc-200/90 dark:hover:bg-zinc-700/80 transition-all shadow-xs"
               >
-                <span className="truncate max-w-[120px]">{currentSemesterName}</span>
+                <span className="w-1.5 h-1.5 rounded-full bg-blue-500" />
+                <span className="truncate max-w-[90px] sm:max-w-[120px]">{currentSemesterName}</span>
                 <span
-                  className={`text-xs transition-transform duration-300 ${
+                  className={`text-[10px] text-zinc-400 transition-transform duration-300 ${
                     isSemesterMenuOpen ? "rotate-180" : "rotate-0"
                   }`}
                 >
@@ -299,9 +308,9 @@ export default function Navbar() {
                     animate={{ opacity: 1, scale: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.95, y: -10 }}
                     transition={{ duration: 0.18, ease: "easeOut" }}
-                    className="absolute left-0 mt-2 w-64 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white/95 dark:bg-zinc-900/95 shadow-2xl backdrop-blur-xl overflow-hidden z-50 p-2 space-y-1"
+                    className="absolute left-0 mt-2 w-64 rounded-3xl border border-zinc-200 dark:border-zinc-800 bg-white/95 dark:bg-zinc-900/95 shadow-2xl backdrop-blur-2xl overflow-hidden z-50 p-2 space-y-1"
                   >
-                    <p className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-zinc-400">
+                    <p className="px-3 py-1.5 text-[10px] font-extrabold uppercase tracking-wider text-zinc-400">
                       Select Semester
                     </p>
 
@@ -313,9 +322,9 @@ export default function Navbar() {
                           setCurrentSemesterId(sem.id);
                           setIsSemesterMenuOpen(false);
                         }}
-                        className={`w-full px-3 py-2 rounded-xl text-left text-xs font-medium transition ${
+                        className={`w-full px-3 py-2 rounded-xl text-left text-xs font-bold transition-all ${
                           sem.id === currentSemesterId
-                            ? "bg-blue-500/10 text-blue-600 dark:text-blue-400 font-bold"
+                            ? "bg-blue-500/10 text-blue-600 dark:text-blue-400 font-extrabold border border-blue-500/20"
                             : "text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800"
                         }`}
                       >
@@ -323,18 +332,18 @@ export default function Navbar() {
                       </button>
                     ))}
 
-                    <div className="border-t border-zinc-200 dark:border-zinc-800 my-1" />
+                    <div className="border-t border-zinc-200 dark:border-zinc-800/80 my-1" />
                     <button
                       type="button"
                       onClick={openCreateSemesterModal}
-                      className="w-full px-3 py-2 rounded-xl text-left text-xs font-semibold text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10"
+                      className="w-full px-3 py-2 rounded-xl text-left text-xs font-bold text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10 transition-colors"
                     >
                       + Add new semester
                     </button>
                     <button
                       type="button"
                       onClick={openTimetableModal}
-                      className="w-full px-3 py-2 rounded-xl text-left text-xs font-semibold text-indigo-600 dark:text-indigo-400 hover:bg-indigo-500/10"
+                      className="w-full px-3 py-2 rounded-xl text-left text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:bg-indigo-500/10 transition-colors"
                     >
                       ✎ Edit timetable
                     </button>
@@ -345,7 +354,7 @@ export default function Navbar() {
                         holdDuration={1500}
                         variant="danger"
                         icon="🗑️"
-                        className="w-full text-xs"
+                        className="w-full text-xs rounded-xl py-1.5"
                       >
                         Delete this semester
                       </HoldButton>
@@ -356,26 +365,27 @@ export default function Navbar() {
             </div>
           </div>
 
-          {/* Kokonut Morphic Navbar Tabs */}
-          <nav className="hidden sm:flex items-center gap-1 bg-zinc-100/80 dark:bg-zinc-800/50 p-1 rounded-2xl border border-zinc-200/50 dark:border-zinc-700/40">
+          {/* Center: Kokonut Morphic Segmented Navbar Bar */}
+          <nav className="hidden lg:flex items-center gap-1 bg-zinc-100/90 dark:bg-zinc-950/80 p-1 rounded-full border border-zinc-200/80 dark:border-zinc-800/80 shadow-inner">
             <NavItem to="/">Home</NavItem>
             <NavItem to="/today">Detailed</NavItem>
             <NavItem to="/calendar">Calendar</NavItem>
             <NavItem to="/ai-timetable">Class Timetable</NavItem>
           </nav>
 
-          {/* Actions & Kokonut Profile Dropdown */}
+          {/* Right Actions & Profile Dropdown */}
           <div className="flex items-center gap-2">
             {/* THEME TOGGLE */}
             <motion.button
               whileTap={{ scale: 0.9 }}
               onClick={toggleTheme}
-              className="hidden sm:flex relative w-12 h-6 rounded-full bg-zinc-200 dark:bg-zinc-800 transition-colors duration-300 cursor-pointer items-center p-0.5 border border-zinc-300 dark:border-zinc-700"
+              className="relative w-12 h-6 rounded-full bg-zinc-200/90 dark:bg-zinc-800/90 transition-colors duration-300 cursor-pointer flex items-center p-0.5 border border-zinc-300/80 dark:border-zinc-700/80 shadow-inner"
+              title="Toggle theme"
             >
               <motion.span
                 animate={{ x: theme === "dark" ? 22 : 2 }}
                 transition={{ type: "spring", stiffness: 500, damping: 30 }}
-                className="w-4 h-4 rounded-full bg-white dark:bg-zinc-200 flex items-center justify-center text-[10px] leading-none shadow-sm"
+                className="w-4 h-4 rounded-full bg-white dark:bg-zinc-200 flex items-center justify-center text-[10px] leading-none shadow-md"
               >
                 {theme === "dark" ? "🌙" : "🌞"}
               </motion.span>
@@ -385,14 +395,14 @@ export default function Navbar() {
             {user && (
               <div ref={profileMenuRef} className="relative inline-block text-left">
                 <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
+                  whileHover={{ scale: 1.06 }}
+                  whileTap={{ scale: 0.94 }}
                   type="button"
                   onClick={() => setIsProfileMenuOpen((prev) => !prev)}
-                  className="relative p-0.5 rounded-full bg-gradient-to-tr from-blue-500 via-indigo-500 to-purple-500 cursor-pointer shadow-md"
+                  className="relative p-[1.5px] rounded-full bg-gradient-to-tr from-blue-500 via-indigo-500 to-violet-500 cursor-pointer shadow-md hover:shadow-blue-500/20 transition-all"
                   aria-label="User profile menu"
                 >
-                  <div className="w-8 h-8 rounded-full bg-zinc-900 text-white font-bold flex items-center justify-center text-xs">
+                  <div className="w-8 h-8 rounded-full bg-zinc-900 text-white font-bold flex items-center justify-center text-xs shadow-inner">
                     {user.displayName ? user.displayName.charAt(0).toUpperCase() : "👤"}
                   </div>
                 </motion.button>
@@ -404,30 +414,30 @@ export default function Navbar() {
                       animate={{ opacity: 1, scale: 1, y: 0 }}
                       exit={{ opacity: 0, scale: 0.95, y: -10 }}
                       transition={{ duration: 0.18, ease: "easeOut" }}
-                      className="absolute right-0 mt-2 w-72 rounded-3xl border border-zinc-200 dark:border-zinc-800 bg-white/95 dark:bg-zinc-900/95 shadow-[0_20px_50px_rgba(0,0,0,0.3)] backdrop-blur-xl overflow-hidden z-[100] p-3 text-zinc-800 dark:text-zinc-200 space-y-2.5"
+                      className="absolute right-0 mt-2 w-72 rounded-3xl border border-zinc-200 dark:border-zinc-800 bg-white/95 dark:bg-zinc-900/95 shadow-2xl backdrop-blur-2xl overflow-hidden z-[100] p-3 text-zinc-800 dark:text-zinc-200 space-y-2.5"
                     >
                       {/* Menu List matching Kokonut UI */}
                       <div className="space-y-1 text-xs font-semibold">
                         <div className="flex items-center justify-between px-3 py-2 rounded-xl hover:bg-zinc-100 dark:hover:bg-zinc-800/60 transition-colors">
-                          <span className="flex items-center gap-2">👤 Profile</span>
+                          <span className="flex items-center gap-2 font-bold">👤 Profile</span>
                           <span className="text-xs text-zinc-700 dark:text-zinc-300 font-bold truncate max-w-[120px]">
                             {user?.displayName || user?.email?.split("@")[0] || "User"}
                           </span>
                         </div>
 
                         <div className="flex items-center justify-between px-3 py-2 rounded-xl hover:bg-zinc-100 dark:hover:bg-zinc-800/60 transition-colors">
-                          <span className="flex items-center gap-2">⚡ Active Semester</span>
-                          <span className="px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-600 dark:text-blue-400 text-[10px] font-bold truncate max-w-[100px]">
+                          <span className="flex items-center gap-2 font-bold">⚡ Active Semester</span>
+                          <span className="px-2.5 py-0.5 rounded-full bg-blue-500/10 text-blue-600 dark:text-blue-400 text-[10px] font-extrabold truncate max-w-[100px] border border-blue-500/20">
                             {currentSemesterName}
                           </span>
                         </div>
 
                         <div className="flex items-center justify-between px-3 py-2 rounded-xl hover:bg-zinc-100 dark:hover:bg-zinc-800/60 transition-colors">
-                          <span className="flex items-center gap-2">📊 Overall Attendance</span>
-                          <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                          <span className="flex items-center gap-2 font-bold">📊 Overall Attendance</span>
+                          <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-extrabold border ${
                             overallPercentage >= 75
-                              ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
-                              : "bg-red-500/10 text-red-600 dark:text-red-400"
+                              ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20"
+                              : "bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/20"
                           }`}>
                             {overallPercentage}%
                           </span>
@@ -435,8 +445,11 @@ export default function Navbar() {
 
                         <button
                           type="button"
-                          onClick={openTimetableModal}
-                          className="w-full flex items-center justify-between px-3 py-2 rounded-xl hover:bg-zinc-100 dark:hover:bg-zinc-800/60 text-left cursor-pointer transition-colors"
+                          onClick={() => {
+                            openTimetableModal();
+                            setIsProfileMenuOpen(false);
+                          }}
+                          className="w-full flex items-center justify-between px-3 py-2 rounded-xl hover:bg-zinc-100 dark:hover:bg-zinc-800/60 text-left cursor-pointer transition-colors font-bold"
                         >
                           <span className="flex items-center gap-2">✎ Edit Timetable</span>
                         </button>
@@ -444,8 +457,11 @@ export default function Navbar() {
                         {!user.providerData.some((p) => p.providerId === "google.com") && (
                           <button
                             type="button"
-                            onClick={handleConnectGoogle}
-                            className="w-full flex items-center justify-between px-3 py-2 rounded-xl hover:bg-zinc-100 dark:hover:bg-zinc-800/60 text-left text-blue-600 dark:text-blue-400 cursor-pointer transition-colors"
+                            onClick={() => {
+                              handleConnectGoogle();
+                              setIsProfileMenuOpen(false);
+                            }}
+                            className="w-full flex items-center justify-between px-3 py-2 rounded-xl hover:bg-zinc-100 dark:hover:bg-zinc-800/60 text-left text-blue-600 dark:text-blue-400 cursor-pointer transition-colors font-bold"
                           >
                             <span className="flex items-center gap-2">🔗 Link Google Account</span>
                           </button>
@@ -503,8 +519,91 @@ export default function Navbar() {
                 </AnimatePresence>
               </div>
             )}
+
+            {/* Mobile Hamburger Menu Button */}
+            <motion.button
+              whileTap={{ scale: 0.9 }}
+              type="button"
+              onClick={() => setIsMobileMenuOpen((prev) => !prev)}
+              className="lg:hidden flex items-center justify-center w-8 h-8 rounded-full bg-zinc-100 dark:bg-zinc-800/80 text-zinc-700 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-700 cursor-pointer shadow-xs"
+              aria-label="Toggle navigation menu"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                {isMobileMenuOpen ? (
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
+                ) : (
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M4 6h16M4 12h16M4 18h16" />
+                )}
+              </svg>
+            </motion.button>
           </div>
         </div>
+
+        {/* Mobile Navigation Drawer Sheet */}
+        <AnimatePresence>
+          {isMobileMenuOpen && (
+            <motion.div
+              initial={{ opacity: 0, height: 0, y: -10 }}
+              animate={{ opacity: 1, height: "auto", y: 0 }}
+              exit={{ opacity: 0, height: 0, y: -10 }}
+              transition={{ duration: 0.2, ease: "easeOut" }}
+              className="lg:hidden mt-2 max-w-6xl mx-auto rounded-3xl bg-white/95 dark:bg-zinc-900/95 border border-zinc-200 dark:border-zinc-800 p-3 shadow-2xl backdrop-blur-2xl overflow-hidden space-y-1"
+            >
+              <NavLink
+                to="/"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className={({ isActive }) =>
+                  `flex items-center gap-2.5 px-4 py-2.5 rounded-2xl text-xs font-bold transition-all ${
+                    isActive
+                      ? "bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20"
+                      : "text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                  }`
+                }
+              >
+                <span>🏠</span> Home
+              </NavLink>
+              <NavLink
+                to="/today"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className={({ isActive }) =>
+                  `flex items-center gap-2.5 px-4 py-2.5 rounded-2xl text-xs font-bold transition-all ${
+                    isActive
+                      ? "bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20"
+                      : "text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                  }`
+                }
+              >
+                <span>📊</span> Detailed
+              </NavLink>
+              <NavLink
+                to="/calendar"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className={({ isActive }) =>
+                  `flex items-center gap-2.5 px-4 py-2.5 rounded-2xl text-xs font-bold transition-all ${
+                    isActive
+                      ? "bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20"
+                      : "text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                  }`
+                }
+              >
+                <span>📅</span> Calendar
+              </NavLink>
+              <NavLink
+                to="/ai-timetable"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className={({ isActive }) =>
+                  `flex items-center gap-2.5 px-4 py-2.5 rounded-2xl text-xs font-bold transition-all ${
+                    isActive
+                      ? "bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20"
+                      : "text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                  }`
+                }
+              >
+                <span>🗓️</span> Class Timetable
+              </NavLink>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </header>
 
       <Modal open={isCreateSemesterOpen} onClose={() => setIsCreateSemesterOpen(false)} size="md">

@@ -134,7 +134,16 @@ export default function AiTimetable() {
   const [activeTab, setActiveTab] = useState("grid"); // grid | list | faculty
   const [loadingDb, setLoadingDb] = useState(true);
 
-  // Form states for editing a cell slot
+  // ── DRAFT states for modals (only committed on explicit Save) ──────────
+  // Structure modal drafts
+  const [draftTimeSlots, setDraftTimeSlots] = useState([]);
+  const [draftBreaks, setDraftBreaks] = useState([]);
+  const [draftActiveDays, setDraftActiveDays] = useState([]);
+
+  // Metadata modal drafts
+  const [draftMetadata, setDraftMetadata] = useState({});
+
+  // Cell edit modal drafts
   const [cellSubject, setCellSubject] = useState("");
   const [cellTeacher, setCellTeacher] = useState("");
   const [cellRoom, setCellRoom] = useState("");
@@ -192,6 +201,20 @@ export default function AiTimetable() {
     localStorage.setItem("TT_DAYS", JSON.stringify(newDays));
   };
 
+  // ── MODAL OPEN HANDLERS (snapshot current state into drafts) ────────────
+  const openStructureModal = () => {
+    setDraftTimeSlots(JSON.parse(JSON.stringify(timeSlots)));
+    setDraftBreaks(JSON.parse(JSON.stringify(breaks)));
+    setDraftActiveDays([...activeDays]);
+    setStructureTab("hours");
+    setIsStructureModalOpen(true);
+  };
+
+  const openMetadataModal = () => {
+    setDraftMetadata({ ...metadata });
+    setIsMetadataModalOpen(true);
+  };
+
   const handleCellClick = (day, index) => {
     if (!isEditMode) return;
     const cell = (timetable[day] || [])[index] || { subject: "", teacher: "", room: "", type: "free", colSpan: 1 };
@@ -203,12 +226,26 @@ export default function AiTimetable() {
     setCellColSpan(cell.colSpan || 1);
   };
 
+  // ── DISCARD (close without saving) ─────────────────────────────────────
+  const discardStructureModal = () => {
+    setIsStructureModalOpen(false);
+    // Drafts are simply abandoned — real state is untouched
+  };
+
+  const discardMetadataModal = () => {
+    setIsMetadataModalOpen(false);
+  };
+
+  const discardCellEdit = () => {
+    setEditingCell(null);
+  };
+
+  // ── SAVE & COMMIT handlers ─────────────────────────────────────────────
   const saveCellEdit = async () => {
     if (!editingCell) return;
     const { day, index } = editingCell;
     const currentDaySchedule = [...(timetable[day] || [])];
     
-    // Ensure array is large enough
     while (currentDaySchedule.length <= index) {
       currentDaySchedule.push({ subject: "", teacher: "", room: "", type: "free", colSpan: 1 });
     }
@@ -231,97 +268,75 @@ export default function AiTimetable() {
       };
     }
 
-    const updatedTT = {
-      ...timetable,
-      [day]: currentDaySchedule,
-    };
-
+    const updatedTT = { ...timetable, [day]: currentDaySchedule };
     setTimetable(updatedTT);
     setEditingCell(null);
 
     saveToLocalStorage(metadata, faculty, updatedTT);
     await saveCollegeTimetable(currentSemesterId, {
-      metadata,
-      faculty,
-      timetable: updatedTT,
-      timeSlots,
-      breaks,
-      activeDays
+      metadata, faculty, timetable: updatedTT, timeSlots, breaks, activeDays
     });
   };
 
-  const handleMetadataChange = async (field, value) => {
-    const updatedMeta = { ...metadata, [field]: value };
-    setMetadata(updatedMeta);
-    saveToLocalStorage(updatedMeta, faculty, timetable);
+  const saveMetadataModal = async () => {
+    setMetadata(draftMetadata);
+    setIsMetadataModalOpen(false);
+    saveToLocalStorage(draftMetadata, faculty, timetable);
     await saveCollegeTimetable(currentSemesterId, {
-      metadata: updatedMeta,
-      faculty,
-      timetable,
-      timeSlots,
-      breaks,
-      activeDays
+      metadata: draftMetadata, faculty, timetable, timeSlots, breaks, activeDays
     });
   };
 
-  // Save structure customizations
-  const saveStructureChanges = async (newSlots, newBreaks, newDays) => {
-    setTimeSlots(newSlots);
-    setBreaks(newBreaks);
-    setActiveDays(newDays);
+  const commitStructureChanges = async () => {
+    // Commit drafts to real state
+    setTimeSlots(draftTimeSlots);
+    setBreaks(draftBreaks);
+    setActiveDays(draftActiveDays);
 
-    // Make sure timetable grid has elements for all slots
+    // Ensure timetable grid has enough slots
     const updatedTT = { ...timetable };
     ALL_DAYS.forEach((day) => {
       const arr = [...(updatedTT[day] || [])];
-      while (arr.length < newSlots.length) {
+      while (arr.length < draftTimeSlots.length) {
         arr.push({ subject: "", teacher: "", room: "", type: "free", colSpan: 1 });
       }
       updatedTT[day] = arr;
     });
 
     setTimetable(updatedTT);
-    saveToLocalStorage(metadata, faculty, updatedTT, newSlots, newBreaks, newDays);
+    setIsStructureModalOpen(false);
+
+    saveToLocalStorage(metadata, faculty, updatedTT, draftTimeSlots, draftBreaks, draftActiveDays);
     await saveCollegeTimetable(currentSemesterId, {
-      metadata,
-      faculty,
-      timetable: updatedTT,
-      timeSlots: newSlots,
-      breaks: newBreaks,
-      activeDays: newDays
+      metadata, faculty, timetable: updatedTT,
+      timeSlots: draftTimeSlots, breaks: draftBreaks, activeDays: draftActiveDays
     });
   };
 
-  // Add Time Slot
+  // ── DRAFT-ONLY mutators for Structure modal (no persistence) ───────────
   const handleAddTimeSlot = () => {
-    const nextIdx = timeSlots.length + 1;
+    const nextIdx = draftTimeSlots.length + 1;
     const newSlot = {
       id: `ts_${Date.now()}`,
       label: `${nextIdx + 8} AM - ${nextIdx + 9} AM`,
       start: `${nextIdx + 8}:00`,
       end: `${nextIdx + 9}:00`,
     };
-    const updated = [...timeSlots, newSlot];
-    saveStructureChanges(updated, breaks, activeDays);
+    setDraftTimeSlots((prev) => [...prev, newSlot]);
   };
 
-  // Remove Time Slot
   const handleRemoveTimeSlot = (idx) => {
-    if (timeSlots.length <= 1) {
+    if (draftTimeSlots.length <= 1) {
       alert("At least one time slot is required.");
       return;
     }
-    const updated = timeSlots.filter((_, i) => i !== idx);
-    saveStructureChanges(updated, breaks, activeDays);
+    setDraftTimeSlots((prev) => prev.filter((_, i) => i !== idx));
   };
 
-  // Update Time Slot
   const handleSlotChange = (idx, field, value) => {
-    const updated = timeSlots.map((s, i) => i === idx ? { ...s, [field]: value } : s);
-    saveStructureChanges(updated, breaks, activeDays);
+    setDraftTimeSlots((prev) => prev.map((s, i) => i === idx ? { ...s, [field]: value } : s));
   };
 
-  // Add Break
   const handleAddBreak = () => {
     const newBreak = {
       id: `br_${Date.now()}`,
@@ -330,41 +345,39 @@ export default function AiTimetable() {
       time: "15 MIN BREAK",
       afterSlotIndex: 0,
     };
-    const updated = [...breaks, newBreak];
-    saveStructureChanges(timeSlots, updated, activeDays);
+    setDraftBreaks((prev) => [...prev, newBreak]);
   };
 
-  // Remove Break
   const handleRemoveBreak = (idx) => {
-    const updated = breaks.filter((_, i) => i !== idx);
-    saveStructureChanges(timeSlots, updated, activeDays);
+    setDraftBreaks((prev) => prev.filter((_, i) => i !== idx));
   };
 
-  // Update Break
   const handleBreakChange = (idx, field, value) => {
-    const updated = breaks.map((b, i) => {
+    setDraftBreaks((prev) => prev.map((b, i) => {
       if (i !== idx) return b;
       if (field === "label") {
         return { ...b, label: value, letters: (value || "BREAK").toUpperCase().split("") };
       }
       return { ...b, [field]: value };
-    });
-    saveStructureChanges(timeSlots, updated, activeDays);
+    }));
   };
 
-  // Toggle Day
   const handleToggleDay = (dayKey) => {
-    let updated;
-    if (activeDays.includes(dayKey)) {
-      if (activeDays.length <= 1) {
-        alert("At least one working day is required.");
-        return;
+    setDraftActiveDays((prev) => {
+      if (prev.includes(dayKey)) {
+        if (prev.length <= 1) {
+          alert("At least one working day is required.");
+          return prev;
+        }
+        return prev.filter((d) => d !== dayKey);
       }
-      updated = activeDays.filter((d) => d !== dayKey);
-    } else {
-      updated = [...activeDays, dayKey];
-    }
-    saveStructureChanges(timeSlots, breaks, updated);
+      return [...prev, dayKey];
+    });
+  };
+
+  // ── DRAFT-ONLY mutator for Metadata modal ──────────────────────────────
+  const handleDraftMetadataChange = (field, value) => {
+    setDraftMetadata((prev) => ({ ...prev, [field]: value }));
   };
 
   const handleFacultyChange = async (index, field, value) => {
@@ -672,7 +685,7 @@ export default function AiTimetable() {
             whileHover={{ scale: 1.03 }}
             whileTap={{ scale: 0.95 }}
             type="button"
-            onClick={() => setIsStructureModalOpen(true)}
+            onClick={openStructureModal}
             className="px-4 h-9 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold rounded-xl shadow-sm transition cursor-pointer flex items-center justify-center gap-1.5"
           >
             🛠️ Customize Hours & Days
@@ -682,7 +695,7 @@ export default function AiTimetable() {
             whileHover={{ scale: 1.03 }}
             whileTap={{ scale: 0.95 }}
             type="button"
-            onClick={() => setIsMetadataModalOpen(true)}
+            onClick={openMetadataModal}
             className="px-4 h-9 bg-zinc-200 hover:bg-zinc-300 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-800 dark:text-zinc-200 text-xs font-bold rounded-xl transition cursor-pointer flex items-center justify-center gap-1.5"
           >
             ⚙️ Edit Details
@@ -971,7 +984,7 @@ export default function AiTimetable() {
                 </div>
                 <button
                   type="button"
-                  onClick={() => setIsStructureModalOpen(false)}
+                  onClick={discardStructureModal}
                   className="w-8 h-8 rounded-full bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 text-zinc-500 flex items-center justify-center font-bold text-sm transition cursor-pointer"
                 >
                   ✕
@@ -989,7 +1002,7 @@ export default function AiTimetable() {
                       : "text-zinc-500 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-200"
                   }`}
                 >
-                  🕒 Time Slots ({timeSlots.length})
+                  🕒 Time Slots ({draftTimeSlots.length})
                 </button>
                 <button
                   type="button"
@@ -1000,7 +1013,7 @@ export default function AiTimetable() {
                       : "text-zinc-500 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-200"
                   }`}
                 >
-                  ☕ Breaks ({breaks.length})
+                  ☕ Breaks ({draftBreaks.length})
                 </button>
                 <button
                   type="button"
@@ -1011,7 +1024,7 @@ export default function AiTimetable() {
                       : "text-zinc-500 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-200"
                   }`}
                 >
-                  📅 Days ({activeDays.length})
+                  📅 Days ({draftActiveDays.length})
                 </button>
               </div>
 
@@ -1030,7 +1043,7 @@ export default function AiTimetable() {
                   </div>
 
                   <div className="space-y-2.5 max-h-72 overflow-y-auto pr-1">
-                    {timeSlots.map((slot, idx) => (
+                    {draftTimeSlots.map((slot, idx) => (
                       <div
                         key={slot.id || idx}
                         className="p-3 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-2xl flex items-center justify-between gap-2"
@@ -1074,7 +1087,7 @@ export default function AiTimetable() {
                   </div>
 
                   <div className="space-y-3 max-h-72 overflow-y-auto pr-1">
-                    {breaks.map((b, idx) => (
+                    {draftBreaks.map((b, idx) => (
                       <div
                         key={b.id || idx}
                         className="p-3.5 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-2xl space-y-2.5 text-left"
@@ -1115,7 +1128,7 @@ export default function AiTimetable() {
                               onChange={(e) => handleBreakChange(idx, "afterSlotIndex", parseInt(e.target.value, 10))}
                               className="w-full mt-1 px-2.5 py-1 text-xs rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 font-bold text-zinc-900 dark:text-white"
                             >
-                              {timeSlots.map((slot, sIdx) => (
+                              {draftTimeSlots.map((slot, sIdx) => (
                                 <option key={slot.id || sIdx} value={sIdx}>
                                   Slot {sIdx + 1}: {slot.label}
                                 </option>
@@ -1125,7 +1138,7 @@ export default function AiTimetable() {
                         </div>
                       </div>
                     ))}
-                    {breaks.length === 0 && (
+                    {draftBreaks.length === 0 && (
                       <p className="text-xs text-zinc-400 py-4 text-center">No custom breaks added. Click "+ Add Break" to insert break columns.</p>
                     )}
                   </div>
@@ -1139,7 +1152,7 @@ export default function AiTimetable() {
 
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                     {ALL_DAYS.map((dayKey) => {
-                      const isActive = activeDays.includes(dayKey);
+                      const isActive = draftActiveDays.includes(dayKey);
                       return (
                         <button
                           key={dayKey}
@@ -1160,13 +1173,20 @@ export default function AiTimetable() {
                 </div>
               )}
 
-              <div className="pt-2 flex justify-end border-t border-zinc-200 dark:border-zinc-800">
+              <div className="pt-2 flex justify-end gap-2 border-t border-zinc-200 dark:border-zinc-800">
                 <button
                   type="button"
-                  onClick={() => setIsStructureModalOpen(false)}
+                  onClick={discardStructureModal}
+                  className="px-4 py-2 bg-zinc-200 hover:bg-zinc-300 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-800 dark:text-zinc-200 text-xs font-bold rounded-xl cursor-pointer shadow-sm"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={commitStructureChanges}
                   className="px-5 py-2 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold rounded-xl cursor-pointer shadow-md"
                 >
-                  Done & Save Structure
+                  💾 Save Structure
                 </button>
               </div>
             </motion.div>
@@ -1191,8 +1211,8 @@ export default function AiTimetable() {
                   Semester / Class Name
                   <input
                     type="text"
-                    value={metadata.semester}
-                    onChange={(e) => handleMetadataChange("semester", e.target.value)}
+                    value={draftMetadata.semester || ""}
+                    onChange={(e) => handleDraftMetadataChange("semester", e.target.value)}
                     className="w-full mt-1.5 px-3 py-2 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 text-xs font-medium focus:outline-none text-zinc-900 dark:text-white focus:ring-2 focus:ring-blue-500/40"
                   />
                 </label>
@@ -1201,8 +1221,8 @@ export default function AiTimetable() {
                   Department
                   <input
                     type="text"
-                    value={metadata.department}
-                    onChange={(e) => handleMetadataChange("department", e.target.value)}
+                    value={draftMetadata.department || ""}
+                    onChange={(e) => handleDraftMetadataChange("department", e.target.value)}
                     className="w-full mt-1.5 px-3 py-2 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 text-xs font-medium focus:outline-none text-zinc-900 dark:text-white focus:ring-2 focus:ring-blue-500/40"
                   />
                 </label>
@@ -1211,8 +1231,8 @@ export default function AiTimetable() {
                   Class Advisor
                   <input
                     type="text"
-                    value={metadata.classAdvisor}
-                    onChange={(e) => handleMetadataChange("classAdvisor", e.target.value)}
+                    value={draftMetadata.classAdvisor || ""}
+                    onChange={(e) => handleDraftMetadataChange("classAdvisor", e.target.value)}
                     className="w-full mt-1.5 px-3 py-2 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 text-xs font-medium focus:outline-none text-zinc-900 dark:text-white focus:ring-2 focus:ring-blue-500/40"
                   />
                 </label>
@@ -1221,20 +1241,27 @@ export default function AiTimetable() {
                   Default Room No
                   <input
                     type="text"
-                    value={metadata.roomNo}
-                    onChange={(e) => handleMetadataChange("roomNo", e.target.value)}
+                    value={draftMetadata.roomNo || ""}
+                    onChange={(e) => handleDraftMetadataChange("roomNo", e.target.value)}
                     className="w-full mt-1.5 px-3 py-2 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 text-xs font-medium focus:outline-none text-zinc-900 dark:text-white focus:ring-2 focus:ring-blue-500/40"
                   />
                 </label>
               </div>
 
-              <div className="pt-2 flex justify-end">
+              <div className="pt-2 flex justify-end gap-2">
                 <button
                   type="button"
-                  onClick={() => setIsMetadataModalOpen(false)}
+                  onClick={discardMetadataModal}
+                  className="px-4 py-2 bg-zinc-200 hover:bg-zinc-300 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-800 dark:text-zinc-200 text-xs font-bold rounded-xl cursor-pointer shadow-sm"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={saveMetadataModal}
                   className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold rounded-xl cursor-pointer shadow-md"
                 >
-                  Close
+                  💾 Save Settings
                 </button>
               </div>
             </motion.div>
@@ -1320,7 +1347,7 @@ export default function AiTimetable() {
               <div className="pt-2 flex justify-end gap-2">
                 <button
                   type="button"
-                  onClick={() => setEditingCell(null)}
+                  onClick={discardCellEdit}
                   className="px-4 py-2 bg-zinc-200 hover:bg-zinc-300 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-800 dark:text-zinc-200 text-xs font-bold rounded-xl cursor-pointer shadow-sm"
                 >
                   Cancel

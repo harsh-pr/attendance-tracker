@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, Fragment } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useSemester } from "../context/SemesterContext";
 import { getCollegeTimetable, saveCollegeTimetable } from "../firebase/firestoreService";
@@ -35,7 +35,7 @@ const DEFAULT_TIMETABLE = {
     { subject: "DS&BAD", teacher: "AC", room: "Room No. - 203", type: "theory", colSpan: 1 },
     { subject: "DBS", teacher: "PM", room: "Room No. - 203", type: "theory", colSpan: 1 },
     { subject: "ADSL(A) / SQL(B) / ED(C)", teacher: "AC/PM/NS", room: "Lab No. - 103/107/105", type: "lab", colSpan: 2 },
-    { subject: "", teacher: "", room: "", type: "free", colSpan: 1 }, // hidden placeholder
+    { subject: "", teacher: "", room: "", type: "free", colSpan: 1 },
     { subject: "", teacher: "", room: "", type: "free", colSpan: 1 },
   ],
   tuesday: [
@@ -44,16 +44,16 @@ const DEFAULT_TIMETABLE = {
     { subject: "DS&BAD", teacher: "AC", room: "Room No. - 203", type: "theory", colSpan: 1 },
     { subject: "SDS", teacher: "TN", room: "Room No. - 203", type: "theory", colSpan: 1 },
     { subject: "Python1(A) / ADSL(B) / Mini Proj(C)", teacher: "ML/AC/AK", room: "Lab No. - 102/103/112", type: "lab", colSpan: 2 },
-    { subject: "", teacher: "", room: "", type: "free", colSpan: 1 }, // hidden placeholder
+    { subject: "", teacher: "", room: "", type: "free", colSpan: 1 },
     { subject: "MENTOR-MENTEE SESSION", teacher: "AC", room: "Room No. - 203", type: "session", colSpan: 1 },
   ],
   wednesday: [
     { subject: "MENTOR-MENTEE SESSION", teacher: "AC", room: "Room No. - 203", type: "session", colSpan: 1 },
     { subject: "POA", teacher: "SP", room: "Room No. - 203", type: "theory", colSpan: 1 },
     { subject: "ED(A) / ES(B) / SQL(C)", teacher: "NS/APS/PM", room: "Lab No. - 112/102/107", type: "lab", colSpan: 2 },
-    { subject: "", teacher: "", room: "", type: "free", colSpan: 1 }, // hidden placeholder
+    { subject: "", teacher: "", room: "", type: "free", colSpan: 1 },
     { subject: "Mini Proj(A) / Python1(B) / Python1(C)", teacher: "AC/ML/AK", room: "Lab No. - 101/107/103", type: "lab", colSpan: 2 },
-    { subject: "", teacher: "", room: "", type: "free", colSpan: 1 }, // hidden placeholder
+    { subject: "", teacher: "", room: "", type: "free", colSpan: 1 },
     { subject: "", teacher: "", room: "", type: "free", colSpan: 1 },
   ],
   thursday: [
@@ -62,21 +62,44 @@ const DEFAULT_TIMETABLE = {
     { subject: "DS&BAD", teacher: "AC", room: "Room No. - 203", type: "theory", colSpan: 1 },
     { subject: "DBS", teacher: "PM", room: "Room No. - 203", type: "theory", colSpan: 1 },
     { subject: "ES(A) / Python2(B) / Python2(C)", teacher: "APS/ML/AK", room: "Lab No. - 101/107/103", type: "lab", colSpan: 2 },
-    { subject: "", teacher: "", room: "", type: "free", colSpan: 1 }, // hidden placeholder
+    { subject: "", teacher: "", room: "", type: "free", colSpan: 1 },
     { subject: "", teacher: "", room: "", type: "free", colSpan: 1 },
   ],
   friday: [
     { subject: "SDS-TUT", teacher: "TN", room: "Room No. - 203", type: "theory", colSpan: 1 },
     { subject: "DBS", teacher: "PM", room: "Room No. - 203", type: "theory", colSpan: 1 },
     { subject: "SQL(A) / Mini Proj(B) / ES(C)", teacher: "PM/NF/APS", room: "Lab No. - 107/101/103", type: "lab", colSpan: 2 },
-    { subject: "", teacher: "", room: "", type: "free", colSpan: 1 }, // hidden placeholder
+    { subject: "", teacher: "", room: "", type: "free", colSpan: 1 },
     { subject: "Python2(A) / ED(B) / ADSL(C)", teacher: "ML/NS/AC", room: "Lab No. - 112/101/105", type: "lab", colSpan: 2 },
-    { subject: "", teacher: "", room: "", type: "free", colSpan: 1 }, // hidden placeholder
+    { subject: "", teacher: "", room: "", type: "free", colSpan: 1 },
     { subject: "", teacher: "", room: "", type: "free", colSpan: 1 },
   ],
+  saturday: [],
+  sunday: [],
 };
 
-// Generates blank metadata template
+// Default Time Slots
+const DEFAULT_TIMESLOTS = [
+  { id: "ts1", label: "9 AM - 10 AM", start: "09:00", end: "10:00" },
+  { id: "ts2", label: "10 AM - 11 AM", start: "10:00", end: "11:00" },
+  { id: "ts3", label: "11:20 AM - 12:20 PM", start: "11:20", end: "12:20" },
+  { id: "ts4", label: "12:20 PM - 1:20 PM", start: "12:20", end: "13:20" },
+  { id: "ts5", label: "2 PM - 3 PM", start: "14:00", end: "15:00" },
+  { id: "ts6", label: "3 PM - 4 PM", start: "15:00", end: "16:00" },
+  { id: "ts7", label: "4 PM - 5 PM", start: "16:00", end: "17:00" },
+];
+
+// Default Breaks
+const DEFAULT_BREAKS = [
+  { id: "br1", label: "recess", letters: ["B", "R", "E", "A", "K"], time: "11 AM - 11:20 AM", afterSlotIndex: 1 },
+  { id: "br2", label: "lunch", letters: ["B", "R", "E", "A", "K"], time: "1:20 PM - 2 PM", afterSlotIndex: 3 },
+];
+
+// Default Active Days
+const DEFAULT_ACTIVE_DAYS = ["monday", "tuesday", "wednesday", "thursday", "friday"];
+
+const ALL_DAYS = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"];
+
 const makeBlankMetadata = (semName) => ({
   department: "INFORMATION TECHNOLOGY",
   classAdvisor: "",
@@ -84,51 +107,40 @@ const makeBlankMetadata = (semName) => ({
   roomNo: "",
 });
 
-// Generates blank weekly grid structures
-const makeBlankTimetable = () => ({
-  monday: Array(7).fill(null).map(() => ({ subject: "", teacher: "", room: "", type: "free", colSpan: 1 })),
-  tuesday: Array(7).fill(null).map(() => ({ subject: "", teacher: "", room: "", type: "free", colSpan: 1 })),
-  wednesday: Array(7).fill(null).map(() => ({ subject: "", teacher: "", room: "", type: "free", colSpan: 1 })),
-  thursday: Array(7).fill(null).map(() => ({ subject: "", teacher: "", room: "", type: "free", colSpan: 1 })),
-  friday: Array(7).fill(null).map(() => ({ subject: "", teacher: "", room: "", type: "free", colSpan: 1 })),
+const makeBlankTimetable = (slotCount = 7) => ({
+  monday: Array(slotCount).fill(null).map(() => ({ subject: "", teacher: "", room: "", type: "free", colSpan: 1 })),
+  tuesday: Array(slotCount).fill(null).map(() => ({ subject: "", teacher: "", room: "", type: "free", colSpan: 1 })),
+  wednesday: Array(slotCount).fill(null).map(() => ({ subject: "", teacher: "", room: "", type: "free", colSpan: 1 })),
+  thursday: Array(slotCount).fill(null).map(() => ({ subject: "", teacher: "", room: "", type: "free", colSpan: 1 })),
+  friday: Array(slotCount).fill(null).map(() => ({ subject: "", teacher: "", room: "", type: "free", colSpan: 1 })),
+  saturday: Array(slotCount).fill(null).map(() => ({ subject: "", teacher: "", room: "", type: "free", colSpan: 1 })),
+  sunday: Array(slotCount).fill(null).map(() => ({ subject: "", teacher: "", room: "", type: "free", colSpan: 1 })),
 });
-
-const TIMESLOTS = [
-  { label: "9 AM - 10 AM", start: "09:00", end: "10:00" },
-  { label: "10 AM - 11 AM", start: "10:00", end: "11:00" },
-  { label: "11:20 AM - 12:20 PM", start: "11:20", end: "12:20" },
-  { label: "12:20 PM - 1:20 PM", start: "12:20", end: "13:20" },
-  { label: "2 PM - 3 PM", start: "14:00", end: "15:00" },
-  { label: "3 PM - 4 PM", start: "15:00", end: "16:00" },
-  { label: "4 PM - 5 PM", start: "16:00", end: "17:00" },
-];
-
-const BREAKS = {
-  recess: { label: "BREAK", letters: ["B", "R", "E", "A", "K"], time: "11 AM - 11:20 AM" },
-  lunch: { label: "BREAK", letters: ["B", "R", "E", "A", "K"], time: "1:20 PM - 2 PM" },
-};
-
-const DAYS = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"];
 
 export default function AiTimetable() {
   const { currentSemester, currentSemesterId } = useSemester();
   const [metadata, setMetadata] = useState(DEFAULT_METADATA);
   const [faculty, setFaculty] = useState(DEFAULT_FACULTY);
   const [timetable, setTimetable] = useState(DEFAULT_TIMETABLE);
+  const [timeSlots, setTimeSlots] = useState(DEFAULT_TIMESLOTS);
+  const [breaks, setBreaks] = useState(DEFAULT_BREAKS);
+  const [activeDays, setActiveDays] = useState(DEFAULT_ACTIVE_DAYS);
+
   const [isEditMode, setIsEditMode] = useState(false);
   const [editingCell, setEditingCell] = useState(null);
   const [isMetadataModalOpen, setIsMetadataModalOpen] = useState(false);
+  const [isStructureModalOpen, setIsStructureModalOpen] = useState(false);
+  const [structureTab, setStructureTab] = useState("hours"); // hours | breaks | days
   const [activeTab, setActiveTab] = useState("grid"); // grid | list | faculty
   const [loadingDb, setLoadingDb] = useState(true);
 
-  // Form states for editing a slot
+  // Form states for editing a cell slot
   const [cellSubject, setCellSubject] = useState("");
   const [cellTeacher, setCellTeacher] = useState("");
   const [cellRoom, setCellRoom] = useState("");
   const [cellType, setCellType] = useState("theory");
   const [cellColSpan, setCellColSpan] = useState(1);
 
-  // Helper to identify Semester 3
   const checkIsSemester3 = (sem) => {
     return sem?.name?.toLowerCase().includes("sem-iii") || 
            sem?.name?.toLowerCase().includes("semester 3") || 
@@ -146,17 +158,24 @@ export default function AiTimetable() {
         if (data.metadata) setMetadata(data.metadata);
         if (data.faculty) setFaculty(data.faculty);
         if (data.timetable) setTimetable(data.timetable);
+        if (data.timeSlots && data.timeSlots.length > 0) setTimeSlots(data.timeSlots);
+        if (data.breaks) setBreaks(data.breaks);
+        if (data.activeDays && data.activeDays.length > 0) setActiveDays(data.activeDays);
       } else {
-        // Fallback checks
         if (checkIsSemester3(currentSemester)) {
           setMetadata(DEFAULT_METADATA);
           setFaculty(DEFAULT_FACULTY);
           setTimetable(DEFAULT_TIMETABLE);
+          setTimeSlots(DEFAULT_TIMESLOTS);
+          setBreaks(DEFAULT_BREAKS);
+          setActiveDays(DEFAULT_ACTIVE_DAYS);
         } else {
-          // Initialize clean blank template for other semesters
           setMetadata(makeBlankMetadata(currentSemester?.name));
           setFaculty([]);
-          setTimetable(makeBlankTimetable());
+          setTimetable(makeBlankTimetable(DEFAULT_TIMESLOTS.length));
+          setTimeSlots(DEFAULT_TIMESLOTS);
+          setBreaks(DEFAULT_BREAKS);
+          setActiveDays(DEFAULT_ACTIVE_DAYS);
         }
       }
       setLoadingDb(false);
@@ -164,19 +183,22 @@ export default function AiTimetable() {
     loadData();
   }, [currentSemesterId, currentSemester]);
 
-  const saveToLocalStorage = (newMeta, newFac, newTT) => {
+  const saveToLocalStorage = (newMeta, newFac, newTT, newSlots = timeSlots, newBreaks = breaks, newDays = activeDays) => {
     localStorage.setItem("TT_METADATA", JSON.stringify(newMeta));
     localStorage.setItem("TT_FACULTY", JSON.stringify(newFac));
     localStorage.setItem("TT_TIMETABLE", JSON.stringify(newTT));
+    localStorage.setItem("TT_SLOTS", JSON.stringify(newSlots));
+    localStorage.setItem("TT_BREAKS", JSON.stringify(newBreaks));
+    localStorage.setItem("TT_DAYS", JSON.stringify(newDays));
   };
 
   const handleCellClick = (day, index) => {
     if (!isEditMode) return;
-    const cell = timetable[day][index];
+    const cell = (timetable[day] || [])[index] || { subject: "", teacher: "", room: "", type: "free", colSpan: 1 };
     setEditingCell({ day, index });
-    setCellSubject(cell.subject);
-    setCellTeacher(cell.teacher);
-    setCellRoom(cell.room);
+    setCellSubject(cell.subject || "");
+    setCellTeacher(cell.teacher || "");
+    setCellRoom(cell.room || "");
     setCellType(cell.type || "theory");
     setCellColSpan(cell.colSpan || 1);
   };
@@ -184,10 +206,14 @@ export default function AiTimetable() {
   const saveCellEdit = async () => {
     if (!editingCell) return;
     const { day, index } = editingCell;
-    const updatedDay = [...timetable[day]];
+    const currentDaySchedule = [...(timetable[day] || [])];
     
-    // Set cell details
-    updatedDay[index] = {
+    // Ensure array is large enough
+    while (currentDaySchedule.length <= index) {
+      currentDaySchedule.push({ subject: "", teacher: "", room: "", type: "free", colSpan: 1 });
+    }
+
+    currentDaySchedule[index] = {
       subject: cellSubject.trim(),
       teacher: cellTeacher.trim(),
       room: cellRoom.trim(),
@@ -195,9 +221,8 @@ export default function AiTimetable() {
       colSpan: parseInt(cellColSpan, 10) || 1,
     };
 
-    // If colSpan is 2, make sure the next cell is marked as placeholder/free so it gets skipped
-    if (cellColSpan === 2 && index < updatedDay.length - 1) {
-      updatedDay[index + 1] = {
+    if (cellColSpan === 2 && index < currentDaySchedule.length - 1) {
+      currentDaySchedule[index + 1] = {
         subject: "",
         teacher: "",
         room: "",
@@ -208,22 +233,138 @@ export default function AiTimetable() {
 
     const updatedTT = {
       ...timetable,
-      [day]: updatedDay,
+      [day]: currentDaySchedule,
     };
 
     setTimetable(updatedTT);
     setEditingCell(null);
 
-    // Save to Firestore and localStorage
     saveToLocalStorage(metadata, faculty, updatedTT);
-    await saveCollegeTimetable(currentSemesterId, { metadata, faculty, timetable: updatedTT });
+    await saveCollegeTimetable(currentSemesterId, {
+      metadata,
+      faculty,
+      timetable: updatedTT,
+      timeSlots,
+      breaks,
+      activeDays
+    });
   };
 
   const handleMetadataChange = async (field, value) => {
     const updatedMeta = { ...metadata, [field]: value };
     setMetadata(updatedMeta);
     saveToLocalStorage(updatedMeta, faculty, timetable);
-    await saveCollegeTimetable(currentSemesterId, { metadata: updatedMeta, faculty, timetable });
+    await saveCollegeTimetable(currentSemesterId, {
+      metadata: updatedMeta,
+      faculty,
+      timetable,
+      timeSlots,
+      breaks,
+      activeDays
+    });
+  };
+
+  // Save structure customizations
+  const saveStructureChanges = async (newSlots, newBreaks, newDays) => {
+    setTimeSlots(newSlots);
+    setBreaks(newBreaks);
+    setActiveDays(newDays);
+
+    // Make sure timetable grid has elements for all slots
+    const updatedTT = { ...timetable };
+    ALL_DAYS.forEach((day) => {
+      const arr = [...(updatedTT[day] || [])];
+      while (arr.length < newSlots.length) {
+        arr.push({ subject: "", teacher: "", room: "", type: "free", colSpan: 1 });
+      }
+      updatedTT[day] = arr;
+    });
+
+    setTimetable(updatedTT);
+    saveToLocalStorage(metadata, faculty, updatedTT, newSlots, newBreaks, newDays);
+    await saveCollegeTimetable(currentSemesterId, {
+      metadata,
+      faculty,
+      timetable: updatedTT,
+      timeSlots: newSlots,
+      breaks: newBreaks,
+      activeDays: newDays
+    });
+  };
+
+  // Add Time Slot
+  const handleAddTimeSlot = () => {
+    const nextIdx = timeSlots.length + 1;
+    const newSlot = {
+      id: `ts_${Date.now()}`,
+      label: `${nextIdx + 8} AM - ${nextIdx + 9} AM`,
+      start: `${nextIdx + 8}:00`,
+      end: `${nextIdx + 9}:00`,
+    };
+    const updated = [...timeSlots, newSlot];
+    saveStructureChanges(updated, breaks, activeDays);
+  };
+
+  // Remove Time Slot
+  const handleRemoveTimeSlot = (idx) => {
+    if (timeSlots.length <= 1) {
+      alert("At least one time slot is required.");
+      return;
+    }
+    const updated = timeSlots.filter((_, i) => i !== idx);
+    saveStructureChanges(updated, breaks, activeDays);
+  };
+
+  // Update Time Slot
+  const handleSlotChange = (idx, field, value) => {
+    const updated = timeSlots.map((s, i) => i === idx ? { ...s, [field]: value } : s);
+    saveStructureChanges(updated, breaks, activeDays);
+  };
+
+  // Add Break
+  const handleAddBreak = () => {
+    const newBreak = {
+      id: `br_${Date.now()}`,
+      label: "BREAK",
+      letters: ["B", "R", "E", "A", "K"],
+      time: "15 MIN BREAK",
+      afterSlotIndex: 0,
+    };
+    const updated = [...breaks, newBreak];
+    saveStructureChanges(timeSlots, updated, activeDays);
+  };
+
+  // Remove Break
+  const handleRemoveBreak = (idx) => {
+    const updated = breaks.filter((_, i) => i !== idx);
+    saveStructureChanges(timeSlots, updated, activeDays);
+  };
+
+  // Update Break
+  const handleBreakChange = (idx, field, value) => {
+    const updated = breaks.map((b, i) => {
+      if (i !== idx) return b;
+      if (field === "label") {
+        return { ...b, label: value, letters: (value || "BREAK").toUpperCase().split("") };
+      }
+      return { ...b, [field]: value };
+    });
+    saveStructureChanges(timeSlots, updated, activeDays);
+  };
+
+  // Toggle Day
+  const handleToggleDay = (dayKey) => {
+    let updated;
+    if (activeDays.includes(dayKey)) {
+      if (activeDays.length <= 1) {
+        alert("At least one working day is required.");
+        return;
+      }
+      updated = activeDays.filter((d) => d !== dayKey);
+    } else {
+      updated = [...activeDays, dayKey];
+    }
+    saveStructureChanges(timeSlots, breaks, updated);
   };
 
   const handleFacultyChange = async (index, field, value) => {
@@ -231,49 +372,80 @@ export default function AiTimetable() {
     updatedFac[index] = { ...updatedFac[index], [field]: value };
     setFaculty(updatedFac);
     saveToLocalStorage(metadata, updatedFac, timetable);
-    await saveCollegeTimetable(currentSemesterId, { metadata, faculty: updatedFac, timetable });
+    await saveCollegeTimetable(currentSemesterId, {
+      metadata,
+      faculty: updatedFac,
+      timetable,
+      timeSlots,
+      breaks,
+      activeDays
+    });
   };
 
   const addFacultyMember = async () => {
     const updatedFac = [...faculty, { abbreviation: "NEW", name: "New Teacher", subject: "New Subject" }];
     setFaculty(updatedFac);
     saveToLocalStorage(metadata, updatedFac, timetable);
-    await saveCollegeTimetable(currentSemesterId, { metadata, faculty: updatedFac, timetable });
+    await saveCollegeTimetable(currentSemesterId, {
+      metadata,
+      faculty: updatedFac,
+      timetable,
+      timeSlots,
+      breaks,
+      activeDays
+    });
   };
 
   const removeFacultyMember = async (index) => {
     const updatedFac = faculty.filter((_, i) => i !== index);
     setFaculty(updatedFac);
     saveToLocalStorage(metadata, updatedFac, timetable);
-    await saveCollegeTimetable(currentSemesterId, { metadata, faculty: updatedFac, timetable });
+    await saveCollegeTimetable(currentSemesterId, {
+      metadata,
+      faculty: updatedFac,
+      timetable,
+      timeSlots,
+      breaks,
+      activeDays
+    });
   };
 
   const resetToDefault = async () => {
-    if (window.confirm("Are you sure you want to reset all modifications back to default?")) {
+    if (window.confirm("Reset all modifications for this timetable back to defaults?")) {
       const isSem3 = checkIsSemester3(currentSemester);
       const newMeta = isSem3 ? DEFAULT_METADATA : makeBlankMetadata(currentSemester?.name);
       const newFac = isSem3 ? DEFAULT_FACULTY : [];
-      const newTT = isSem3 ? DEFAULT_TIMETABLE : makeBlankTimetable();
+      const newTT = isSem3 ? DEFAULT_TIMETABLE : makeBlankTimetable(DEFAULT_TIMESLOTS.length);
+      const newSlots = DEFAULT_TIMESLOTS;
+      const newBreaks = DEFAULT_BREAKS;
+      const newDays = DEFAULT_ACTIVE_DAYS;
 
       setMetadata(newMeta);
       setFaculty(newFac);
       setTimetable(newTT);
-      saveToLocalStorage(newMeta, newFac, newTT);
+      setTimeSlots(newSlots);
+      setBreaks(newBreaks);
+      setActiveDays(newDays);
+
+      saveToLocalStorage(newMeta, newFac, newTT, newSlots, newBreaks, newDays);
       await saveCollegeTimetable(currentSemesterId, {
         metadata: newMeta,
         faculty: newFac,
-        timetable: newTT
+        timetable: newTT,
+        timeSlots: newSlots,
+        breaks: newBreaks,
+        activeDays: newDays
       });
     }
   };
 
-  // Get current day lectures
+  // Get current day lectures for Today list view
   const getTodayLectures = () => {
     const dayNames = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
     const todayIndex = new Date().getDay();
     const currentDay = dayNames[todayIndex];
 
-    if (currentDay === "saturday" || currentDay === "sunday") {
+    if (!activeDays.includes(currentDay)) {
       return { isWeekend: true, dayName: currentDay };
     }
 
@@ -281,7 +453,7 @@ export default function AiTimetable() {
     const formatted = [];
     let skip = 0;
     
-    TIMESLOTS.forEach((slot, idx) => {
+    timeSlots.forEach((slot, idx) => {
       if (skip > 0) {
         skip--;
         return;
@@ -292,8 +464,10 @@ export default function AiTimetable() {
           skip = lec.colSpan - 1;
         }
         if (lec.subject) {
+          const endIdx = idx + (lec.colSpan - 1);
+          const endLabel = timeSlots[endIdx] ? timeSlots[endIdx].label.split(" - ")[1] || timeSlots[endIdx].label : slot.label;
           formatted.push({
-            time: lec.colSpan > 1 ? `${slot.label.split(" - ")[0]} - ${TIMESLOTS[idx + (lec.colSpan - 1)].label.split(" - ")[1]}` : slot.label,
+            time: lec.colSpan > 1 ? `${slot.label.split(" - ")[0]} - ${endLabel}` : slot.label,
             ...lec
           });
         }
@@ -370,81 +544,63 @@ export default function AiTimetable() {
     );
   };
 
-  const renderRow = (dayKey, dayIdx) => {
-    const isWeekend = dayKey === "saturday" || dayKey === "sunday";
-    const isLastRow = dayIdx === DAYS.length - 1;
+  const firstWorkingDayIndex = ALL_DAYS.findIndex((d) => activeDays.includes(d));
 
-    if (isWeekend) {
+  const renderRow = (dayKey, dayIdx) => {
+    const isWorking = activeDays.includes(dayKey);
+    const isLastRow = dayIdx === ALL_DAYS.length - 1;
+
+    if (!isWorking) {
       return (
         <tr key={dayKey} className={`${!isLastRow ? "border-b border-zinc-200 dark:border-zinc-800/80" : ""} bg-zinc-50/50 dark:bg-zinc-950/40`}>
           <td className="p-4 font-black uppercase text-[10px] tracking-widest border-r border-zinc-200 dark:border-zinc-800 bg-zinc-100/70 dark:bg-zinc-950/80 w-[110px] text-zinc-500 dark:text-zinc-400">
             {dayKey.substring(0, 3)}
           </td>
-          <td colSpan={9} className="p-5 text-center font-black text-blue-600 dark:text-blue-400 uppercase tracking-[0.25em] text-xs font-[Poppins]">
+          <td colSpan={50} className="p-5 text-center font-black text-blue-600 dark:text-blue-400 uppercase tracking-[0.25em] text-xs font-[Poppins]">
             HOLIDAY
           </td>
         </tr>
       );
     }
 
-    const schedule = timetable[dayKey] || [];
     const rowTds = [];
     let skipCount = 0;
 
-    for (let i = 0; i < 7; i++) {
-      // Recess Break Column Span
-      if (i === 2) {
-        if (dayIdx === 0) {
-          rowTds.push(
-            <td
-              key="recess-break"
-              rowSpan={5}
-              className="bg-zinc-100/70 dark:bg-zinc-950 text-blue-600 dark:text-blue-400 font-black text-center align-middle border-r border-zinc-200 dark:border-zinc-800 leading-normal py-4"
-            >
-              <div className="flex flex-col items-center justify-center font-[Poppins] gap-1.5 select-none text-[10px]">
-                {BREAKS.recess.letters.map((l, idx) => (
-                  <span key={idx} className="font-black leading-none">{l}</span>
-                ))}
-              </div>
-            </td>
-          );
-        }
-      }
-
-      // Lunch Break Column Span
-      if (i === 4) {
-        if (dayIdx === 0) {
-          rowTds.push(
-            <td
-              key="lunch-break"
-              rowSpan={5}
-              className="bg-zinc-100/70 dark:bg-zinc-950 text-blue-600 dark:text-blue-400 font-black text-center align-middle border-r border-zinc-200 dark:border-zinc-800 leading-normal py-4"
-            >
-              <div className="flex flex-col items-center justify-center font-[Poppins] gap-1.5 select-none text-[10px]">
-                {BREAKS.lunch.letters.map((l, idx) => (
-                  <span key={idx} className="font-black leading-none">{l}</span>
-                ))}
-              </div>
-            </td>
-          );
-        }
-      }
+    timeSlots.forEach((slot, i) => {
+      const activeBreaks = breaks.filter((b) => b.afterSlotIndex === i);
 
       if (skipCount > 0) {
         skipCount--;
-        continue;
+      } else {
+        const lec = (timetable[dayKey] || [])[i] || { colSpan: 1 };
+        const span = lec.colSpan || 1;
+        const isLastCol = (i + span - 1) >= (timeSlots.length - 1) && activeBreaks.length === 0;
+
+        rowTds.push(renderCell(dayKey, i, isLastCol, isLastRow));
+
+        if (span > 1) {
+          skipCount = span - 1;
+        }
       }
 
-      const lec = schedule[i] || { colSpan: 1 };
-      const span = lec.colSpan || 1;
-      const isLastCol = (i + span - 1) >= 6;
-
-      rowTds.push(renderCell(dayKey, i, isLastCol, isLastRow));
-
-      if (span > 1) {
-        skipCount = span - 1;
-      }
-    }
+      activeBreaks.forEach((b) => {
+        if (dayIdx === firstWorkingDayIndex) {
+          rowTds.push(
+            <td
+              key={`break-${b.id || b.label}-${i}`}
+              rowSpan={activeDays.length}
+              className="bg-zinc-100/70 dark:bg-zinc-950 text-blue-600 dark:text-blue-400 font-black text-center align-middle border-r border-zinc-200 dark:border-zinc-800 leading-normal py-4"
+            >
+              <div className="flex flex-col items-center justify-center font-[Poppins] gap-1.5 select-none text-[10px]">
+                {(b.letters || (b.label || "BREAK").split("")).map((l, idx) => (
+                  <span key={idx} className="font-black leading-none">{l}</span>
+                ))}
+              </div>
+            </td>
+          );
+        }
+      });
+    });
 
     return (
       <tr key={dayKey} className="hover:bg-zinc-100/40 dark:hover:bg-zinc-800/20 transition duration-150">
@@ -464,7 +620,7 @@ export default function AiTimetable() {
           items={[
             "Syncing College Timetable database...",
             "Fetching faculty records...",
-            "Building weekly grid layout...",
+            "Building custom weekly grid structure...",
           ]}
           interval={1800}
           className="text-xs font-semibold text-zinc-400"
@@ -510,6 +666,17 @@ export default function AiTimetable() {
           >
             {isEditMode ? "💾 Save Layout" : "✏️ Edit Cells"}
           </motion.button>
+
+          <motion.button
+            whileHover={{ scale: 1.03 }}
+            whileTap={{ scale: 0.95 }}
+            type="button"
+            onClick={() => setIsStructureModalOpen(true)}
+            className="px-4 h-9 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold rounded-xl shadow-sm transition cursor-pointer flex items-center justify-center gap-1.5"
+          >
+            🛠️ Customize Hours & Days
+          </motion.button>
+
           <motion.button
             whileHover={{ scale: 1.03 }}
             whileTap={{ scale: 0.95 }}
@@ -517,7 +684,7 @@ export default function AiTimetable() {
             onClick={() => setIsMetadataModalOpen(true)}
             className="px-4 h-9 bg-zinc-200 hover:bg-zinc-300 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-800 dark:text-zinc-200 text-xs font-bold rounded-xl transition cursor-pointer flex items-center justify-center gap-1.5"
           >
-            ⚙️ Edit Metadata
+            ⚙️ Edit Details
           </motion.button>
 
           <HoldButton
@@ -595,37 +762,25 @@ export default function AiTimetable() {
                   <th className="p-4 text-xs font-extrabold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider border-r border-zinc-200 dark:border-zinc-800 w-[110px]">
                     Day
                   </th>
-                  <th className="p-4 text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider border-r border-zinc-200 dark:border-zinc-800 text-center">
-                    9 AM - 10 AM
-                  </th>
-                  <th className="p-4 text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider border-r border-zinc-200 dark:border-zinc-800 text-center">
-                    10 AM - 11 AM
-                  </th>
-                  <th className="p-4 text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider border-r border-zinc-200 dark:border-zinc-800 text-center">
-                    11 AM - 11:20 AM
-                  </th>
-                  <th className="p-4 text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider border-r border-zinc-200 dark:border-zinc-800 text-center">
-                    11:20 AM - 12:20 PM
-                  </th>
-                  <th className="p-4 text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider border-r border-zinc-200 dark:border-zinc-800 text-center">
-                    12:20 PM - 1:20 PM
-                  </th>
-                  <th className="p-4 text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider border-r border-zinc-200 dark:border-zinc-800 text-center">
-                    1:20 PM - 2 PM
-                  </th>
-                  <th className="p-4 text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider border-r border-zinc-200 dark:border-zinc-800 text-center">
-                    2 PM - 3 PM
-                  </th>
-                  <th className="p-4 text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider border-r border-zinc-200 dark:border-zinc-800 text-center">
-                    3 PM - 4 PM
-                  </th>
-                  <th className="p-4 text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider text-center">
-                    4 PM - 5 PM
-                  </th>
+                  {timeSlots.map((slot, i) => {
+                    const activeBreaks = breaks.filter((b) => b.afterSlotIndex === i);
+                    return (
+                      <Fragment key={slot.id || i}>
+                        <th className="p-4 text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider border-r border-zinc-200 dark:border-zinc-800 text-center">
+                          {slot.label}
+                        </th>
+                        {activeBreaks.map((b) => (
+                          <th key={`hdr-br-${b.id || b.label}-${i}`} className="p-4 text-[10px] font-extrabold text-blue-600 dark:text-blue-400 uppercase tracking-wider border-r border-zinc-200 dark:border-zinc-800 text-center bg-zinc-50 dark:bg-zinc-950/90">
+                            {b.time || b.label}
+                          </th>
+                        ))}
+                      </Fragment>
+                    );
+                  })}
                 </tr>
               </thead>
               <tbody>
-                {DAYS.map((dayKey, dayIdx) => renderRow(dayKey, dayIdx))}
+                {ALL_DAYS.map((dayKey, dayIdx) => renderRow(dayKey, dayIdx))}
               </tbody>
             </table>
           </div>
@@ -797,6 +952,226 @@ export default function AiTimetable() {
           </div>
         </motion.div>
       )}
+
+      {/* STRUCTURE & HOURS CUSTOMIZATION MODAL */}
+      <AnimatePresence>
+        {isStructureModalOpen && (
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 max-w-xl w-full rounded-3xl p-6 shadow-2xl space-y-5 text-zinc-900 dark:text-white text-left max-h-[85vh] overflow-y-auto"
+            >
+              <div className="flex items-center justify-between border-b border-zinc-200 dark:border-zinc-800 pb-3">
+                <div>
+                  <h2 className="text-lg font-extrabold flex items-center gap-2">🛠️ Customize Hours, Days & Breaks</h2>
+                  <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">Customize lecture timings, custom recess/lunch breaks, and active working days.</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setIsStructureModalOpen(false)}
+                  className="w-8 h-8 rounded-full bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 text-zinc-500 flex items-center justify-center font-bold text-sm transition cursor-pointer"
+                >
+                  ✕
+                </button>
+              </div>
+
+              {/* Sub Tabs */}
+              <div className="flex gap-2 p-1 bg-zinc-100 dark:bg-zinc-800/60 rounded-2xl">
+                <button
+                  type="button"
+                  onClick={() => setStructureTab("hours")}
+                  className={`flex-1 py-1.5 text-xs font-extrabold rounded-xl transition cursor-pointer ${
+                    structureTab === "hours"
+                      ? "bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white shadow-xs"
+                      : "text-zinc-500 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-200"
+                  }`}
+                >
+                  🕒 Time Slots ({timeSlots.length})
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setStructureTab("breaks")}
+                  className={`flex-1 py-1.5 text-xs font-extrabold rounded-xl transition cursor-pointer ${
+                    structureTab === "breaks"
+                      ? "bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white shadow-xs"
+                      : "text-zinc-500 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-200"
+                  }`}
+                >
+                  ☕ Breaks ({breaks.length})
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setStructureTab("days")}
+                  className={`flex-1 py-1.5 text-xs font-extrabold rounded-xl transition cursor-pointer ${
+                    structureTab === "days"
+                      ? "bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white shadow-xs"
+                      : "text-zinc-500 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-200"
+                  }`}
+                >
+                  📅 Days ({activeDays.length})
+                </button>
+              </div>
+
+              {/* TAB 1: HOURS / SLOTS */}
+              {structureTab === "hours" && (
+                <div className="space-y-3">
+                  <div className="flex justify-between items-center">
+                    <p className="text-xs font-extrabold text-zinc-500 uppercase tracking-wider">Configure Lecture Hours</p>
+                    <button
+                      type="button"
+                      onClick={handleAddTimeSlot}
+                      className="px-3 py-1 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold rounded-xl cursor-pointer transition shadow-xs"
+                    >
+                      + Add Slot
+                    </button>
+                  </div>
+
+                  <div className="space-y-2.5 max-h-72 overflow-y-auto pr-1">
+                    {timeSlots.map((slot, idx) => (
+                      <div
+                        key={slot.id || idx}
+                        className="p-3 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-2xl flex items-center justify-between gap-2"
+                      >
+                        <span className="w-6 h-6 rounded-full bg-blue-500/10 text-blue-600 dark:text-blue-400 font-black text-[11px] flex items-center justify-center shrink-0">
+                          {idx + 1}
+                        </span>
+                        <input
+                          type="text"
+                          value={slot.label}
+                          onChange={(e) => handleSlotChange(idx, "label", e.target.value)}
+                          className="flex-1 px-3 py-1.5 text-xs rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 font-bold text-zinc-900 dark:text-white focus:outline-none"
+                          placeholder="e.g. 9 AM - 10 AM"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveTimeSlot(idx)}
+                          className="p-1.5 text-rose-500 hover:bg-rose-500/10 rounded-xl font-bold text-xs cursor-pointer transition shrink-0"
+                          title="Delete slot"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* TAB 2: BREAKS */}
+              {structureTab === "breaks" && (
+                <div className="space-y-3">
+                  <div className="flex justify-between items-center">
+                    <p className="text-xs font-extrabold text-zinc-500 uppercase tracking-wider">Configure Recess & Lunch Breaks</p>
+                    <button
+                      type="button"
+                      onClick={handleAddBreak}
+                      className="px-3 py-1 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold rounded-xl cursor-pointer transition shadow-xs"
+                    >
+                      + Add Break
+                    </button>
+                  </div>
+
+                  <div className="space-y-3 max-h-72 overflow-y-auto pr-1">
+                    {breaks.map((b, idx) => (
+                      <div
+                        key={b.id || idx}
+                        className="p-3.5 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-2xl space-y-2.5 text-left"
+                      >
+                        <div className="flex items-center justify-between gap-2">
+                          <input
+                            type="text"
+                            value={b.label}
+                            onChange={(e) => handleBreakChange(idx, "label", e.target.value)}
+                            className="px-3 py-1 text-xs rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 font-extrabold text-zinc-900 dark:text-white uppercase focus:outline-none"
+                            placeholder="Break Name (e.g. RECESS, LUNCH)"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveBreak(idx)}
+                            className="px-2 py-1 text-xs text-rose-500 hover:bg-rose-500/10 rounded-xl font-bold cursor-pointer transition shrink-0"
+                          >
+                            ✕ Remove
+                          </button>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-2 text-xs">
+                          <label className="block text-[10px] font-bold text-zinc-500 uppercase">
+                            Break Timing Label
+                            <input
+                              type="text"
+                              value={b.time}
+                              onChange={(e) => handleBreakChange(idx, "time", e.target.value)}
+                              className="w-full mt-1 px-2.5 py-1 text-xs rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 font-bold text-zinc-900 dark:text-white"
+                              placeholder="e.g. 11 AM - 11:20 AM"
+                            />
+                          </label>
+
+                          <label className="block text-[10px] font-bold text-zinc-500 uppercase">
+                            Appears After Slot
+                            <select
+                              value={b.afterSlotIndex}
+                              onChange={(e) => handleBreakChange(idx, "afterSlotIndex", parseInt(e.target.value, 10))}
+                              className="w-full mt-1 px-2.5 py-1 text-xs rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 font-bold text-zinc-900 dark:text-white"
+                            >
+                              {timeSlots.map((slot, sIdx) => (
+                                <option key={slot.id || sIdx} value={sIdx}>
+                                  Slot {sIdx + 1}: {slot.label}
+                                </option>
+                              ))}
+                            </select>
+                          </label>
+                        </div>
+                      </div>
+                    ))}
+                    {breaks.length === 0 && (
+                      <p className="text-xs text-zinc-400 py-4 text-center">No custom breaks added. Click "+ Add Break" to insert break columns.</p>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* TAB 3: DAYS */}
+              {structureTab === "days" && (
+                <div className="space-y-3">
+                  <p className="text-xs font-extrabold text-zinc-500 uppercase tracking-wider">Select Working Days</p>
+
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                    {ALL_DAYS.map((dayKey) => {
+                      const isActive = activeDays.includes(dayKey);
+                      return (
+                        <button
+                          key={dayKey}
+                          type="button"
+                          onClick={() => handleToggleDay(dayKey)}
+                          className={`p-3 rounded-2xl text-xs font-black uppercase tracking-wider flex items-center justify-between border cursor-pointer transition-all ${
+                            isActive
+                              ? "bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/30 shadow-xs"
+                              : "bg-zinc-50 dark:bg-zinc-950 text-zinc-400 border-zinc-200 dark:border-zinc-800 hover:bg-zinc-100"
+                          }`}
+                        >
+                          <span>{dayKey}</span>
+                          <span className="text-sm">{isActive ? "✅" : "⚪"}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              <div className="pt-2 flex justify-end border-t border-zinc-200 dark:border-zinc-800">
+                <button
+                  type="button"
+                  onClick={() => setIsStructureModalOpen(false)}
+                  className="px-5 py-2 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold rounded-xl cursor-pointer shadow-md"
+                >
+                  Done & Save Structure
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
 
       {/* METADATA MODAL (SETTINGS) */}
       <AnimatePresence>

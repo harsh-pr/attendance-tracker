@@ -43,8 +43,17 @@ export default function Modal({
             className="fixed inset-0 bg-black/60 backdrop-blur-sm"
           />
 
-          {/* Smooth Bottom Drawer / Card */}
+          {/* Smooth Bottom Drawer / Drag-to-Dismiss Card */}
           <motion.div
+            drag="y"
+            dragConstraints={{ top: 0, bottom: 0 }}
+            dragElastic={{ top: 0, bottom: 0.8 }}
+            dragSnapToOrigin={true}
+            onDragEnd={(e, info) => {
+              if (info.offset.y > 100 || info.velocity.y > 250) {
+                onClose();
+              }
+            }}
             initial={{ y: "100%", opacity: 0.9 }}
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: "100%", opacity: 0 }}
@@ -63,8 +72,8 @@ export default function Modal({
               will-change-transform
             `}
           >
-            {/* Kokonut UI Drawer Drag Handle Bar */}
-            <div className="w-12 h-1.5 bg-zinc-300 dark:bg-zinc-700 rounded-full mx-auto mb-4 shrink-0 cursor-grab" />
+            {/* Functional Kokonut UI Drag-to-Dismiss Handle Bar */}
+            <div className="w-16 h-2 bg-zinc-300 dark:bg-zinc-600 rounded-full mx-auto mb-4 shrink-0 cursor-grab active:cursor-grabbing hover:bg-zinc-400 dark:hover:bg-zinc-500 transition-colors shadow-inner" />
 
             {/* Optional Header Title */}
             {title && (
@@ -74,7 +83,7 @@ export default function Modal({
             )}
 
             {/* Scrollable Content Area */}
-            <div className="overflow-y-auto pr-1 flex-1 custom-scrollbar">
+            <div className="overflow-y-auto pr-1 flex-1">
               {children}
             </div>
 

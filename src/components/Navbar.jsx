@@ -544,36 +544,34 @@ export default function Navbar() {
             </button>
           </div>
 
-          <form onSubmit={submitSubjectCreate} className="grid grid-cols-1 sm:grid-cols-6 gap-2 rounded-xl border border-gray-200 dark:border-gray-700 p-3">
+          <form onSubmit={submitSubjectCreate} className="grid grid-cols-1 sm:grid-cols-6 gap-2 rounded-2xl border border-zinc-200 dark:border-zinc-800 p-3 bg-zinc-50 dark:bg-zinc-900/60">
             <input
               value={newSubjectName}
               onChange={(e) => setNewSubjectName(e.target.value)}
-              className="sm:col-span-3 px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900"
+              className="sm:col-span-3 px-3 py-2 text-xs font-medium rounded-xl border border-zinc-300 dark:border-zinc-700/80 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="New subject name"
             />
             <select
               value={newSubjectType}
               onChange={(e) => setNewSubjectType(e.target.value)}
-              className="sm:col-span-2 px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900"
+              className="sm:col-span-2 px-3 py-2 text-xs font-semibold rounded-xl border border-zinc-300 dark:border-zinc-700/80 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white"
             >
               <option value="theory">theory</option>
               <option value="lab">lab</option>
             </select>
-            <button type="submit" className="sm:col-span-1 px-3 py-2 rounded-lg bg-blue-600 text-white">
+            <button type="submit" className="sm:col-span-1 px-3 py-2 text-xs font-bold rounded-xl bg-blue-600 hover:bg-blue-500 text-white cursor-pointer shadow-sm">
               + Subject
             </button>
           </form>
 
-
-
           {subjects.length ? (
-            <div className="rounded-xl border border-gray-200 dark:border-gray-700 p-3 space-y-2">
-              <p className="text-sm font-medium">Subjects in {currentSemesterName}</p>
-              <div className="space-y-1 max-h-40 overflow-auto pr-1">
+            <div className="rounded-2xl border border-zinc-200 dark:border-zinc-800 p-3 space-y-2 bg-zinc-50 dark:bg-zinc-900/40">
+              <p className="text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Subjects in {currentSemesterName}</p>
+              <div className="space-y-1.5 max-h-48 overflow-y-auto pr-1">
                 {subjects.map((subject) => (
                   <div
                     key={subject.id}
-                    className="flex items-center justify-between rounded-lg bg-gray-100 dark:bg-gray-800 px-3 py-2"
+                    className="flex items-center justify-between rounded-xl bg-white dark:bg-zinc-800/80 border border-zinc-200/80 dark:border-zinc-700/60 px-3 py-2 text-xs"
                   >
                     {editingSubjectId === subject.id ? (
                       <div className="flex items-center gap-2 w-full">
@@ -581,7 +579,7 @@ export default function Navbar() {
                           type="text"
                           value={editingSubjectName}
                           onChange={(e) => setEditingSubjectName(e.target.value)}
-                          className="flex-1 px-2 py-1 text-sm rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          className="flex-1 px-2.5 py-1 text-xs rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                           placeholder="Subject name"
                           autoFocus
                         />
@@ -596,39 +594,39 @@ export default function Navbar() {
                               setEditingSubjectId(null);
                             }
                           }}
-                          className="text-xs px-2.5 py-1.5 rounded-md bg-green-600 hover:bg-green-500 text-white font-semibold transition cursor-pointer"
+                          className="text-xs px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold transition cursor-pointer"
                         >
                           Save
                         </button>
                         <button
                           type="button"
                           onClick={() => setEditingSubjectId(null)}
-                          className="text-xs px-2.5 py-1.5 rounded-md bg-gray-300 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 font-semibold transition cursor-pointer"
+                          className="text-xs px-2.5 py-1 rounded-lg bg-zinc-200 hover:bg-zinc-300 dark:bg-zinc-700 dark:hover:bg-zinc-600 text-zinc-800 dark:text-zinc-200 font-bold transition cursor-pointer"
                         >
                           Cancel
                         </button>
                       </div>
                     ) : (
                       <>
-                        <div className="text-sm font-medium">
+                        <div className="font-semibold text-zinc-900 dark:text-zinc-100">
                           {subject.name}
-                          <span className="ml-2 text-xs font-normal text-gray-500 dark:text-gray-400">({subject.type})</span>
+                          <span className="ml-2 text-[10px] font-medium text-zinc-400">({subject.type})</span>
                         </div>
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-1.5">
                           <button
                             type="button"
                             onClick={() => {
                               setEditingSubjectId(subject.id);
                               setEditingSubjectName(subject.name);
                             }}
-                            className="text-xs px-2.5 py-1.5 rounded-md bg-blue-600 hover:bg-blue-500 text-white font-semibold transition cursor-pointer"
+                            className="text-[11px] px-2.5 py-1 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-bold transition cursor-pointer"
                           >
                             Rename
                           </button>
                           <button
                             type="button"
                             onClick={() => removeDraftSubject(subject.id)}
-                            className="text-xs px-2.5 py-1.5 rounded-md bg-red-600 hover:bg-red-500 text-white font-semibold transition cursor-pointer"
+                            className="text-[11px] px-2.5 py-1 rounded-lg bg-red-600 hover:bg-red-500 text-white font-bold transition cursor-pointer"
                           >
                             Delete
                           </button>
@@ -642,33 +640,33 @@ export default function Navbar() {
           ) : null}
 
           {subjects.length === 0 ? (
-            <div className="rounded-xl border border-dashed border-gray-300 dark:border-gray-700 p-4 text-sm text-gray-500 dark:text-gray-400">
+            <div className="rounded-2xl border border-dashed border-zinc-300 dark:border-zinc-800 p-4 text-xs font-medium text-zinc-500 dark:text-zinc-400">
               No subjects in this semester yet. Add subjects first, then build timetable.
             </div>
           ) : (
-            <div className="space-y-3 max-h-[65vh] overflow-auto pr-1">
+            <div className="space-y-3 pr-1">
               {(weekDays || Object.keys(DAY_LABELS)).map((dayKey) => {
                 const lectures = timetableDraft[dayKey] || [];
                 return (
-                  <section key={dayKey} className="rounded-xl border border-gray-200 dark:border-gray-700 p-3">
+                  <section key={dayKey} className="rounded-2xl border border-zinc-200 dark:border-zinc-800/80 p-3 bg-zinc-50/50 dark:bg-zinc-900/40">
                     <div className="flex items-center justify-between mb-2">
-                      <h3 className="font-medium">{DAY_LABELS[dayKey]}</h3>
+                      <h3 className="text-xs font-bold text-zinc-900 dark:text-zinc-100">{DAY_LABELS[dayKey]}</h3>
                       <button
                         type="button"
                         onClick={() => addLectureRow(dayKey)}
-                        className="text-sm px-2 py-1 rounded-md bg-blue-600 text-white"
+                        className="text-xs px-2.5 py-1 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-bold cursor-pointer"
                       >
                         + Add
                       </button>
                     </div>
                     <div className="space-y-2">
                       {lectures.length === 0 ? (
-                        <p className="text-sm text-gray-500 dark:text-gray-400">No lectures yet.</p>
+                        <p className="text-xs text-zinc-400">No lectures scheduled.</p>
                       ) : (
                         lectures.map((lecture, index) => (
                           <div
                             key={`${dayKey}-${index}`}
-                            className="grid grid-cols-12 gap-2 items-center rounded-lg bg-gray-100 dark:bg-gray-800 p-2"
+                            className="grid grid-cols-12 gap-2 items-center rounded-xl bg-white dark:bg-zinc-800/80 border border-zinc-200/80 dark:border-zinc-700/60 p-2 text-xs"
                           >
                             <select
                               value={lecture.subjectId}
@@ -683,7 +681,7 @@ export default function Navbar() {
                                   selectedSubject?.type || lecture.type || "theory"
                                 );
                               }}
-                              className="col-span-10 px-2 py-1 rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900"
+                              className="col-span-9 px-2.5 py-1.5 rounded-lg border border-zinc-300 dark:border-zinc-700/80 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 text-xs font-medium"
                             >
                               {sortedSubjects.map((subject) => (
                                 <option key={subject.id} value={subject.id}>
@@ -694,7 +692,7 @@ export default function Navbar() {
                             <button
                               type="button"
                               onClick={() => removeLectureRow(dayKey, index)}
-                              className="col-span-2 text-xs px-2 py-1 rounded bg-red-600 text-white"
+                              className="col-span-3 text-[11px] px-2 py-1.5 rounded-lg bg-red-600 hover:bg-red-500 text-white font-bold cursor-pointer transition-colors"
                             >
                               Delete
                             </button>
@@ -708,18 +706,18 @@ export default function Navbar() {
             </div>
           )}
 
-          <div className="flex justify-end gap-2 pt-2">
+          <div className="flex justify-end gap-2 pt-3 border-t border-zinc-200 dark:border-zinc-800">
             <button
               type="button"
               onClick={() => setIsTimetableOpen(false)}
-              className="px-4 py-2 rounded-lg bg-gray-200 dark:bg-gray-700"
+              className="px-4 py-2 rounded-xl bg-zinc-200 hover:bg-zinc-300 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-800 dark:text-zinc-200 text-xs font-bold cursor-pointer"
             >
               Cancel
             </button>
             <button
               type="button"
               onClick={saveTimetable}
-              className="px-4 py-2 rounded-lg bg-blue-600 text-white"
+              className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold cursor-pointer shadow-md"
             >
               Save timetable
             </button>

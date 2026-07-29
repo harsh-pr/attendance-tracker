@@ -10,8 +10,10 @@ import {
   GoogleAuthProvider,
   signInWithPopup,
   linkWithPopup,
+  deleteUser,
 } from "firebase/auth";
 import { auth } from "../firebase/config";
+import { deleteAllUserData } from "../firebase/firestoreService";
 
 const AuthContext = createContext();
 
@@ -149,6 +151,32 @@ export function AuthProvider({ children }) {
     }
   }
 
+  async function deleteAccount() {
+    const currentUser = auth.currentUser;
+    if (!currentUser) throw new Error("No authenticated user to delete.");
+
+    setLoading(true);
+    try {
+      // 1. Delete all user records from Firestore
+      await deleteAllUserData(currentUser.uid);
+
+      // 2. Delete user account from Firebase Auth
+      await deleteUser(currentUser);
+
+      // 3. Clean local storage heartbeat and state
+      localStorage.removeItem("last_active_heartbeat");
+      setUser(null);
+    } catch (error) {
+      console.error("[Auth] Delete account error:", error);
+      if (error.code === "auth/requires-recent-login") {
+        throw new Error("For security, please log out and log back in before deleting your account.");
+      }
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  }
+
   const contextValue = {
     user,
     loading,
@@ -157,6 +185,7 @@ export function AuthProvider({ children }) {
     loginWithGoogle,
     connectGoogle,
     logout,
+    deleteAccount,
   };
 
   return (

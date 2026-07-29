@@ -39,7 +39,7 @@ export default function Navbar() {
   } = useSemester();
 
   const { theme, toggleTheme } = useTheme();
-  const { user, logout, connectGoogle } = useAuth();
+  const { user, logout, connectGoogle, deleteAccount } = useAuth();
 
   const [isSemesterMenuOpen, setIsSemesterMenuOpen] = useState(false);
   const [isCreateSemesterOpen, setIsCreateSemesterOpen] = useState(false);
@@ -452,16 +452,35 @@ export default function Navbar() {
 
                       <div className="border-t border-zinc-200 dark:border-zinc-800/80 my-1" />
 
-                      {/* Kokonut Red Action Box for Sign Out with Hold Button */}
-                      <div>
+                      {/* Profile Action Buttons: Normal Sign Out & Hold to Delete Account */}
+                      <div className="space-y-1.5 pt-1">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setIsProfileMenuOpen(false);
+                            logout();
+                          }}
+                          className="w-full flex items-center justify-between px-3.5 py-2.5 rounded-2xl bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800/80 dark:hover:bg-zinc-750 text-zinc-800 dark:text-zinc-200 text-xs font-semibold cursor-pointer transition-colors"
+                        >
+                          <span className="flex items-center gap-2">🚪 Sign Out</span>
+                          <span className="text-[10px] text-zinc-400 font-medium">Click to exit</span>
+                        </button>
+
                         <HoldButton
-                          onConfirm={logout}
+                          onConfirm={async () => {
+                            setIsProfileMenuOpen(false);
+                            try {
+                              await deleteAccount();
+                            } catch (err) {
+                              alert(err.message || "Failed to delete account.");
+                            }
+                          }}
                           holdDuration={1500}
                           variant="danger"
-                          icon="🚪"
+                          icon="⚠️"
                           className="w-full justify-between py-2 rounded-2xl"
                         >
-                          Sign Out
+                          Delete Account
                         </HoldButton>
                       </div>
 

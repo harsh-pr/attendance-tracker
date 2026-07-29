@@ -84,8 +84,8 @@ export default function HoldButton({
       onTouchEnd={cancelHold}
       className={`
         relative overflow-hidden select-none cursor-pointer
-        px-4 py-2.5 rounded-xl border text-xs font-semibold
-        flex items-center justify-between transition-colors
+        px-3.5 py-2 rounded-xl border text-xs font-semibold
+        inline-flex items-center justify-between gap-2.5 transition-colors
         ${currentVariant.bg}
         ${className}
       `}
@@ -98,13 +98,13 @@ export default function HoldButton({
       />
 
       {/* Button Content */}
-      <span className="relative z-10 flex items-center gap-2">
-        {icon && <span>{icon}</span>}
-        <span>{children}</span>
+      <span className="relative z-10 flex items-center gap-1.5 shrink-0">
+        {icon && <span className="text-xs leading-none">{icon}</span>}
+        <span className="font-bold">{children}</span>
       </span>
 
-      <span className="relative z-10 text-[10px] opacity-75 font-mono">
-        {isHolding ? `${Math.round(progress)}%` : "Hold 1.5s"}
+      <span className="relative z-10 text-[10px] font-mono opacity-85 px-1.5 py-0.5 rounded-md bg-black/10 dark:bg-white/10 shrink-0 whitespace-nowrap ml-auto">
+        {isHolding ? `${Math.round(progress)}%` : `Hold ${(holdDuration / 1000).toFixed(1)}s`}
       </span>
     </motion.button>
   );

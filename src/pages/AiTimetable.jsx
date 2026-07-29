@@ -490,11 +490,11 @@ export default function AiTimetable() {
         {/* Toolbar Buttons */}
         <div className="flex flex-wrap items-center gap-2">
           <motion.button
-            whileHover={{ scale: 1.04 }}
+            whileHover={{ scale: 1.03 }}
             whileTap={{ scale: 0.95 }}
             type="button"
             onClick={() => setIsEditMode(!isEditMode)}
-            className={`px-4 py-2 text-xs font-bold rounded-xl shadow-sm transition duration-150 cursor-pointer ${
+            className={`px-4 h-9 text-xs font-bold rounded-xl shadow-sm transition duration-150 cursor-pointer flex items-center justify-center gap-1.5 ${
               isEditMode
                 ? "bg-amber-600 hover:bg-amber-500 text-white"
                 : "bg-blue-600 hover:bg-blue-500 text-white"
@@ -503,11 +503,11 @@ export default function AiTimetable() {
             {isEditMode ? "💾 Save Layout" : "✏️ Edit Cells"}
           </motion.button>
           <motion.button
-            whileHover={{ scale: 1.04 }}
+            whileHover={{ scale: 1.03 }}
             whileTap={{ scale: 0.95 }}
             type="button"
             onClick={() => setIsMetadataModalOpen(true)}
-            className="px-4 py-2 bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-750 text-xs font-bold rounded-xl transition cursor-pointer"
+            className="px-4 h-9 bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-750 text-xs font-bold rounded-xl transition cursor-pointer flex items-center justify-center gap-1.5"
           >
             ⚙️ Edit Metadata
           </motion.button>
@@ -517,7 +517,7 @@ export default function AiTimetable() {
             holdDuration={1500}
             variant="danger"
             icon="🔄"
-            className="rounded-xl py-2"
+            className="h-9 rounded-xl py-0"
           >
             Reset
           </HoldButton>

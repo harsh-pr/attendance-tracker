@@ -248,3 +248,38 @@ export async function deleteLegacyData() {
     throw error;
   }
 }
+
+// ─── DELETE ALL USER DATA ───────────────────────────────────────────────────
+export async function deleteAllUserData(userId) {
+  if (!userId) return;
+  try {
+    const batch = writeBatch(db);
+
+    const mRef = doc(db, "users", userId, "meta", "app");
+    const sRef = doc(db, "users", userId, "subjects", "data");
+    const tRef = doc(db, "users", userId, "timetables", "data");
+    const rRef = doc(db, "users", userId, "reminders", "data");
+
+    const metaSnap = await getDoc(mRef);
+    if (metaSnap.exists()) {
+      const semesters = metaSnap.data().semesters || [];
+      for (const sem of semesters) {
+        batch.delete(doc(db, "users", userId, "semesters", sem.id, "attendance", "data"));
+        batch.delete(doc(db, "users", userId, "college_timetable", sem.id));
+      }
+    }
+
+    batch.delete(mRef);
+    batch.delete(sRef);
+    batch.delete(tRef);
+    batch.delete(rRef);
+    batch.delete(doc(db, "users", userId));
+
+    await batch.commit();
+    console.log(`[Firestore] Successfully deleted all data for user: ${userId}`);
+    return true;
+  } catch (error) {
+    console.error("[Firestore] Error deleting user data:", error);
+    throw error;
+  }
+}

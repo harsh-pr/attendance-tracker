@@ -267,9 +267,9 @@ export default function Navbar() {
   return (
     <>
       <header className="fixed top-0 left-0 right-0 z-50 px-3 sm:px-6 pt-3 pb-2 bg-gradient-to-b from-zinc-50/90 via-zinc-50/60 to-transparent dark:from-zinc-950/90 dark:via-zinc-950/60 dark:to-transparent backdrop-blur-md">
-        <div className="max-w-6xl mx-auto h-14 px-3.5 sm:px-5 rounded-full bg-white/80 dark:bg-zinc-900/80 border border-zinc-200/80 dark:border-zinc-800/80 shadow-[0_8px_30px_rgb(0,0,0,0.08)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.4)] flex items-center justify-between backdrop-blur-2xl transition-all duration-300">
+        <div className="max-w-6xl mx-auto h-12 sm:h-14 px-1 sm:px-5 rounded-full bg-transparent sm:bg-white/80 sm:dark:bg-zinc-900/80 border-0 sm:border sm:border-zinc-200/80 sm:dark:border-zinc-800/80 shadow-none sm:shadow-[0_8px_30px_rgb(0,0,0,0.08)] sm:dark:shadow-[0_8px_30px_rgb(0,0,0,0.4)] flex items-center justify-between backdrop-blur-none sm:backdrop-blur-2xl transition-all duration-300">
           
-          {/* Logo & Semester Selector */}
+          {/* Logo & Desktop Semester Selector */}
           <div className="flex items-center gap-2.5 sm:gap-3">
             <NavLink to="/" className="flex items-center gap-2 group cursor-pointer select-none">
               <span className="text-base sm:text-lg font-black tracking-tight font-[Poppins] text-zinc-900 dark:text-white">
@@ -277,8 +277,8 @@ export default function Navbar() {
               </span>
             </NavLink>
 
-            {/* Semester Selector Pill Dropdown */}
-            <div ref={menuRef} className="relative">
+            {/* Desktop-Only Semester Selector Pill Dropdown */}
+            <div ref={menuRef} className="relative hidden sm:block">
               <motion.button
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.96 }}
@@ -361,7 +361,7 @@ export default function Navbar() {
             </div>
           </div>
 
-          {/* Center: Kokonut Morphic Segmented Navbar Bar */}
+          {/* Center: Kokonut Morphic Segmented Navbar Bar (Desktop Only) */}
           <nav className="hidden lg:flex items-center gap-1 bg-zinc-100/90 dark:bg-zinc-950/80 p-1 rounded-full border border-zinc-200/80 dark:border-zinc-800/80 shadow-inner">
             <NavItem to="/">Home</NavItem>
             <NavItem to="/today">Detailed</NavItem>
@@ -434,13 +434,39 @@ export default function Navbar() {
                         <button
                           type="button"
                           onClick={() => {
+                            openCreateSemesterModal();
+                            setIsProfileMenuOpen(false);
+                          }}
+                          className="w-full flex items-center justify-between px-3 py-2 rounded-xl hover:bg-zinc-100 dark:hover:bg-zinc-800/60 text-left text-emerald-600 dark:text-emerald-400 cursor-pointer transition-colors font-bold"
+                        >
+                          <span className="flex items-center gap-2">+ Add New Semester</span>
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => {
                             openTimetableModal();
                             setIsProfileMenuOpen(false);
                           }}
-                          className="w-full flex items-center justify-between px-3 py-2 rounded-xl hover:bg-zinc-100 dark:hover:bg-zinc-800/60 text-left cursor-pointer transition-colors font-bold"
+                          className="w-full flex items-center justify-between px-3 py-2 rounded-xl hover:bg-zinc-100 dark:hover:bg-zinc-800/60 text-left text-indigo-600 dark:text-indigo-400 cursor-pointer transition-colors font-bold"
                         >
                           <span className="flex items-center gap-2">✎ Edit Timetable</span>
                         </button>
+
+                        <div className="pt-1">
+                          <HoldButton
+                            onConfirm={() => {
+                              handleDeleteCurrentSemester();
+                              setIsProfileMenuOpen(false);
+                            }}
+                            holdDuration={1500}
+                            variant="danger"
+                            icon="🗑️"
+                            className="w-full text-xs rounded-xl py-1.5"
+                          >
+                            Delete this semester
+                          </HoldButton>
+                        </div>
 
                         {!user.providerData.some((p) => p.providerId === "google.com") && (
                           <button

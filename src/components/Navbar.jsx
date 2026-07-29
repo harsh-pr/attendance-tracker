@@ -327,34 +327,6 @@ export default function Navbar() {
                         {sem.name}
                       </button>
                     ))}
-
-                    <div className="border-t border-zinc-200 dark:border-zinc-800/80 my-1" />
-                    <button
-                      type="button"
-                      onClick={openCreateSemesterModal}
-                      className="w-full px-3 py-2 rounded-xl text-left text-xs font-bold text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10 transition-colors"
-                    >
-                      + Add new semester
-                    </button>
-                    <button
-                      type="button"
-                      onClick={openTimetableModal}
-                      className="w-full px-3 py-2 rounded-xl text-left text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:bg-indigo-500/10 transition-colors"
-                    >
-                      ✎ Edit timetable
-                    </button>
-
-                    <div className="pt-1">
-                      <HoldButton
-                        onConfirm={handleDeleteCurrentSemester}
-                        holdDuration={1500}
-                        variant="danger"
-                        icon="🗑️"
-                        className="w-full text-xs rounded-xl py-1.5"
-                      >
-                        Delete this semester
-                      </HoldButton>
-                    </div>
                   </motion.div>
                 )}
               </AnimatePresence>

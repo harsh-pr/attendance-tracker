@@ -305,8 +305,11 @@ export default function AiTimetable() {
 
   const todayData = getTodayLectures();
 
-  const getCellClassName = (type) => {
-    let base = "p-3.5 text-center transition-all duration-200 border-b border-r border-zinc-200 dark:border-zinc-800/80 min-w-[110px] lg:min-w-0 align-middle ";
+  const getCellClassName = (type, isLastCol = false, isLastRow = false) => {
+    let base = "p-3.5 text-center transition-all duration-200 min-w-[110px] lg:min-w-0 align-middle ";
+    if (!isLastCol) base += "border-r border-zinc-200 dark:border-zinc-800/80 ";
+    if (!isLastRow) base += "border-b border-zinc-200 dark:border-zinc-800/80 ";
+
     if (isEditMode) base += "cursor-pointer hover:bg-zinc-100 dark:hover:bg-zinc-800/60 ";
     
     if (type === "free") return base + "bg-white dark:bg-zinc-950 text-zinc-400 dark:text-zinc-600";
@@ -331,7 +334,7 @@ export default function AiTimetable() {
     return names.join(" & ");
   };
 
-  const renderCell = (dayKey, index) => {
+  const renderCell = (dayKey, index, isLastCol = false, isLastRow = false) => {
     const schedule = timetable[dayKey] || [];
     const lec = schedule[index] || { subject: "", teacher: "", room: "", type: "free", colSpan: 1 };
     const colSpan = lec.colSpan || 1;
@@ -340,7 +343,7 @@ export default function AiTimetable() {
       <td
         key={index}
         colSpan={colSpan}
-        className={getCellClassName(lec.type)}
+        className={getCellClassName(lec.type, isLastCol, isLastRow)}
         onClick={() => handleCellClick(dayKey, index)}
       >
         {lec.subject ? (
@@ -369,9 +372,11 @@ export default function AiTimetable() {
 
   const renderRow = (dayKey, dayIdx) => {
     const isWeekend = dayKey === "saturday" || dayKey === "sunday";
+    const isLastRow = dayIdx === DAYS.length - 1;
+
     if (isWeekend) {
       return (
-        <tr key={dayKey} className="border-b border-zinc-200 dark:border-zinc-800/80 bg-zinc-50/50 dark:bg-zinc-950/40">
+        <tr key={dayKey} className={`${!isLastRow ? "border-b border-zinc-200 dark:border-zinc-800/80" : ""} bg-zinc-50/50 dark:bg-zinc-950/40`}>
           <td className="p-4 font-black uppercase text-[10px] tracking-widest border-r border-zinc-200 dark:border-zinc-800 bg-zinc-100/70 dark:bg-zinc-950/80 w-[110px] text-zinc-500 dark:text-zinc-400">
             {dayKey.substring(0, 3)}
           </td>
@@ -430,17 +435,20 @@ export default function AiTimetable() {
         continue;
       }
 
-      rowTds.push(renderCell(dayKey, i));
-
       const lec = schedule[i] || { colSpan: 1 };
-      if (lec.colSpan > 1) {
-        skipCount = lec.colSpan - 1;
+      const span = lec.colSpan || 1;
+      const isLastCol = (i + span - 1) >= 6;
+
+      rowTds.push(renderCell(dayKey, i, isLastCol, isLastRow));
+
+      if (span > 1) {
+        skipCount = span - 1;
       }
     }
 
     return (
-      <tr key={dayKey} className="border-b border-zinc-200 dark:border-zinc-800/80 hover:bg-zinc-100/40 dark:hover:bg-zinc-800/20 transition duration-150">
-        <td className="p-4 font-black uppercase text-[10px] tracking-widest border-r border-zinc-200 dark:border-zinc-800 bg-zinc-100/70 dark:bg-zinc-950/80 w-[110px] text-zinc-500 dark:text-zinc-400">
+      <tr key={dayKey} className="hover:bg-zinc-100/40 dark:hover:bg-zinc-800/20 transition duration-150">
+        <td className={`p-4 font-black uppercase text-[10px] tracking-widest border-r border-zinc-200 dark:border-zinc-800 bg-zinc-100/70 dark:bg-zinc-950/80 w-[110px] text-zinc-500 dark:text-zinc-400 ${!isLastRow ? "border-b border-zinc-200 dark:border-zinc-800/80" : ""}`}>
           {dayKey.substring(0, 3)}
         </td>
         {rowTds}
@@ -578,7 +586,7 @@ export default function AiTimetable() {
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-white/80 dark:bg-zinc-900/80 border border-zinc-200 dark:border-zinc-800 rounded-3xl shadow-xl overflow-hidden p-1 backdrop-blur-xl"
+          className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-xl overflow-hidden backdrop-blur-xl"
         >
           <div className="overflow-x-auto lg:overflow-x-visible">
             <table className="w-full min-w-[850px] lg:min-w-0 border-collapse text-left table-fixed">

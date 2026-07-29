@@ -1,5 +1,6 @@
 import { NavLink } from "react-router-dom";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
 import Modal from "./Modal";
 import { useSemester } from "../context/SemesterContext";
 import { useTheme } from "../context/ThemeContext";
@@ -271,10 +272,11 @@ export default function Navbar() {
           </h1>
 
           <div ref={menuRef} className="relative hidden sm:block ml-4">
-            <button
+            <motion.button
+              whileTap={{ scale: 0.96 }}
               type="button"
               onClick={() => setIsSemesterMenuOpen((prev) => !prev)}
-              className="px-3 py-1.5 rounded-xl border-0 border-none appearance-none shadow-none ring-0 focus:ring-0 focus:outline-none focus-visible:outline-none focus-visible:ring-0 bg-blue-50 dark:bg-blue-900/40 text-blue-700 dark:text-blue-200 text-sm font-medium min-w-40 inline-flex items-center gap-2"
+              className="px-3 py-1.5 rounded-xl border-0 border-none appearance-none shadow-none ring-0 focus:ring-0 focus:outline-none focus-visible:outline-none focus-visible:ring-0 bg-blue-50 dark:bg-blue-900/40 text-blue-700 dark:text-blue-200 text-sm font-medium min-w-40 inline-flex items-center gap-2 cursor-pointer hover:bg-blue-100 dark:hover:bg-blue-900/60 transition-colors"
             >
               <span className="truncate">{currentSemesterName}</span>
               <span
@@ -284,55 +286,63 @@ export default function Navbar() {
               >
                 🡣
               </span>
-            </button>
+            </motion.button>
 
-            {isSemesterMenuOpen ? (
-              <div className="absolute left-0 mt-2 w-64 rounded-2xl border border-blue-200/60 dark:border-blue-700/60 bg-white/95 dark:bg-slate-900/95 shadow-[0_18px_45px_rgba(13,30,67,0.35)] backdrop-blur-xl overflow-hidden transform-gpu">
-                {semesters.map((sem) => (
+            <AnimatePresence>
+              {isSemesterMenuOpen && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.95, y: -10 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.95, y: -10 }}
+                  transition={{ duration: 0.18, ease: "easeOut" }}
+                  className="absolute left-0 mt-2 w-64 rounded-2xl border border-blue-200/60 dark:border-blue-700/60 bg-white/95 dark:bg-slate-900/95 shadow-[0_18px_45px_rgba(13,30,67,0.35)] backdrop-blur-xl overflow-hidden z-50"
+                >
+                  {semesters.map((sem) => (
+                    <button
+                      key={sem.id}
+                      type="button"
+                      onClick={() => {
+                        setCurrentSemesterId(sem.id);
+                        setIsSemesterMenuOpen(false);
+                      }}
+                      className={`w-full px-4 py-2 text-left text-sm transition ${
+                        sem.id === currentSemesterId
+                          ? "bg-blue-100 dark:bg-blue-900/60 text-blue-700 dark:text-blue-200 font-semibold"
+                          : "text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800"
+                      }`}
+                    >
+                      {sem.name}
+                    </button>
+                  ))}
+
+                  <div className="border-t border-gray-200 dark:border-gray-700" />
                   <button
-                    key={sem.id}
                     type="button"
-                    onClick={() => {
-                      setCurrentSemesterId(sem.id);
-                      setIsSemesterMenuOpen(false);
-                    }}
-                    className={`w-full px-4 py-2 text-left text-sm transition ${
-                      sem.id === currentSemesterId
-                        ? "bg-blue-100 dark:bg-blue-900/60 text-blue-700 dark:text-blue-200"
-                        : "text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800"
-                    }`}
+                    onClick={openCreateSemesterModal}
+                    className="w-full px-4 py-2 text-left text-sm text-emerald-600 dark:text-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 font-medium"
                   >
-                    {sem.name}
+                    + Add new semester
                   </button>
-                ))}
-
-                <div className="border-t border-gray-200 dark:border-gray-700" />
-                <button
-                  type="button"
-                  onClick={openCreateSemesterModal}
-                  className="w-full px-4 py-2 text-left text-sm text-emerald-600 dark:text-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-900/20"
-                >
-                  + Add new semester
-                </button>
-                <button
-                  type="button"
-                  onClick={openTimetableModal}
-                  className="w-full px-4 py-2 text-left text-sm text-indigo-600 dark:text-indigo-300 hover:bg-indigo-50 dark:hover:bg-indigo-900/20"
-                >
-                  ✎ Edit timetable
-                </button>
-                <button
-                  type="button"
-                  onClick={handleDeleteCurrentSemester}
-                  className="w-full px-4 py-2 text-left text-sm text-red-600 dark:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20"
-                >
-                  🗑 Delete this semester
-                </button>
-              </div>
-            ) : null}
+                  <button
+                    type="button"
+                    onClick={openTimetableModal}
+                    className="w-full px-4 py-2 text-left text-sm text-indigo-600 dark:text-indigo-300 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 font-medium"
+                  >
+                    ✎ Edit timetable
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleDeleteCurrentSemester}
+                    className="w-full px-4 py-2 text-left text-sm text-red-600 dark:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20 font-medium"
+                  >
+                    🗑 Delete this semester
+                  </button>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
 
-          <nav className="hidden sm:flex items-center gap-4 ml-6">
+          <nav className="hidden sm:flex items-center gap-2 ml-6">
             <NavItem to="/">Home</NavItem>
             <NavItem to="/today">Detailed</NavItem>
             <NavItem to="/calendar">Calendar</NavItem>
@@ -342,84 +352,95 @@ export default function Navbar() {
           <div className="flex-1" />
 
           {/* THEME TOGGLE */}
-          <button
+          <motion.button
+            whileTap={{ scale: 0.9 }}
             onClick={toggleTheme}
-            className="hidden sm:flex relative w-14 h-7 rounded-full bg-gray-300 dark:bg-gray-700 transition-colors duration-300 cursor-pointer items-center mr-2"
+            className="hidden sm:flex relative w-14 h-7 rounded-full bg-gray-300 dark:bg-gray-700 transition-colors duration-300 cursor-pointer items-center mr-2 shadow-inner"
           >
-            <span
-              className={`absolute left-1 top-1 w-5 h-5 rounded-full bg-white flex items-center justify-center text-xs leading-none transition-all duration-300 ${
-                theme === "dark" ? "translate-x-7" : ""
-              }`}
+            <motion.span
+              animate={{ x: theme === "dark" ? 28 : 4 }}
+              transition={{ type: "spring", stiffness: 500, damping: 30 }}
+              className="absolute left-0 top-1 w-5 h-5 rounded-full bg-white flex items-center justify-center text-xs leading-none shadow-sm"
             >
               {theme === "dark" ? "🌙" : "🌞"}
-            </span>
-          </button>
+            </motion.span>
+          </motion.button>
 
           {/* USER PROFILE DROPDOWN */}
           {user && (
             <div ref={profileMenuRef} className="relative inline-block text-left ml-2">
-              <button
+              <motion.button
+                whileHover={{ scale: 1.08 }}
+                whileTap={{ scale: 0.92 }}
                 type="button"
                 onClick={() => setIsProfileMenuOpen((prev) => !prev)}
-                className="w-8 h-8 rounded-full bg-blue-600 hover:bg-blue-500 text-white font-bold flex items-center justify-center text-sm shadow-md hover:shadow active:scale-95 transition-all cursor-pointer"
+                className="w-8 h-8 rounded-full bg-blue-600 hover:bg-blue-500 text-white font-bold flex items-center justify-center text-sm shadow-md hover:shadow-lg transition-all cursor-pointer"
                 aria-label="User profile menu"
               >
                 {user.displayName ? user.displayName.charAt(0).toUpperCase() : "👤"}
-              </button>
+              </motion.button>
 
-              {isProfileMenuOpen && (
-                <div className="absolute right-0 mt-2 w-64 rounded-2xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-[0_18px_45px_rgba(0,0,0,0.15)] dark:shadow-[0_18px_45px_rgba(0,0,0,0.5)] overflow-hidden z-[100] p-4 text-gray-700 dark:text-gray-200 space-y-4">
-                  
-                  {/* Profile Header */}
-                  <div className="space-y-1">
-                    <p className="font-semibold text-gray-900 dark:text-white truncate">
-                      {user.displayName || "Attendance User"}
-                    </p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
-                      {user.email}
-                    </p>
-                  </div>
-
-                  <div className="border-t border-gray-200 dark:border-slate-800" />
-
-                  {/* Overall Attendance Display (analogous to Total Spent in Splitwise AI) */}
-                  <div className="p-3 bg-blue-50/50 dark:bg-blue-950/20 border border-blue-100 dark:border-blue-900/30 rounded-xl">
-                    <p className="text-[10px] font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider">
-                      Overall Attendance
-                    </p>
-                    <p className={`text-2xl font-extrabold mt-0.5 ${
-                      overallPercentage >= 75 ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"
-                    }`}>
-                      {overallPercentage}%
-                    </p>
-                  </div>
-
-                  {user.providerData.some((p) => p.providerId === "google.com") ? (
-                    <div className="flex items-center gap-1.5 p-2 bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-100 dark:border-emerald-900/30 text-[11px] text-green-700 dark:text-green-400 font-semibold rounded-xl justify-center">
-                      ✓ Connected with Google
-                    </div>
-                  ) : (
-                    <button
-                      type="button"
-                      onClick={handleConnectGoogle}
-                      className="w-full py-2.5 flex items-center justify-center gap-2 border border-gray-200 dark:border-slate-800 hover:bg-gray-50 dark:hover:bg-slate-805/40 text-gray-700 dark:text-gray-200 bg-white dark:bg-slate-900 text-xs font-semibold rounded-xl cursor-pointer transition shadow-sm hover:shadow"
-                    >
-                      🔗 Link Google Account
-                    </button>
-                  )}
-
-                  <div className="border-t border-gray-200 dark:border-slate-800" />
-
-                  {/* Sign Out */}
-                  <button
-                    type="button"
-                    onClick={logout}
-                    className="w-full py-2.5 bg-red-600 hover:bg-red-500 text-white rounded-xl text-xs font-bold shadow-md shadow-red-500/10 hover:shadow-red-500/20 active:scale-[0.97] transition-all cursor-pointer"
+              <AnimatePresence>
+                {isProfileMenuOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.95, y: -10 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.95, y: -10 }}
+                    transition={{ duration: 0.18, ease: "easeOut" }}
+                    className="absolute right-0 mt-2 w-64 rounded-2xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-[0_18px_45px_rgba(0,0,0,0.15)] dark:shadow-[0_18px_45px_rgba(0,0,0,0.5)] overflow-hidden z-[100] p-4 text-gray-700 dark:text-gray-200 space-y-4"
                   >
-                    🚪 Sign Out
-                  </button>
-                </div>
-              )}
+                    {/* Profile Header */}
+                    <div className="space-y-1">
+                      <p className="font-semibold text-gray-900 dark:text-white truncate">
+                        {user.displayName || "Attendance User"}
+                      </p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
+                        {user.email}
+                      </p>
+                    </div>
+
+                    <div className="border-t border-gray-200 dark:border-slate-800" />
+
+                    {/* Overall Attendance Display */}
+                    <div className="p-3 bg-blue-50/50 dark:bg-blue-950/20 border border-blue-100 dark:border-blue-900/30 rounded-xl">
+                      <p className="text-[10px] font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider">
+                        Overall Attendance
+                      </p>
+                      <p className={`text-2xl font-extrabold mt-0.5 ${
+                        overallPercentage >= 75 ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"
+                      }`}>
+                        {overallPercentage}%
+                      </p>
+                    </div>
+
+                    {user.providerData.some((p) => p.providerId === "google.com") ? (
+                      <div className="flex items-center gap-1.5 p-2 bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-100 dark:border-emerald-900/30 text-[11px] text-green-700 dark:text-green-400 font-semibold rounded-xl justify-center">
+                        ✓ Connected with Google
+                      </div>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={handleConnectGoogle}
+                        className="w-full py-2.5 flex items-center justify-center gap-2 border border-gray-200 dark:border-slate-800 hover:bg-gray-50 dark:hover:bg-slate-800 text-gray-700 dark:text-gray-200 bg-white dark:bg-slate-900 text-xs font-semibold rounded-xl cursor-pointer transition shadow-sm hover:shadow"
+                      >
+                        🔗 Link Google Account
+                      </button>
+                    )}
+
+                    <div className="border-t border-gray-200 dark:border-slate-800" />
+
+                    {/* Sign Out */}
+                    <motion.button
+                      whileTap={{ scale: 0.96 }}
+                      type="button"
+                      onClick={logout}
+                      className="w-full py-2.5 bg-red-600 hover:bg-red-500 text-white rounded-xl text-xs font-bold shadow-md shadow-red-500/10 hover:shadow-red-500/20 transition-all cursor-pointer"
+                    >
+                      🚪 Sign Out
+                    </motion.button>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
           )}
         </div>
@@ -670,18 +691,25 @@ function NavItem({ to, children }) {
     <NavLink
       to={to}
       className={({ isActive }) =>
-        `
-        px-3 py-1.5 rounded-lg text-sm font-medium
-        transition-all duration-200 cursor-pointer
-        ${
+        `relative px-3.5 py-1.5 rounded-xl text-sm font-medium transition-colors cursor-pointer ${
           isActive
-            ? "bg-blue-600 text-white"
-            : "text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
-        }
-      `
+            ? "text-white font-semibold"
+            : "text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
+        }`
       }
     >
-      {children}
+      {({ isActive }) => (
+        <>
+          {isActive && (
+            <motion.div
+              layoutId="activeNavbarPill"
+              transition={{ type: "spring", stiffness: 400, damping: 30 }}
+              className="absolute inset-0 bg-blue-600 rounded-xl -z-10 shadow-sm"
+            />
+          )}
+          <span className="relative z-10">{children}</span>
+        </>
+      )}
     </NavLink>
   );
 }

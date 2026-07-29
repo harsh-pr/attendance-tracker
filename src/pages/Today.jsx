@@ -1,7 +1,25 @@
 import { useState } from "react";
+import { motion } from "framer-motion";
 import { useSemester } from "../context/SemesterContext";
 import { getSubjectWiseStatus } from "../utils/attendanceUtils";
 import SubjectCalendarModal from "../components/SubjectCalendarModal";
+
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: { staggerChildren: 0.08 },
+  },
+};
+
+const cardVariants = {
+  hidden: { opacity: 0, y: 15 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { type: "spring", stiffness: 350, damping: 25 },
+  },
+};
 
 export default function Today() {
   const { currentSemester } = useSemester();
@@ -21,16 +39,21 @@ export default function Today() {
   );
 
   return (
-    <div className="max-w-6xl mx-auto px-4 pt-6 space-y-6">
+    <motion.div
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+      className="max-w-6xl mx-auto px-4 pt-6 space-y-6"
+    >
       {/* ===== HEADER ===== */}
-      <div>
+      <motion.div variants={cardVariants}>
         <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
           Subject-wise Attendance
         </h1>
         <p className="text-gray-600 dark:text-gray-400">
           Theory & Lab attendance till date. Click a card to view calendar dates.
         </p>
-      </div>
+      </motion.div>
 
       {/* ===== SUBJECT GRID ===== */}
       <div className="space-y-6">
@@ -54,7 +77,7 @@ export default function Today() {
           data={selectedSubjectData}
         />
       )}
-    </div>
+    </motion.div>
   );
 }
 
@@ -72,13 +95,17 @@ function SubjectCard({ data, onClick }) {
   };
 
   return (
-    <div
+    <motion.div
+      variants={cardVariants}
+      whileHover={{ y: -4, scale: 1.02 }}
+      whileTap={{ scale: 0.97 }}
+      transition={{ type: "spring", stiffness: 400, damping: 25 }}
       onClick={onClick}
       className="
         p-5 rounded-2xl
         bg-white dark:bg-gray-800
         border border-gray-200 dark:border-gray-700
-        cursor-pointer hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200
+        cursor-pointer shadow-sm hover:shadow-xl transition-shadow
       "
     >
       <div className="flex items-start justify-between gap-3">
@@ -106,18 +133,20 @@ function SubjectCard({ data, onClick }) {
           </span>
           <span className="font-semibold">{percentage}%</span>
         </div>
-        <div className="mt-2 h-2 rounded-full bg-gray-200 dark:bg-gray-700">
-          <div
+        <div className="mt-2 h-2 rounded-full bg-gray-200 dark:bg-gray-700 overflow-hidden">
+          <motion.div
+            initial={{ width: 0 }}
+            animate={{ width: `${Math.min(100, Math.max(0, percentage))}%` }}
+            transition={{ duration: 0.8, ease: "easeOut" }}
             className={`h-2 rounded-full ${
               percentage >= 75
                 ? "bg-green-500"
                 : "bg-red-500"
             }`}
-            style={{ width: `${percentage}%` }}
           />
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 }
 
@@ -137,7 +166,12 @@ function SubjectSection({ title, items, onCardClick }) {
           No subjects yet.
         </div>
       ) : (
-        <div className="grid gap-4 md:grid-cols-2">
+        <motion.div
+          variants={containerVariants}
+          initial="hidden"
+          animate="visible"
+          className="grid gap-4 md:grid-cols-2"
+        >
           {items.map((item) => (
             <SubjectCard
               key={item.subject.id}
@@ -145,7 +179,7 @@ function SubjectSection({ title, items, onCardClick }) {
               onClick={() => onCardClick(item)}
             />
           ))}
-        </div>
+        </motion.div>
       )}
     </section>
   );

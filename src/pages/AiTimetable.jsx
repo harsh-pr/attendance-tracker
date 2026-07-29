@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { useSemester } from "../context/SemesterContext";
 import { getCollegeTimetable, saveCollegeTimetable } from "../firebase/firestoreService";
 
@@ -455,7 +456,12 @@ export default function AiTimetable() {
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 pt-6 pb-24 space-y-6 animate-fade-in text-gray-900 dark:text-slate-100 font-sans">
+    <motion.div
+      initial={{ opacity: 0, y: 15 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.25, ease: "easeOut" }}
+      className="max-w-7xl mx-auto px-4 pt-6 pb-24 space-y-6 text-gray-900 dark:text-slate-100 font-sans"
+    >
       {/* HEADER */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-slate-200 dark:border-slate-800 pb-5">
         <div className="space-y-1 text-left">
@@ -473,7 +479,9 @@ export default function AiTimetable() {
 
         {/* Toolbar Buttons */}
         <div className="flex flex-wrap gap-2">
-          <button
+          <motion.button
+            whileHover={{ scale: 1.04 }}
+            whileTap={{ scale: 0.95 }}
             type="button"
             onClick={() => setIsEditMode(!isEditMode)}
             className={`px-4 py-2 text-xs font-bold rounded-md shadow-sm transition duration-150 cursor-pointer ${
@@ -483,21 +491,25 @@ export default function AiTimetable() {
             }`}
           >
             {isEditMode ? "💾 Save Layout" : "✏️ Edit Cells"}
-          </button>
-          <button
+          </motion.button>
+          <motion.button
+            whileHover={{ scale: 1.04 }}
+            whileTap={{ scale: 0.95 }}
             type="button"
             onClick={() => setIsMetadataModalOpen(true)}
-            className="px-4 py-2 bg-slate-200 hover:bg-slate-355 dark:bg-slate-800 dark:hover:bg-slate-750 text-xs font-bold rounded-md transition cursor-pointer"
+            className="px-4 py-2 bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-750 text-xs font-bold rounded-md transition cursor-pointer"
           >
             ⚙️ Edit Metadata
-          </button>
-          <button
+          </motion.button>
+          <motion.button
+            whileHover={{ scale: 1.04 }}
+            whileTap={{ scale: 0.95 }}
             type="button"
             onClick={resetToDefault}
-            className="px-4 py-2 bg-red-650 hover:bg-red-500 text-white text-xs font-bold rounded-md transition cursor-pointer"
+            className="px-4 py-2 bg-red-600 hover:bg-red-500 text-white text-xs font-bold rounded-md transition cursor-pointer"
           >
             🔄 Reset
-          </button>
+          </motion.button>
         </div>
       </div>
 
@@ -889,6 +901,6 @@ export default function AiTimetable() {
           </div>
         </div>
       )}
-    </div>
+    </motion.div>
   );
 }

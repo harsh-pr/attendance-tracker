@@ -1,4 +1,5 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
+import { AnimatePresence, motion } from "framer-motion";
 
 import Home from "./pages/Home";
 import Today from "./pages/Today";
@@ -41,6 +42,29 @@ export default function App() {
   );
 }
 
+function AnimatedRoutes() {
+  const location = useLocation();
+
+  return (
+    <AnimatePresence mode="wait">
+      <motion.div
+        key={location.pathname}
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -10 }}
+        transition={{ duration: 0.2, ease: "easeOut" }}
+      >
+        <Routes location={location}>
+          <Route path="/" element={<Home />} />
+          <Route path="/today" element={<Today />} />
+          <Route path="/calendar" element={<Calendar />} />
+          <Route path="/ai-timetable" element={<AiTimetable />} />
+        </Routes>
+      </motion.div>
+    </AnimatePresence>
+  );
+}
+
 function AppContent() {
   const { semesters } = useSemester();
 
@@ -57,12 +81,7 @@ function AppContent() {
       <MobileNav />
 
       <main className="pt-16 pb-20 min-h-screen bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100 transition-colors duration-300">
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/today" element={<Today />} />
-          <Route path="/calendar" element={<Calendar />} />
-          <Route path="/ai-timetable" element={<AiTimetable />} />
-        </Routes>
+        <AnimatedRoutes />
       </main>
     </BrowserRouter>
   );

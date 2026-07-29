@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { motion } from "framer-motion";
 import { useSemester } from "../context/SemesterContext";
 import { calculateOverallAttendance } from "../utils/attendanceUtils";
 import { getTodayDate } from "../store/attendanceStore";
@@ -8,6 +9,26 @@ import AttendanceOverviewChart from "../components/AttendanceOverviewChart";
 import QuickTodayAttendance from "../components/QuickTodayAttendance";
 import OverallAttendanceModal from "../components/OverallAttendanceModal";
 import Modal from "../components/Modal";
+
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.08,
+      delayChildren: 0.05,
+    },
+  },
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 15 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { type: "spring", stiffness: 300, damping: 24 },
+  },
+};
 
 export default function Home() {
   const {
@@ -89,45 +110,49 @@ export default function Home() {
   };
 
   return (
-    <div className="max-w-6xl mx-auto px-4 pt-6 pb-24 space-y-8">
+    <motion.div
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+      className="max-w-6xl mx-auto px-4 pt-6 pb-24 space-y-8"
+    >
       {/* ===== HEADER ===== */}
-<div className="flex flex-col gap-2 sm:block">
-  <div className="flex items-center justify-between sm:block">
-    <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-gray-100">
-      Dashboard
-    </h1>
+      <motion.div variants={itemVariants} className="flex flex-col gap-2 sm:block">
+        <div className="flex items-center justify-between sm:block">
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-gray-100">
+            Dashboard
+          </h1>
 
-    {/* ===== MOBILE ONLY SEMESTER SELECTOR ===== */}
-        <div className="sm:hidden">
-          <select
-            value={currentSemester.id}
-            onChange={(e) => {
-              setCurrentSemesterId(e.target.value);
-            }}
-            className="
-              px-2 py-1 text-sm rounded-md
-              bg-gray-100 dark:bg-gray-800
-              border border-gray-300 dark:border-gray-700
-              text-gray-900 dark:text-gray-100
-            "
-          >
-            {semesters.map((sem) => (
-              <option key={sem.id} value={sem.id}>
-                {sem.name}
-              </option>
-            ))}
-          </select>
+          {/* ===== MOBILE ONLY SEMESTER SELECTOR ===== */}
+          <div className="sm:hidden">
+            <select
+              value={currentSemester.id}
+              onChange={(e) => {
+                setCurrentSemesterId(e.target.value);
+              }}
+              className="
+                px-2 py-1 text-sm rounded-md
+                bg-gray-100 dark:bg-gray-800
+                border border-gray-300 dark:border-gray-700
+                text-gray-900 dark:text-gray-100
+              "
+            >
+              {semesters.map((sem) => (
+                <option key={sem.id} value={sem.id}>
+                  {sem.name}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
-      </div>
 
-      <p className="text-gray-600 dark:text-gray-400">
-        Attendance overview
-      </p>
-    </div>
-
+        <p className="text-gray-600 dark:text-gray-400">
+          Attendance overview
+        </p>
+      </motion.div>
 
       {/* ===== STAT CARDS ===== */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <motion.div variants={itemVariants} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* TODAY */}
         <StatCard onClick={() => setQuickOpen(true)}>
           <p className="text-sm text-gray-500 dark:text-gray-400">
@@ -169,6 +194,16 @@ export default function Home() {
           <p className="text-sm text-gray-600 dark:text-gray-400">
             Till today
           </p>
+          <div className="mt-3 h-1.5 w-full bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+            <motion.div
+              initial={{ width: 0 }}
+              animate={{ width: `${Math.min(100, Math.max(0, theoryPercentage))}%` }}
+              transition={{ duration: 0.8, ease: "easeOut" }}
+              className={`h-full rounded-full ${
+                theoryPercentage >= 75 ? "bg-green-500" : "bg-red-500"
+              }`}
+            />
+          </div>
         </StatCard>
 
         {/* LABS */}
@@ -188,6 +223,16 @@ export default function Home() {
           <p className="text-sm text-gray-600 dark:text-gray-400">
             Till today
           </p>
+          <div className="mt-3 h-1.5 w-full bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+            <motion.div
+              initial={{ width: 0 }}
+              animate={{ width: `${Math.min(100, Math.max(0, labPercentage))}%` }}
+              transition={{ duration: 0.8, ease: "easeOut", delay: 0.1 }}
+              className={`h-full rounded-full ${
+                labPercentage >= 75 ? "bg-green-500" : "bg-red-500"
+              }`}
+            />
+          </div>
         </StatCard>
 
         {/* OVERALL */}
@@ -207,16 +252,26 @@ export default function Home() {
           <p className="text-sm text-gray-600 dark:text-gray-400">
             Till today
           </p>
+          <div className="mt-3 h-1.5 w-full bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+            <motion.div
+              initial={{ width: 0 }}
+              animate={{ width: `${Math.min(100, Math.max(0, overallPercentage))}%` }}
+              transition={{ duration: 0.8, ease: "easeOut", delay: 0.2 }}
+              className={`h-full rounded-full ${
+                overallPercentage >= 75 ? "bg-green-500" : "bg-red-500"
+              }`}
+            />
+          </div>
         </StatCard>
-      </div>
+      </motion.div>
 
       {/* ===== GRAPH ===== */}
-      <div className="w-full overflow-hidden">
+      <motion.div variants={itemVariants} className="w-full overflow-hidden">
         <AttendanceOverviewChart />
-      </div>
+      </motion.div>
 
       {/* ===== LOGS ===== */}
-      <section className="space-y-4">
+      <motion.section variants={itemVariants} className="space-y-4">
         <div className="flex items-center justify-between gap-4">
           <div>
             <h2 className="text-lg font-semibold">
@@ -227,13 +282,15 @@ export default function Home() {
             </p>
           </div>
           {logs.length > 7 && (
-            <button
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
               type="button"
               onClick={() => setAllLogsOpen(true)}
               className="text-sm font-medium text-blue-600 dark:text-blue-400 hover:underline"
             >
               View all
-            </button>
+            </motion.button>
           )}
         </div>
 
@@ -243,10 +300,13 @@ export default function Home() {
               No attendance logs yet.
             </div>
           ) : (
-            visibleLogs.map((day) => (
-              <div
+            visibleLogs.map((day, idx) => (
+              <motion.div
                 key={day.date}
-                className="rounded-xl bg-white dark:bg-gray-800 p-4 border border-gray-200 dark:border-gray-700"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: idx * 0.04, duration: 0.2 }}
+                className="rounded-xl bg-white dark:bg-gray-800 p-4 border border-gray-200 dark:border-gray-700 shadow-sm"
               >
                 <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">
                   {new Date(day.date).toLocaleDateString(
@@ -298,11 +358,11 @@ export default function Home() {
                     })
                   )}
                 </div>
-              </div>
+              </motion.div>
             ))
           )}
         </div>
-      </section>
+      </motion.section>
 
       {/* ===== MODALS ===== */}
       <QuickTodayAttendance
@@ -397,25 +457,26 @@ export default function Home() {
           )}
         </div>
       </Modal>
-    </div>
+    </motion.div>
   );
 }
 
 /* ===== CARD ===== */
 function StatCard({ children, onClick }) {
   return (
-    <div
+    <motion.div
       onClick={onClick}
+      whileHover={{ y: -4, scale: 1.02 }}
+      whileTap={{ scale: 0.97 }}
+      transition={{ type: "spring", stiffness: 400, damping: 25 }}
       className="
         rounded-2xl p-5 cursor-pointer
         bg-white dark:bg-gray-800
         border border-gray-200 dark:border-gray-700
-        transition-all duration-300
-        hover:-translate-y-1 hover:shadow-xl
-        active:scale-95
+        shadow-sm hover:shadow-xl
       "
     >
       {children}
-    </div>
+    </motion.div>
   );
 }

@@ -480,7 +480,7 @@ export default function AiTimetable() {
   const todayData = getTodayLectures();
 
   const getCellClassName = (type, isLastCol = false, isLastRow = false) => {
-    let base = "p-3.5 text-center transition-all duration-200 min-w-[110px] lg:min-w-0 align-middle ";
+    let base = "p-3.5 text-center transition-all duration-200 min-w-[130px] align-middle ";
     if (!isLastCol) base += "border-r border-zinc-200 dark:border-zinc-800/80 ";
     if (!isLastRow) base += "border-b border-zinc-200 dark:border-zinc-800/80 ";
 
@@ -549,6 +549,7 @@ export default function AiTimetable() {
   const renderRow = (dayKey, dayIdx) => {
     const isWorking = activeDays.includes(dayKey);
     const isLastRow = dayIdx === ALL_DAYS.length - 1;
+    const totalSlotCols = timeSlots.length + breaks.length;
 
     if (!isWorking) {
       return (
@@ -556,7 +557,7 @@ export default function AiTimetable() {
           <td className="p-4 font-black uppercase text-[10px] tracking-widest border-r border-zinc-200 dark:border-zinc-800 bg-zinc-100/70 dark:bg-zinc-950/80 w-[110px] text-zinc-500 dark:text-zinc-400">
             {dayKey.substring(0, 3)}
           </td>
-          <td colSpan={50} className="p-5 text-center font-black text-blue-600 dark:text-blue-400 uppercase tracking-[0.25em] text-xs font-[Poppins]">
+          <td colSpan={totalSlotCols} className="p-5 text-center font-black text-blue-600 dark:text-blue-400 uppercase tracking-[0.25em] text-xs font-[Poppins]">
             HOLIDAY
           </td>
         </tr>
@@ -755,8 +756,8 @@ export default function AiTimetable() {
           animate={{ opacity: 1, y: 0 }}
           className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-xl overflow-hidden backdrop-blur-xl"
         >
-          <div className="overflow-x-auto lg:overflow-x-visible">
-            <table className="w-full min-w-[850px] lg:min-w-0 border-collapse text-left table-fixed">
+          <div className="overflow-x-auto">
+            <table className="w-full border-collapse text-left">
               <thead>
                 <tr className="bg-zinc-100/70 dark:bg-zinc-950/80 border-b border-zinc-200 dark:border-zinc-800">
                   <th className="p-4 text-xs font-extrabold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider border-r border-zinc-200 dark:border-zinc-800 w-[110px]">
@@ -766,11 +767,11 @@ export default function AiTimetable() {
                     const activeBreaks = breaks.filter((b) => b.afterSlotIndex === i);
                     return (
                       <Fragment key={slot.id || i}>
-                        <th className="p-4 text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider border-r border-zinc-200 dark:border-zinc-800 text-center">
+                        <th className="p-4 text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider border-r border-zinc-200 dark:border-zinc-800 text-center min-w-[130px]">
                           {slot.label}
                         </th>
                         {activeBreaks.map((b) => (
-                          <th key={`hdr-br-${b.id || b.label}-${i}`} className="p-4 text-[10px] font-extrabold text-blue-600 dark:text-blue-400 uppercase tracking-wider border-r border-zinc-200 dark:border-zinc-800 text-center bg-zinc-50 dark:bg-zinc-950/90">
+                          <th key={`hdr-br-${b.id || b.label}-${i}`} className="p-4 text-[10px] font-extrabold text-blue-600 dark:text-blue-400 uppercase tracking-wider border-r border-zinc-200 dark:border-zinc-800 text-center bg-zinc-50 dark:bg-zinc-950/90 min-w-[60px]">
                             {b.time || b.label}
                           </th>
                         ))}

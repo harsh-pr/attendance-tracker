@@ -431,6 +431,8 @@ export default function Navbar() {
                           </span>
                         </div>
 
+                        <div className="border-t border-zinc-200 dark:border-zinc-800/80 my-1.5" />
+
                         <button
                           type="button"
                           onClick={() => {

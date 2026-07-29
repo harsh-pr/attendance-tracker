@@ -1,6 +1,6 @@
 import { NavLink } from "react-router-dom";
 import { motion } from "framer-motion";
-import { useTheme } from "../context/ThemeContext";
+import ThemeToggle from "./ThemeToggle";
 
 const links = [
   { to: "/", label: "Home", icon: "🏠" },
@@ -10,10 +10,8 @@ const links = [
 ];
 
 export default function MobileNav() {
-  const { theme, toggleTheme } = useTheme();
-
   return (
-    <nav className="fixed bottom-4 left-3 right-3 sm:hidden z-40 max-w-md mx-auto h-15 rounded-full bg-white/85 dark:bg-zinc-900/85 border border-zinc-200/80 dark:border-zinc-800/80 shadow-[0_10px_35px_rgba(0,0,0,0.12)] dark:shadow-[0_10px_35px_rgba(0,0,0,0.5)] backdrop-blur-2xl px-2.5 flex items-center justify-around">
+    <nav className="fixed bottom-4 left-3 right-3 sm:hidden z-40 max-w-md mx-auto h-16 rounded-full bg-white/85 dark:bg-zinc-900/85 border border-zinc-200/80 dark:border-zinc-800/80 shadow-[0_10px_35px_rgba(0,0,0,0.12)] dark:shadow-[0_10px_35px_rgba(0,0,0,0.5)] backdrop-blur-2xl px-2 flex items-center justify-around">
       {links.map((link) => (
         <NavLink
           key={link.to}
@@ -45,19 +43,10 @@ export default function MobileNav() {
         </NavLink>
       ))}
 
-      {/* Theme Toggle Pill */}
-      <motion.button
-        whileTap={{ scale: 0.88 }}
-        onClick={toggleTheme}
-        type="button"
-        className="flex flex-col items-center justify-center flex-1 h-full py-1 text-zinc-400 dark:text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300 cursor-pointer select-none"
-        title="Toggle Theme"
-      >
-        <span className="text-base leading-none">{theme === "dark" ? "🌙" : "🌞"}</span>
-        <span className="text-[10px] font-extrabold tracking-tight mt-0.5">
-          {theme === "dark" ? "Dark" : "Light"}
-        </span>
-      </motion.button>
+      {/* User's Theme Toggle Slider */}
+      <div className="flex items-center justify-center px-1">
+        <ThemeToggle />
+      </div>
     </nav>
   );
 }

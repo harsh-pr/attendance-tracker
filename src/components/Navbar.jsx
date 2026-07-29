@@ -266,99 +266,16 @@ export default function Navbar() {
 
   return (
     <>
-      <header className="fixed top-0 left-0 right-0 z-50 px-3 sm:px-6 pt-3 pb-2 bg-gradient-to-b from-zinc-50/90 via-zinc-50/60 to-transparent dark:from-zinc-950/90 dark:via-zinc-950/60 dark:to-transparent backdrop-blur-md">
+      <header className="hidden sm:block fixed top-0 left-0 right-0 z-50 px-3 sm:px-6 pt-3 pb-2 bg-gradient-to-b from-zinc-50/90 via-zinc-50/60 to-transparent dark:from-zinc-950/90 dark:via-zinc-950/60 dark:to-transparent backdrop-blur-md">
         <div className="max-w-6xl mx-auto h-14 px-3.5 sm:px-5 rounded-full bg-white/80 dark:bg-zinc-900/80 border border-zinc-200/80 dark:border-zinc-800/80 shadow-[0_8px_30px_rgb(0,0,0,0.08)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.4)] flex items-center justify-between backdrop-blur-2xl transition-all duration-300">
           
-          {/* Logo & Semester Selector */}
+          {/* Logo */}
           <div className="flex items-center gap-2.5 sm:gap-3">
             <NavLink to="/" className="flex items-center gap-2 group cursor-pointer select-none">
               <span className="text-base sm:text-lg font-black tracking-tight font-[Poppins] text-zinc-900 dark:text-white">
                 AttendanceManager
               </span>
             </NavLink>
-
-            {/* Semester Selector Pill Dropdown */}
-            <div ref={menuRef} className="relative">
-              <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.96 }}
-                type="button"
-                onClick={() => setIsSemesterMenuOpen((prev) => !prev)}
-                className="px-3 py-1.5 rounded-full bg-zinc-100/90 dark:bg-zinc-800/70 text-zinc-800 dark:text-zinc-200 text-xs font-bold inline-flex items-center gap-1.5 border border-zinc-200/80 dark:border-zinc-700/50 cursor-pointer hover:bg-zinc-200/90 dark:hover:bg-zinc-700/80 transition-all shadow-xs"
-              >
-                <span className="w-1.5 h-1.5 rounded-full bg-blue-500" />
-                <span className="truncate max-w-[90px] sm:max-w-[120px]">{currentSemesterName}</span>
-                <span
-                  className={`text-[10px] text-zinc-400 transition-transform duration-300 ${
-                    isSemesterMenuOpen ? "rotate-180" : "rotate-0"
-                  }`}
-                >
-                  ▼
-                </span>
-              </motion.button>
-
-              <AnimatePresence>
-                {isSemesterMenuOpen && (
-                  <motion.div
-                    initial={{ opacity: 0, scale: 0.95, y: -10 }}
-                    animate={{ opacity: 1, scale: 1, y: 0 }}
-                    exit={{ opacity: 0, scale: 0.95, y: -10 }}
-                    transition={{ duration: 0.18, ease: "easeOut" }}
-                    className="absolute left-0 mt-2 w-64 rounded-3xl border border-zinc-200 dark:border-zinc-800 bg-white/95 dark:bg-zinc-900/95 shadow-2xl backdrop-blur-2xl overflow-hidden z-50 p-2 space-y-1"
-                  >
-                    <p className="px-3 py-1.5 text-[10px] font-extrabold uppercase tracking-wider text-zinc-400">
-                      Select Semester
-                    </p>
-
-                    {semesters.map((sem) => (
-                      <button
-                        key={sem.id}
-                        type="button"
-                        onClick={() => {
-                          setCurrentSemesterId(sem.id);
-                          setIsSemesterMenuOpen(false);
-                        }}
-                        className={`w-full px-3 py-2 rounded-xl text-left text-xs font-bold transition-all ${
-                          sem.id === currentSemesterId
-                            ? "bg-blue-500/10 text-blue-600 dark:text-blue-400 font-extrabold border border-blue-500/20"
-                            : "text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800"
-                        }`}
-                      >
-                        {sem.name}
-                      </button>
-                    ))}
-
-                    <div className="border-t border-zinc-200 dark:border-zinc-800/80 my-1" />
-                    <button
-                      type="button"
-                      onClick={openCreateSemesterModal}
-                      className="w-full px-3 py-2 rounded-xl text-left text-xs font-bold text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10 transition-colors"
-                    >
-                      + Add new semester
-                    </button>
-                    <button
-                      type="button"
-                      onClick={openTimetableModal}
-                      className="w-full px-3 py-2 rounded-xl text-left text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:bg-indigo-500/10 transition-colors"
-                    >
-                      ✎ Edit timetable
-                    </button>
-
-                    <div className="pt-1">
-                      <HoldButton
-                        onConfirm={handleDeleteCurrentSemester}
-                        holdDuration={1500}
-                        variant="danger"
-                        icon="🗑️"
-                        className="w-full text-xs rounded-xl py-1.5"
-                      >
-                        Delete this semester
-                      </HoldButton>
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
           </div>
 
           {/* Center: Kokonut Morphic Segmented Navbar Bar */}
@@ -371,22 +288,6 @@ export default function Navbar() {
 
           {/* Right Actions & Profile Dropdown */}
           <div className="flex items-center gap-2">
-            {/* THEME TOGGLE */}
-            <motion.button
-              whileTap={{ scale: 0.9 }}
-              onClick={toggleTheme}
-              className="relative w-12 h-6 rounded-full bg-zinc-200/90 dark:bg-zinc-800/90 transition-colors duration-300 cursor-pointer flex items-center p-0.5 border border-zinc-300/80 dark:border-zinc-700/80 shadow-inner"
-              title="Toggle theme"
-            >
-              <motion.span
-                animate={{ x: theme === "dark" ? 22 : 2 }}
-                transition={{ type: "spring", stiffness: 500, damping: 30 }}
-                className="w-4 h-4 rounded-full bg-white dark:bg-zinc-200 flex items-center justify-center text-[10px] leading-none shadow-md"
-              >
-                {theme === "dark" ? "🌙" : "🌞"}
-              </motion.span>
-            </motion.button>
-
             {/* KOKONUT PROFILE DROPDOWN */}
             {user && (
               <div ref={profileMenuRef} className="relative inline-block text-left">
@@ -423,9 +324,17 @@ export default function Navbar() {
 
                         <div className="flex items-center justify-between px-3 py-2 rounded-xl hover:bg-zinc-100 dark:hover:bg-zinc-800/60 transition-colors">
                           <span className="flex items-center gap-2 font-bold">⚡ Active Semester</span>
-                          <span className="px-2.5 py-0.5 rounded-full bg-blue-500/10 text-blue-600 dark:text-blue-400 text-[10px] font-extrabold truncate max-w-[100px] border border-blue-500/20">
-                            {currentSemesterName}
-                          </span>
+                          <select
+                            value={currentSemesterId}
+                            onChange={(e) => setCurrentSemesterId(e.target.value)}
+                            className="px-2 py-1 rounded-lg bg-zinc-100 dark:bg-zinc-800 text-blue-600 dark:text-blue-400 text-[10px] font-extrabold cursor-pointer border border-zinc-200 dark:border-zinc-700 focus:outline-none"
+                          >
+                            {semesters.map((sem) => (
+                              <option key={sem.id} value={sem.id}>
+                                {sem.name}
+                              </option>
+                            ))}
+                          </select>
                         </div>
 
                         <div className="flex items-center justify-between px-3 py-2 rounded-xl hover:bg-zinc-100 dark:hover:bg-zinc-800/60 transition-colors">

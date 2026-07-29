@@ -470,10 +470,11 @@ function StatCard({ children, onClick }) {
       whileTap={{ scale: 0.97 }}
       transition={{ type: "spring", stiffness: 400, damping: 25 }}
       className="
-        rounded-2xl p-5 cursor-pointer
-        bg-white dark:bg-gray-800
-        border border-gray-200 dark:border-gray-700
-        shadow-sm hover:shadow-xl
+        rounded-3xl p-5 cursor-pointer
+        bg-white dark:bg-zinc-900/90
+        border border-zinc-200/80 dark:border-zinc-800/80
+        shadow-md hover:shadow-2xl transition-all duration-200
+        backdrop-blur-xl
       "
     >
       {children}

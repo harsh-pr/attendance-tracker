@@ -2,6 +2,8 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useSemester } from "../context/SemesterContext";
 import { getCollegeTimetable, saveCollegeTimetable } from "../firebase/firestoreService";
+import DynamicText from "../components/DynamicText";
+import HoldButton from "../components/HoldButton";
 
 // Default metadata for Semester 3
 const DEFAULT_METADATA = {
@@ -450,7 +452,15 @@ export default function AiTimetable() {
     return (
       <div className="flex flex-col items-center justify-center min-h-[400px] space-y-4">
         <div className="w-10 h-10 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
-        <p className="text-xs font-semibold text-slate-550">Syncing College Timetable database...</p>
+        <DynamicText
+          items={[
+            "Syncing College Timetable database...",
+            "Fetching faculty records...",
+            "Building weekly grid layout...",
+          ]}
+          interval={1800}
+          className="text-xs font-semibold text-zinc-400"
+        />
       </div>
     );
   }
@@ -478,13 +488,13 @@ export default function AiTimetable() {
         </div>
 
         {/* Toolbar Buttons */}
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <motion.button
             whileHover={{ scale: 1.04 }}
             whileTap={{ scale: 0.95 }}
             type="button"
             onClick={() => setIsEditMode(!isEditMode)}
-            className={`px-4 py-2 text-xs font-bold rounded-md shadow-sm transition duration-150 cursor-pointer ${
+            className={`px-4 py-2 text-xs font-bold rounded-xl shadow-sm transition duration-150 cursor-pointer ${
               isEditMode
                 ? "bg-amber-600 hover:bg-amber-500 text-white"
                 : "bg-blue-600 hover:bg-blue-500 text-white"
@@ -497,19 +507,20 @@ export default function AiTimetable() {
             whileTap={{ scale: 0.95 }}
             type="button"
             onClick={() => setIsMetadataModalOpen(true)}
-            className="px-4 py-2 bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-750 text-xs font-bold rounded-md transition cursor-pointer"
+            className="px-4 py-2 bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-750 text-xs font-bold rounded-xl transition cursor-pointer"
           >
             ⚙️ Edit Metadata
           </motion.button>
-          <motion.button
-            whileHover={{ scale: 1.04 }}
-            whileTap={{ scale: 0.95 }}
-            type="button"
-            onClick={resetToDefault}
-            className="px-4 py-2 bg-red-600 hover:bg-red-500 text-white text-xs font-bold rounded-md transition cursor-pointer"
+
+          <HoldButton
+            onConfirm={resetToDefault}
+            holdDuration={1500}
+            variant="danger"
+            icon="🔄"
+            className="rounded-xl py-2"
           >
-            🔄 Reset
-          </motion.button>
+            Reset
+          </HoldButton>
         </div>
       </div>
 

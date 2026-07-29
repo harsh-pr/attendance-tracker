@@ -26,7 +26,7 @@ const statusConfig = {
   holiday: {
     label: "Holiday",
     badge: "bg-sky-100 text-sky-700 dark:bg-sky-500/20 dark:text-sky-200",
-    tile:  "bg-gray-50/20 dark:bg-gray-900/10 text-gray-300 dark:text-gray-700 border-dashed opacity-40",
+    tile:  "bg-zinc-50/20 dark:bg-zinc-900/40 text-zinc-300 dark:text-zinc-600 border-dashed opacity-40",
   },
   exam: {
     label: "Exam Day",
@@ -35,8 +35,8 @@ const statusConfig = {
   },
   none: {
     label: "No Data",
-    badge: "bg-gray-100 text-gray-600 dark:bg-gray-500/20 dark:text-gray-300",
-    tile:  "bg-white text-gray-700 dark:bg-gray-800 dark:text-gray-200",
+    badge: "bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300",
+    tile:  "bg-white text-zinc-700 dark:bg-zinc-900 dark:text-zinc-200",
   },
 };
 
@@ -44,13 +44,13 @@ const exportPalette = {
   full:        { background: "#12352a", text: "#d1fae5" },
   partial:     { background: "#3a2e12", text: "#fde68a" },
   absent:      { background: "#3b1a1a", text: "#fecaca" },
-  holiday:     { background: "#0f2a3a", text: "#bae6fd" },
+  holiday:     { background: "#18181b", text: "#bae6fd" },
   exam:        { background: "#2b1b3f", text: "#e9d5ff" },
-  none:        { background: "#111827", text: "#e5e7eb" },
-  border:      "#1f2937",
-  muted:       "#9ca3af",
-  surface:     "#0b1120",
-  softSurface: "#0f172a",
+  none:        { background: "#09090b", text: "#e4e4e7" },
+  border:      "#27272a",
+  muted:       "#a1a1aa",
+  surface:     "#09090b",
+  softSurface: "#18181b",
 };
 
 const lectureStatusStyles = {
@@ -811,20 +811,20 @@ export default function Calendar() {
       {/* ── HEADER ── */}
       <section className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
         <div className="space-y-2">
-          <span className="inline-flex items-center gap-2 rounded-full border border-gray-200 dark:border-gray-700 bg-white/80 dark:bg-gray-900/40 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-gray-500 dark:text-gray-400">
+          <span className="inline-flex items-center gap-2 rounded-full border border-zinc-200 dark:border-zinc-800 bg-white/80 dark:bg-zinc-900/60 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-zinc-500 dark:text-zinc-400">
             Attendance Calendar
           </span>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Your attendance, beautifully tracked</h1>
-          <p className="text-gray-600 dark:text-gray-400">See full-day, partial, absent, and holiday patterns at a glance.</p>
+          <h1 className="text-3xl font-bold text-zinc-900 dark:text-zinc-100 font-[Poppins]">Your attendance, beautifully tracked</h1>
+          <p className="text-zinc-600 dark:text-zinc-400 text-sm">See full-day, partial, absent, and holiday patterns at a glance.</p>
         </div>
         <div className="flex flex-wrap gap-3">
           <button type="button" onClick={handleExportMonth}
-            className="rounded-full border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-4 py-2 text-sm font-semibold text-gray-700 dark:text-gray-200 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
+            className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/80 px-4 py-2 text-xs font-bold text-zinc-700 dark:text-zinc-200 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md cursor-pointer">
             Export Month
           </button>
           <button type="button" onClick={() => { setEditingReminder(null); setReminderForm({ title: "", date: "", time: "" }); setAddReminderOpen(true); }}
-            className="rounded-full bg-gray-900 text-white dark:bg-white dark:text-gray-900 px-4 py-2 text-sm font-semibold shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
-            Add Reminder
+            className="rounded-xl bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 px-4 py-2 text-xs font-bold shadow-md transition hover:-translate-y-0.5 hover:shadow-lg cursor-pointer">
+            + Add Reminder
           </button>
         </div>
       </section>
@@ -837,14 +837,14 @@ export default function Calendar() {
           { title: "Absences",     value: statusCounts.absent,  change: formatDelta(statusCounts.absent  - previousStatusCounts.absent),  status: "absent"  },
           { title: "Holidays",     value: statusCounts.holiday, change: formatDelta(statusCounts.holiday - previousStatusCounts.holiday), status: "holiday" },
         ].map((item, index) => (
-          <div key={item.title} className="animate-[fadeUp_0.6s_ease-out] rounded-2xl border border-gray-200 dark:border-gray-700 bg-white/80 dark:bg-gray-900/50 p-4 shadow-sm" style={{ animationDelay: `${index * 80}ms` }}>
+          <div key={item.title} className="animate-[fadeUp_0.6s_ease-out] rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white/80 dark:bg-zinc-900/80 p-4 shadow-sm backdrop-blur-xl" style={{ animationDelay: `${index * 80}ms` }}>
             <div className="flex items-center justify-between">
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">{item.title}</p>
-              <span className={`rounded-full px-2 py-1 text-[10px] font-semibold uppercase tracking-wide ${statusConfig[item.status].badge}`}>{statusConfig[item.status].label}</span>
+              <p className="text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">{item.title}</p>
+              <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide ${statusConfig[item.status].badge}`}>{statusConfig[item.status].label}</span>
             </div>
             <div className="mt-3 flex items-end justify-between">
-              <p className="text-3xl font-semibold text-gray-900 dark:text-white">{item.value}</p>
-              <p className="text-xs text-gray-500 dark:text-gray-400">{item.change}</p>
+              <p className="text-3xl font-black text-zinc-900 dark:text-white">{item.value}</p>
+              <p className="text-xs text-zinc-500 dark:text-zinc-400 font-medium">{item.change}</p>
             </div>
           </div>
         ))}
@@ -852,39 +852,39 @@ export default function Calendar() {
 
       {/* ── CALENDAR + SIDEBAR ── */}
       <section className="grid gap-6 lg:grid-cols-[2.1fr_1fr]">
-        <div className="space-y-4 rounded-3xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900/50 p-6 shadow-sm">
+        <div className="space-y-4 rounded-3xl border border-zinc-200 dark:border-zinc-800 bg-white/80 dark:bg-zinc-900/80 p-6 shadow-sm backdrop-blur-xl">
           <div className="flex flex-wrap items-start justify-between gap-4 pt-1">
             <div className="space-y-1">
-              <p className="text-sm font-semibold text-gray-500 dark:text-gray-400">Calendar View</p>
-              <h2 className="text-2xl font-semibold text-gray-900 dark:text-white">{monthLabel}</h2>
+              <p className="text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Calendar View</p>
+              <h2 className="text-2xl font-bold text-zinc-900 dark:text-white">{monthLabel}</h2>
             </div>
             <div className="flex items-center gap-5">
               <button type="button" onClick={() => setActiveMonthDate(prev => new Date(prev.getFullYear(), prev.getMonth() - 1, 1))}
-                aria-label="Previous month" className="text-3xl leading-none text-gray-600 transition hover:scale-110 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white">←</button>
+                aria-label="Previous month" className="text-2xl leading-none text-zinc-500 transition hover:scale-110 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white cursor-pointer">←</button>
               <button type="button" onClick={() => setActiveMonthDate(prev => new Date(prev.getFullYear(), prev.getMonth() + 1, 1))}
-                aria-label="Next month" className="text-3xl leading-none text-gray-600 transition hover:scale-110 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white">→</button>
+                aria-label="Next month" className="text-2xl leading-none text-zinc-500 transition hover:scale-110 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white cursor-pointer">→</button>
             </div>
           </div>
 
-          <div className="grid grid-cols-7 gap-2 text-[10px] sm:text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+          <div className="grid grid-cols-7 gap-2 text-[10px] sm:text-xs font-bold uppercase tracking-wider text-zinc-400">
             {weekDays.map(day => <div key={day} className="text-center">{day}</div>)}
           </div>
 
-          <div className="rounded-2xl border border-gray-200 dark:border-gray-700 bg-gray-100/70 dark:bg-gray-800/60 p-2">
+          <div className="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-zinc-100/60 dark:bg-zinc-950/60 p-2">
             <div className="grid grid-cols-7 gap-1 sm:gap-2">
               {leadingBlanks.map(blank => <div key={blank.key} className="h-12 sm:h-14 rounded-lg border border-transparent" />)}
               {calendarDays.map((day, index) => (
                 <button key={day.dayNumber} type="button"
                   onClick={() => setSelectedDay({ day: day.dayNumber, status: day.status, date: day.date, dayEntry: day.dayEntry })}
-                  className={`group relative overflow-hidden flex flex-col justify-between min-h-[3.25rem] sm:min-h-[3.75rem] h-auto rounded-lg border border-gray-200/80 dark:border-gray-700/80 bg-white dark:bg-gray-900 p-1.5 text-[11px] sm:text-sm font-semibold transition ${statusConfig[day.status].tile} hover:-translate-y-0.5 hover:border-gray-300 hover:shadow-lg dark:hover:border-gray-600`}
-                  style={{ animation: "fadeUp 0.5s ease-out", animationDelay: `${(index % 7) * 50}ms`, animationFillMode: "both" }}>
-                  <div className="w-full flex items-center justify-between text-[10px] sm:text-xs text-gray-500 dark:text-gray-400">
+                  className={`group relative overflow-hidden flex flex-col justify-between min-h-[3.25rem] sm:min-h-[3.75rem] h-auto rounded-xl border border-zinc-200/80 dark:border-zinc-800/80 bg-white dark:bg-zinc-900 p-1.5 text-[11px] sm:text-sm font-semibold transition ${statusConfig[day.status].tile} hover:-translate-y-0.5 hover:border-zinc-400 dark:hover:border-zinc-700 hover:shadow-lg cursor-pointer`}
+                  style={{ animation: "fadeUp 0.5s ease-out", animationDelay: `${(index % 7) * 40}ms`, animationFillMode: "both" }}>
+                  <div className="w-full flex items-center justify-between text-[10px] sm:text-xs text-zinc-500 dark:text-zinc-400 font-bold">
                     <span>{day.dayNumber}</span>
                     <span className="h-1.5 w-1.5 rounded-full bg-current opacity-60" />
                   </div>
-                  <p className="mt-2 w-full text-center text-[8px] sm:text-[9px] font-bold uppercase tracking-wider truncate pb-0.5">{statusConfig[day.status].label}</p>
+                  <p className="mt-2 w-full text-center text-[8px] sm:text-[9px] font-extrabold uppercase tracking-wider truncate pb-0.5">{statusConfig[day.status].label}</p>
                   {day.status === "holiday" && (
-                    <svg className="absolute inset-0 w-full h-full pointer-events-none stroke-gray-300 dark:stroke-gray-700 opacity-60 dark:opacity-40" viewBox="0 0 100 100" preserveAspectRatio="none">
+                    <svg className="absolute inset-0 w-full h-full pointer-events-none stroke-zinc-300 dark:stroke-zinc-800 opacity-60 dark:opacity-40" viewBox="0 0 100 100" preserveAspectRatio="none">
                       <line x1="0" y1="0" x2="100" y2="100" strokeWidth="1.5" />
                       <line x1="100" y1="0" x2="0" y2="100" strokeWidth="1.5" />
                     </svg>
@@ -897,7 +897,7 @@ export default function Calendar() {
           <div className="flex justify-end pt-1">
             <div className="flex flex-wrap gap-2">
               {Object.entries(statusConfig).filter(([key]) => key !== "none").map(([key, config]) => (
-                <span key={key} className={`rounded-full px-3 py-1 text-xs font-semibold ${config.badge}`}>{config.label}</span>
+                <span key={key} className={`rounded-full px-3 py-1 text-xs font-bold ${config.badge}`}>{config.label}</span>
               ))}
             </div>
           </div>
@@ -905,43 +905,43 @@ export default function Calendar() {
 
         {/* Sidebar */}
         <div className="space-y-4">
-          <div className="rounded-3xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900/50 p-5 shadow-sm">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Monthly Highlights</h3>
+          <div className="rounded-3xl border border-zinc-200 dark:border-zinc-800 bg-white/80 dark:bg-zinc-900/80 p-5 shadow-sm backdrop-blur-xl">
+            <h3 className="text-base font-extrabold text-zinc-900 dark:text-white">Monthly Highlights</h3>
             <div className="mt-4 space-y-3">
               {monthlyHighlights.map(item => (
-                <div key={item.title} className="rounded-2xl border border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-900/70 p-3 transition hover:-translate-y-0.5 hover:shadow-md">
-                  <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">{item.title}</p>
-                  <p className="text-lg font-semibold text-gray-900 dark:text-white">{item.value}</p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">{item.detail}</p>
+                <div key={item.title} className="rounded-2xl border border-zinc-200/80 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950/60 p-3.5 transition hover:-translate-y-0.5 hover:shadow-md">
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">{item.title}</p>
+                  <p className="text-xl font-black text-zinc-900 dark:text-white">{item.value}</p>
+                  <p className="text-xs text-zinc-500 dark:text-zinc-400 font-medium">{item.detail}</p>
                 </div>
               ))}
             </div>
           </div>
 
-          <div className="rounded-3xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900/50 p-5 shadow-sm">
+          <div className="rounded-3xl border border-zinc-200 dark:border-zinc-800 bg-white/80 dark:bg-zinc-900/80 p-5 shadow-sm backdrop-blur-xl">
             <div className="flex items-center justify-between">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Reminders</h3>
-              <span className="rounded-full bg-gray-100 dark:bg-gray-800 px-3 py-1 text-xs font-semibold text-gray-500 dark:text-gray-300">{reminders.length} items</span>
+              <h3 className="text-base font-extrabold text-zinc-900 dark:text-white">Reminders</h3>
+              <span className="rounded-full bg-zinc-100 dark:bg-zinc-800 px-3 py-1 text-xs font-bold text-zinc-600 dark:text-zinc-300">{reminders.length} items</span>
             </div>
             <div className="mt-4 space-y-3">
               {visibleReminders.length === 0 ? (
-                <div className="rounded-xl border border-dashed border-gray-200 dark:border-gray-700 p-4 text-sm text-gray-500 dark:text-gray-400">
-                  No reminders yet. Add one to get notified.
+                <div className="rounded-2xl border border-dashed border-zinc-300 dark:border-zinc-800 p-4 text-xs font-medium text-zinc-500 dark:text-zinc-400 text-center">
+                  No reminders scheduled for this month.
                 </div>
               ) : (
                 visibleReminders.map(note => (
-                  <div key={note.id ?? note.title} className="flex flex-col gap-3 rounded-2xl border border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-900/70 p-3 sm:flex-row sm:items-center sm:justify-between">
+                  <div key={note.id ?? note.title} className="flex flex-col gap-3 rounded-2xl border border-zinc-200/80 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950/60 p-3 sm:flex-row sm:items-center sm:justify-between">
                     <div>
-                      <p className="text-sm font-semibold text-gray-900 dark:text-white">{note.title}</p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">{reminderDateLabel(note.date)}{note.time ? ` · ${note.time}` : ""}</p>
+                      <p className="text-xs font-bold text-zinc-900 dark:text-white">{note.title}</p>
+                      <p className="text-[11px] text-zinc-500 dark:text-zinc-400 font-medium">{reminderDateLabel(note.date)}{note.time ? ` · ${note.time}` : ""}</p>
                     </div>
                     <div className="flex flex-wrap items-center gap-2">
                       <button type="button" onClick={() => handleEditReminder(note)}
-                        className="rounded-full border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-gray-600 dark:text-gray-300 hover:border-gray-300 hover:text-gray-900 dark:hover:border-gray-500 dark:hover:text-white">
+                        className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-zinc-600 dark:text-zinc-300 hover:border-zinc-300 dark:hover:border-zinc-700 cursor-pointer">
                         Edit
                       </button>
                       <button type="button" onClick={() => handleDeleteReminder(note.id)}
-                        className="rounded-full border border-rose-200 dark:border-rose-500/30 bg-rose-50 dark:bg-rose-500/10 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-rose-700 dark:text-rose-200">
+                        className="rounded-xl border border-rose-200 dark:border-rose-500/30 bg-rose-50 dark:bg-rose-500/10 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-rose-700 dark:text-rose-200 cursor-pointer">
                         Delete
                       </button>
                     </div>

@@ -272,7 +272,6 @@ export default function Navbar() {
           {/* Logo & Semester Selector */}
           <div className="flex items-center gap-2.5 sm:gap-3">
             <NavLink to="/" className="flex items-center gap-2 group cursor-pointer select-none">
-              <span className="w-2.5 h-2.5 rounded-full bg-blue-500 animate-pulse" />
               <span className="text-base sm:text-lg font-black tracking-tight font-[Poppins] text-zinc-900 dark:text-white">
                 AttendanceManager
               </span>

@@ -15,6 +15,7 @@ import {
   saveTimetables,
   saveReminders,
 } from "../firebase/firestoreService";
+import LoadingScreen from "../components/LoadingScreen";
 
 const SemesterContext = createContext();
 const WEEK_DAYS = ["monday", "tuesday", "wednesday", "thursday", "friday"];
@@ -593,14 +594,13 @@ export function SemesterProvider({ children }) {
   return (
     <SemesterContext.Provider value={contextValue}>
       {!hasLoaded ? (
-        <div className="fixed inset-0 z-[99999] flex items-center justify-center bg-gray-100 dark:bg-gray-900">
-          <div className="text-center space-y-3">
-            <div className="w-10 h-10 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto" />
-            <p className="text-gray-600 dark:text-gray-300 text-sm font-medium">
-              Loading your data…
-            </p>
-          </div>
-        </div>
+        <LoadingScreen
+          items={[
+            "Syncing semester schedules...",
+            "Loading attendance records...",
+            "Preparing your workspace...",
+          ]}
+        />
       ) : (
         children
       )}

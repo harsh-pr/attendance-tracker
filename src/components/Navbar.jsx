@@ -272,11 +272,8 @@ export default function Navbar() {
           {/* Logo & Semester Selector */}
           <div className="flex items-center gap-2.5 sm:gap-3">
             <NavLink to="/" className="flex items-center gap-2 group cursor-pointer select-none">
-              <div className="relative flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-tr from-blue-600 via-indigo-600 to-violet-600 shadow-md shadow-blue-500/20 group-hover:scale-105 transition-transform duration-300">
-                <span className="text-white font-black text-xs tracking-wider">AM</span>
-                <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald-400 border-2 border-white dark:border-zinc-900 animate-pulse" />
-              </div>
-              <span className="text-sm sm:text-base font-black tracking-tight font-[Poppins] bg-gradient-to-r from-zinc-900 via-zinc-700 to-zinc-900 dark:from-white dark:via-zinc-100 dark:to-zinc-300 bg-clip-text text-transparent hidden min-[400px]:inline">
+              <span className="w-2.5 h-2.5 rounded-full bg-blue-500 animate-pulse" />
+              <span className="text-base sm:text-lg font-black tracking-tight font-[Poppins] text-zinc-900 dark:text-white">
                 AttendanceManager
               </span>
             </NavLink>

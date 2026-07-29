@@ -1,13 +1,18 @@
 // src/pages/Auth.jsx
 import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "../context/AuthContext";
+import { useTheme } from "../context/ThemeContext";
 
 export default function Auth() {
   const { login, register, loginWithGoogle } = useAuth();
+  const { theme, toggleTheme } = useTheme();
+
   const [isLoginTab, setIsLoginTab] = useState(true);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -51,7 +56,7 @@ export default function Auth() {
           return;
         }
         if (!isPasswordValid) {
-          setErrorMsg("Password does not meet the safety requirements.");
+          setErrorMsg("Password does not meet all safety requirements below.");
           setLoading(false);
           return;
         }
@@ -65,7 +70,11 @@ export default function Auth() {
         friendlyMessage = "Password must be at least 6 characters long.";
       } else if (err.code === "auth/invalid-email") {
         friendlyMessage = "Please enter a valid email address.";
-      } else if (err.code === "auth/wrong-password" || err.code === "auth/user-not-found" || err.code === "auth/invalid-credential") {
+      } else if (
+        err.code === "auth/wrong-password" ||
+        err.code === "auth/user-not-found" ||
+        err.code === "auth/invalid-credential"
+      ) {
         friendlyMessage = "Invalid email or password.";
       }
       setErrorMsg(friendlyMessage);
@@ -80,151 +89,280 @@ export default function Auth() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-50 via-gray-100 to-blue-50 dark:from-slate-950 dark:via-slate-900 dark:to-blue-950 px-4 transition-colors duration-300">
-      <div className="w-full max-w-md bg-white/70 dark:bg-slate-900/70 border border-white/20 dark:border-slate-800/60 shadow-2xl rounded-3xl backdrop-blur-xl p-8 transform-gpu transition-all duration-300 hover:shadow-[0_20px_50px_rgba(99,102,241,0.15)] dark:hover:shadow-[0_20px_50px_rgba(30,58,138,0.3)]">
-        
-        {/* LOGO AREA */}
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-blue-600 text-white font-extrabold text-2xl shadow-lg shadow-blue-500/35 mb-3">
-            A
+    <div className="relative min-h-screen flex items-center justify-center bg-zinc-50 dark:bg-zinc-950 px-4 py-12 overflow-hidden transition-colors duration-300">
+      {/* AMBIENT BACKGROUND GLOW BLOBS */}
+      <div className="absolute top-1/4 -left-32 w-96 h-96 bg-blue-500/20 dark:bg-blue-600/15 rounded-full blur-[120px] pointer-events-none" />
+      <div className="absolute bottom-1/4 -right-32 w-96 h-96 bg-indigo-500/20 dark:bg-indigo-600/15 rounded-full blur-[120px] pointer-events-none" />
+
+      {/* TOP FLOATING THEME TOGGLE */}
+      <div className="absolute top-6 right-6 z-20">
+        <motion.button
+          whileTap={{ scale: 0.9 }}
+          onClick={toggleTheme}
+          className="flex relative w-12 h-6 rounded-full bg-zinc-200 dark:bg-zinc-800 transition-colors duration-300 cursor-pointer items-center p-0.5 border border-zinc-300 dark:border-zinc-700 shadow-sm"
+          aria-label="Toggle theme"
+        >
+          <motion.span
+            animate={{ x: theme === "dark" ? 22 : 2 }}
+            transition={{ type: "spring", stiffness: 500, damping: 30 }}
+            className="w-4 h-4 rounded-full bg-white dark:bg-zinc-200 flex items-center justify-center text-[10px] leading-none shadow-sm"
+          >
+            {theme === "dark" ? "🌙" : "🌞"}
+          </motion.span>
+        </motion.button>
+      </div>
+
+      {/* KOKONUT UI MAIN GLASS CARD */}
+      <motion.div
+        initial={{ opacity: 0, y: 24, scale: 0.96 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        transition={{ duration: 0.35, ease: "easeOut" }}
+        className="relative z-10 w-full max-w-md bg-white/80 dark:bg-zinc-900/80 border border-zinc-200/80 dark:border-zinc-800/80 shadow-[0_20px_60px_rgba(0,0,0,0.08)] dark:shadow-[0_20px_60px_rgba(0,0,0,0.45)] backdrop-blur-2xl rounded-3xl p-6 sm:p-8 space-y-6"
+      >
+        {/* LOGO & HEADER */}
+        <div className="text-center space-y-2">
+          <div className="relative inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-tr from-blue-600 via-indigo-600 to-purple-600 text-white font-black text-2xl shadow-lg shadow-blue-500/30">
+            <span>A</span>
+            <span className="absolute -bottom-1 -right-1 w-4 h-4 bg-emerald-500 border-2 border-white dark:border-zinc-900 rounded-full" />
           </div>
-          <h2 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
-            Attendance <span className="text-blue-600">Tracker</span>
-          </h2>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-            Keep your schedule and records perfectly synced
-          </p>
+
+          <div>
+            <h2 className="text-2xl sm:text-3xl font-black tracking-tight text-zinc-900 dark:text-white font-[Poppins]">
+              Attendance{" "}
+              <span className="bg-gradient-to-r from-blue-600 to-indigo-500 dark:from-blue-400 dark:to-indigo-400 bg-clip-text text-transparent">
+                Tracker
+              </span>
+            </h2>
+            <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1 font-medium">
+              Sync your schedules, logs, and analytics seamlessly
+            </p>
+          </div>
         </div>
 
-        {/* TABS */}
-        <div className="flex bg-gray-100/70 dark:bg-slate-800/40 p-1.5 rounded-xl mb-6">
+        {/* KOKONUT MORPHIC TAB SWITCHER */}
+        <div className="relative flex p-1 rounded-2xl bg-zinc-100 dark:bg-zinc-800/60 border border-zinc-200/60 dark:border-zinc-700/50">
           <button
             type="button"
             onClick={() => handleSwitchTab(true)}
-            className={`flex-1 py-2 text-sm font-semibold rounded-lg transition-all duration-200 ${
-              isLoginTab
-                ? "bg-white dark:bg-slate-800 text-blue-600 dark:text-blue-400 shadow-sm"
-                : "text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
+            className={`relative flex-1 py-2.5 text-xs font-bold rounded-xl transition-colors cursor-pointer select-none z-10 ${
+              isLoginTab ? "text-zinc-900 dark:text-white" : "text-zinc-500 dark:text-zinc-400"
             }`}
           >
-            Sign In
+            {isLoginTab && (
+              <motion.div
+                layoutId="auth-tab-pill"
+                transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                className="absolute inset-0 bg-white dark:bg-zinc-800 rounded-xl shadow-sm border border-zinc-200/80 dark:border-zinc-700/60"
+              />
+            )}
+            <span className="relative z-10">Sign In</span>
           </button>
+
           <button
             type="button"
             onClick={() => handleSwitchTab(false)}
-            className={`flex-1 py-2 text-sm font-semibold rounded-lg transition-all duration-200 ${
-              !isLoginTab
-                ? "bg-white dark:bg-slate-800 text-blue-600 dark:text-blue-400 shadow-sm"
-                : "text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
+            className={`relative flex-1 py-2.5 text-xs font-bold rounded-xl transition-colors cursor-pointer select-none z-10 ${
+              !isLoginTab ? "text-zinc-900 dark:text-white" : "text-zinc-500 dark:text-zinc-400"
             }`}
           >
-            Sign Up
+            {!isLoginTab && (
+              <motion.div
+                layoutId="auth-tab-pill"
+                transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                className="absolute inset-0 bg-white dark:bg-zinc-800 rounded-xl shadow-sm border border-zinc-200/80 dark:border-zinc-700/60"
+              />
+            )}
+            <span className="relative z-10">Sign Up</span>
           </button>
         </div>
 
-        {/* ERROR STATE */}
-        {errorMsg && (
-          <div className="bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/50 rounded-xl p-3.5 mb-6 text-sm text-red-600 dark:text-red-300 animate-pulse">
-            <span className="font-semibold">Error:</span> {errorMsg}
-          </div>
-        )}
+        {/* ERROR CALLOUT */}
+        <AnimatePresence mode="wait">
+          {errorMsg && (
+            <motion.div
+              initial={{ opacity: 0, y: -8, height: 0 }}
+              animate={{ opacity: 1, y: 0, height: "auto" }}
+              exit={{ opacity: 0, y: -8, height: 0 }}
+              transition={{ duration: 0.2 }}
+              className="p-3.5 rounded-2xl bg-red-500/10 dark:bg-red-950/40 border border-red-200 dark:border-red-900/60 text-xs text-red-600 dark:text-red-300 font-semibold flex items-center gap-2"
+            >
+              <span className="text-base shrink-0">⚠️</span>
+              <span>{errorMsg}</span>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
-        {/* FORM */}
+        {/* FORM FIELDS */}
         <form onSubmit={handleSubmit} className="space-y-4">
-          {!isLoginTab && (
-            <div>
-              <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1.5">
-                Full Name
-              </label>
+          <AnimatePresence mode="wait">
+            {!isLoginTab && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+                transition={{ duration: 0.2 }}
+                className="space-y-1.5"
+              >
+                <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 uppercase tracking-wider">
+                  Full Name
+                </label>
+                <div className="relative">
+                  <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm text-zinc-400">
+                    👤
+                  </span>
+                  <input
+                    type="text"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    className="w-full pl-10 pr-4 py-2.5 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white/70 dark:bg-zinc-950/70 text-zinc-900 dark:text-white text-xs font-medium focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition duration-200"
+                    placeholder="John Doe"
+                    required
+                  />
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          <div className="space-y-1.5">
+            <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 uppercase tracking-wider">
+              Email Address
+            </label>
+            <div className="relative">
+              <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm text-zinc-400">
+                ✉️
+              </span>
               <input
-                type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/40 dark:focus:ring-blue-600/40 transition duration-200"
-                placeholder="John Doe"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-full pl-10 pr-4 py-2.5 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white/70 dark:bg-zinc-950/70 text-zinc-900 dark:text-white text-xs font-medium focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition duration-200"
+                placeholder="name@university.edu"
                 required
               />
             </div>
-          )}
-
-          <div>
-            <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1.5">
-              Email Address
-            </label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/40 dark:focus:ring-blue-600/40 transition duration-200"
-              placeholder="name@university.edu"
-              required
-            />
           </div>
 
-          <div>
-            <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1.5">
+          <div className="space-y-1.5">
+            <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 uppercase tracking-wider">
               Password
             </label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/40 dark:focus:ring-blue-600/40 transition duration-200"
-              placeholder="••••••••"
-              required
-            />
+            <div className="relative">
+              <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm text-zinc-400">
+                🔒
+              </span>
+              <input
+                type={showPassword ? "text" : "password"}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full pl-10 pr-10 py-2.5 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white/70 dark:bg-zinc-950/70 text-zinc-900 dark:text-white text-xs font-medium focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition duration-200"
+                placeholder="••••••••"
+                required
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 transition"
+              >
+                {showPassword ? "🙈" : "👁️"}
+              </button>
+            </div>
+
+            {/* PASSWORD REQUIREMENTS INDICATOR */}
             {!isLoginTab && password.length > 0 && (
-              <div className="mt-2.5 p-3 rounded-xl bg-gray-50 dark:bg-slate-950/40 border border-gray-150 dark:border-slate-800/80 text-[11px] space-y-1.5 transition-all text-gray-500 dark:text-gray-400">
-                <p className="font-semibold">Password requirements:</p>
-                <div className="grid grid-cols-2 gap-x-3 gap-y-1">
-                  <div className={`flex items-center gap-1.5 ${isMinLength ? "text-green-600 dark:text-green-400 font-medium" : "text-gray-400 dark:text-gray-500"}`}>
+              <motion.div
+                initial={{ opacity: 0, y: -4 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="p-3 rounded-2xl bg-zinc-100/70 dark:bg-zinc-950/50 border border-zinc-200/80 dark:border-zinc-800/80 text-[11px] space-y-1.5 text-zinc-600 dark:text-zinc-400"
+              >
+                <p className="font-bold text-[10px] uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+                  Password Safety Requirements:
+                </p>
+                <div className="grid grid-cols-2 gap-x-2 gap-y-1">
+                  <div
+                    className={`flex items-center gap-1.5 transition-colors ${
+                      isMinLength
+                        ? "text-emerald-600 dark:text-emerald-400 font-bold"
+                        : "text-zinc-400"
+                    }`}
+                  >
                     <span>{isMinLength ? "✓" : "•"}</span> 8+ characters
                   </div>
-                  <div className={`flex items-center gap-1.5 ${hasUpper ? "text-green-600 dark:text-green-400 font-medium" : "text-gray-400 dark:text-gray-500"}`}>
+                  <div
+                    className={`flex items-center gap-1.5 transition-colors ${
+                      hasUpper
+                        ? "text-emerald-600 dark:text-emerald-400 font-bold"
+                        : "text-zinc-400"
+                    }`}
+                  >
                     <span>{hasUpper ? "✓" : "•"}</span> Uppercase letter
                   </div>
-                  <div className={`flex items-center gap-1.5 ${hasLower ? "text-green-600 dark:text-green-400 font-medium" : "text-gray-400 dark:text-gray-500"}`}>
+                  <div
+                    className={`flex items-center gap-1.5 transition-colors ${
+                      hasLower
+                        ? "text-emerald-600 dark:text-emerald-400 font-bold"
+                        : "text-zinc-400"
+                    }`}
+                  >
                     <span>{hasLower ? "✓" : "•"}</span> Lowercase letter
                   </div>
-                  <div className={`flex items-center gap-1.5 ${hasDigit ? "text-green-600 dark:text-green-400 font-medium" : "text-gray-400 dark:text-gray-500"}`}>
+                  <div
+                    className={`flex items-center gap-1.5 transition-colors ${
+                      hasDigit
+                        ? "text-emerald-600 dark:text-emerald-400 font-bold"
+                        : "text-zinc-400"
+                    }`}
+                  >
                     <span>{hasDigit ? "✓" : "•"}</span> One number
                   </div>
-                  <div className={`flex items-center gap-1.5 ${hasSpecial ? "text-green-600 dark:text-green-400 font-medium" : "text-gray-400 dark:text-gray-500"}`}>
-                    <span>{hasSpecial ? "✓" : "•"}</span> Special char
+                  <div
+                    className={`flex items-center gap-1.5 transition-colors ${
+                      hasSpecial
+                        ? "text-emerald-600 dark:text-emerald-400 font-bold"
+                        : "text-zinc-400"
+                    }`}
+                  >
+                    <span>{hasSpecial ? "✓" : "•"}</span> Special character
                   </div>
                 </div>
-              </div>
+              </motion.div>
             )}
           </div>
 
-          <button
+          <motion.button
+            whileHover={{ scale: 1.01 }}
+            whileTap={{ scale: 0.98 }}
             type="submit"
             disabled={loading}
-            className="w-full py-3 mt-4 bg-blue-600 hover:bg-blue-500 dark:bg-blue-600 dark:hover:bg-blue-500 text-white rounded-xl font-bold tracking-wide shadow-lg shadow-blue-500/25 active:scale-[0.98] transition-all duration-200 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+            className="w-full py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white rounded-2xl font-bold text-xs shadow-lg shadow-blue-500/25 transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {loading ? (
-              <span className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
-            ) : null}
-            {isLoginTab ? "Sign In" : "Create Account"}
-          </button>
+              <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+            ) : (
+              <span>{isLoginTab ? "Sign In to Dashboard" : "Create My Account"}</span>
+            )}
+          </motion.button>
         </form>
 
-        <div className="relative my-6 flex items-center justify-center">
+        {/* DIVIDER */}
+        <div className="relative my-4 flex items-center justify-center">
           <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-gray-200 dark:border-slate-800"></div>
+            <div className="w-full border-t border-zinc-200 dark:border-zinc-800" />
           </div>
-          <span className="relative px-3 bg-white dark:bg-slate-900 text-xs font-semibold text-gray-500 dark:text-gray-450 uppercase tracking-wider">
-            Or
+          <span className="relative px-3 bg-white dark:bg-zinc-900 text-[10px] font-bold text-zinc-400 uppercase tracking-widest">
+            Or Continue With
           </span>
         </div>
 
-        <button
+        {/* GOOGLE SIGN-IN BUTTON */}
+        <motion.button
+          whileHover={{ scale: 1.01 }}
+          whileTap={{ scale: 0.98 }}
           type="button"
           onClick={handleGoogleSignIn}
           disabled={loading}
-          className="w-full py-3 flex items-center justify-center gap-3 border border-gray-200 dark:border-slate-800 hover:bg-gray-50/80 dark:hover:bg-slate-850/40 text-gray-700 dark:text-gray-200 bg-white/50 dark:bg-slate-900/30 rounded-xl font-bold transition-all duration-200 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer shadow-sm hover:shadow"
+          className="w-full py-2.5 flex items-center justify-center gap-3 border border-zinc-200 dark:border-zinc-800 bg-zinc-50/80 hover:bg-zinc-100 dark:bg-zinc-950/60 dark:hover:bg-zinc-800/80 text-zinc-800 dark:text-zinc-200 rounded-2xl text-xs font-bold transition-all duration-200 cursor-pointer shadow-sm disabled:opacity-50"
         >
-          <svg className="w-5 h-5" viewBox="0 0 24 24">
+          <svg className="w-4 h-4" viewBox="0 0 24 24">
             <path
               fill="#4285F4"
               d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
@@ -242,9 +380,9 @@ export default function Auth() {
               d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
             />
           </svg>
-          Continue with Google
-        </button>
-      </div>
+          <span>Continue with Google</span>
+        </motion.button>
+      </motion.div>
     </div>
   );
 }

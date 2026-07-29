@@ -53,8 +53,10 @@ export default function Navbar() {
   const [editingSubjectId, setEditingSubjectId] = useState(null);
   const [editingSubjectName, setEditingSubjectName] = useState("");
 
-  // User Profile Dropdown Menu
+  // User Profile Dropdown Menu & Delete Account Modal State
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
+  const [isDeleteAccountWarningOpen, setIsDeleteAccountWarningOpen] = useState(false);
+  const [isDeletingAccount, setIsDeletingAccount] = useState(false);
 
   const menuRef = useRef(null);
   const profileMenuRef = useRef(null);
@@ -467,13 +469,9 @@ export default function Navbar() {
                         </button>
 
                         <HoldButton
-                          onConfirm={async () => {
+                          onConfirm={() => {
                             setIsProfileMenuOpen(false);
-                            try {
-                              await deleteAccount();
-                            } catch (err) {
-                              alert(err.message || "Failed to delete account.");
-                            }
+                            setIsDeleteAccountWarningOpen(true);
                           }}
                           holdDuration={1500}
                           variant="danger"
@@ -740,6 +738,74 @@ export default function Navbar() {
             >
               Save timetable
             </button>
+          </div>
+        </div>
+      </Modal>
+
+      {/* DELETE ACCOUNT WARNING POPUP MODAL */}
+      <Modal
+        open={isDeleteAccountWarningOpen}
+        onClose={() => {
+          if (!isDeletingAccount) setIsDeleteAccountWarningOpen(false);
+        }}
+        size="md"
+        showCloseButton={false}
+      >
+        <div className="space-y-4 text-center p-2">
+          <div className="w-14 h-14 rounded-2xl bg-red-500/10 border border-red-500/20 text-red-500 flex items-center justify-center text-2xl mx-auto shadow-inner">
+            ⚠️
+          </div>
+
+          <div>
+            <h3 className="text-lg font-black text-zinc-900 dark:text-white">
+              Permanently Delete Account?
+            </h3>
+            <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
+              Account: <span className="font-semibold text-zinc-800 dark:text-zinc-200">{user?.email}</span>
+            </p>
+          </div>
+
+          <div className="p-4 rounded-2xl bg-red-500/10 dark:bg-red-950/40 border border-red-200/80 dark:border-red-900/60 text-left text-xs space-y-2 text-red-700 dark:text-red-300">
+            <p className="font-bold flex items-center gap-1.5 text-red-800 dark:text-red-200">
+              <span>🚨</span> Warning: This action cannot be undone!
+            </p>
+            <ul className="list-disc list-inside space-y-1 opacity-90 text-[11px] font-medium">
+              <li>All attendance history & analytics will be permanently deleted</li>
+              <li>Semester subjects, weekly timetables & custom layouts erased</li>
+              <li>Saved reminders, user preferences & metadata removed</li>
+              <li>Your login account will be deleted from Firebase</li>
+            </ul>
+          </div>
+
+          <div className="flex flex-col sm:flex-row items-center justify-end gap-2 pt-2">
+            <button
+              type="button"
+              disabled={isDeletingAccount}
+              onClick={() => setIsDeleteAccountWarningOpen(false)}
+              className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-800 dark:text-zinc-200 text-xs font-bold transition cursor-pointer disabled:opacity-50"
+            >
+              Cancel, keep account
+            </button>
+
+            <HoldButton
+              onConfirm={async () => {
+                setIsDeletingAccount(true);
+                try {
+                  await deleteAccount();
+                  setIsDeleteAccountWarningOpen(false);
+                } catch (err) {
+                  alert(err.message || "Failed to delete account.");
+                } finally {
+                  setIsDeletingAccount(false);
+                }
+              }}
+              holdDuration={2000}
+              variant="danger"
+              icon="💣"
+              className="w-full sm:w-auto py-2.5 rounded-xl justify-center font-bold text-xs"
+            >
+              {isDeletingAccount ? "Deleting..." : "Confirm Delete"}
+            </HoldButton>
           </div>
         </div>
       </Modal>

@@ -22,6 +22,7 @@ export function ensureDayExists(semester, date) {
         subjectId: l.subjectId,
         status: null,
         type: l.type,      // theory / lab
+        slotIndex: l.slotIndex,
       })),
     };
 
@@ -32,24 +33,36 @@ export function ensureDayExists(semester, date) {
 }
 
 /**
- * Mark attendance for a subject
+ * Mark attendance for a subject at a specific slot
  */
 export function markTodayAttendance(
   semester,
   subjectId,
   status,
-  dateOverride
+  dateOverride,
+  slotIndex
 ) {
   const date = dateOverride || getTodayDate();
   const day = ensureDayExists(semester, date);
 
   if (!day) return;
 
-  const lecture = day.lectures.find(
-    l => l.subjectId === subjectId
-  );
+  // Use slotIndex for precise matching when available
+  let lecture;
+  if (slotIndex != null) {
+    lecture = day.lectures.find(
+      l => l.subjectId === subjectId && l.slotIndex === slotIndex
+    );
+  }
+  // Fallback: match by subjectId only (backward compat for old data without slotIndex)
+  if (!lecture) {
+    lecture = day.lectures.find(
+      l => l.subjectId === subjectId
+    );
+  }
 
   if (lecture) {
     lecture.status = status;
   }
 }
+

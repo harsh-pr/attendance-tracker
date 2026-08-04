@@ -50,5 +50,8 @@ export function getLecturesForDate(dateStr, semesterInput, semesters = []) {
     timetable = rawTimetable || EMPTY_TIMETABLE;
   }
 
-  return timetable[dayKey] || [];
+  return (timetable[dayKey] || []).map((lecture, index) => ({
+    ...lecture,
+    slotIndex: index,
+  }));
 }

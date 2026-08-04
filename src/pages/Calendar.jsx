@@ -572,8 +572,10 @@ export default function Calendar() {
     setEditDayOpen(false);
   };
 
-  const setPartialStatus = (subjectId, status) => {
-    setPartialSelection(prev => ({ ...prev, [subjectId]: status }));
+  const lectureKey = (l) => l.slotIndex != null ? `${l.subjectId}::${l.slotIndex}` : l.subjectId;
+
+  const setPartialStatus = (key, status) => {
+    setPartialSelection(prev => ({ ...prev, [key]: status }));
   };
 
   const selectedDayDateKey  = selectedDay?.date ? formatDateKey(selectedDay.date) : null;
@@ -1160,7 +1162,7 @@ export default function Calendar() {
           {/* Custom / Detailed marking */}
           <div>
             <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-gray-500">Detailed Status</span>
-            <button type="button" onClick={() => { setPartialSelection(selectedDayLectures.reduce((acc, l) => { acc[l.subjectId] = l.status ?? "absent"; return acc; }, {})); setPartialMarkOpen(true); }}
+            <button type="button" onClick={() => { setPartialSelection(selectedDayLectures.reduce((acc, l) => { const key = l.slotIndex != null ? `${l.subjectId}::${l.slotIndex}` : l.subjectId; acc[key] = l.status ?? "absent"; return acc; }, {})); setPartialMarkOpen(true); }}
               className="mt-2 w-full flex items-center justify-between rounded-2xl border border-amber-200/80 dark:border-amber-500/20 bg-amber-50/50 dark:bg-amber-500/5 p-3.5 text-left text-amber-800 dark:text-amber-300 transition hover:-translate-y-0.5 hover:bg-amber-100/60 dark:hover:bg-amber-500/10 hover:shadow-md cursor-pointer">
               <div className="flex items-center gap-3">
                 <div className="rounded-lg p-2 bg-white/80 dark:bg-gray-800 shadow-sm flex items-center justify-center shrink-0">
@@ -1206,9 +1208,10 @@ export default function Calendar() {
           ) : (
             selectedDayLectures.map((lecture) => {
               const subject       = subjectsById.get(lecture.subjectId);
-              const currentStatus = partialSelection[lecture.subjectId] ?? "absent";
+              const key           = lecture.slotIndex != null ? `${lecture.subjectId}::${lecture.slotIndex}` : lecture.subjectId;
+              const currentStatus = partialSelection[key] ?? "absent";
               return (
-                <div key={`partial-${lecture.subjectId}`} className="rounded-2xl p-4 border border-gray-100 dark:border-gray-800/80 bg-gray-50/50 dark:bg-gray-900/40 space-y-3">
+                <div key={`partial-${key}`} className="rounded-2xl p-4 border border-gray-100 dark:border-gray-800/80 bg-gray-50/50 dark:bg-gray-900/40 space-y-3">
                   <div>
                     <span className="font-bold text-sm text-gray-900 dark:text-gray-100">{subject?.name ?? lecture.subjectId}</span>
                     <p className="text-[10px] text-gray-400 dark:text-gray-500 font-bold uppercase tracking-wider mt-0.5">
@@ -1220,8 +1223,8 @@ export default function Calendar() {
                       const style = optionStyles[val];
                       const isSelected = currentStatus === val;
                       return (
-                        <button key={`${lecture.subjectId}-${val}`} type="button"
-                          onClick={() => setPartialStatus(lecture.subjectId, val)}
+                        <button key={`${key}-${val}`} type="button"
+                          onClick={() => setPartialStatus(key, val)}
                           className={`rounded-lg border px-2 py-1.5 text-xs font-semibold capitalize transition duration-200 cursor-pointer text-center ${isSelected ? style.selected : style.unselected}`}>
                           {style.label}
                         </button>

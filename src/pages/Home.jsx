@@ -53,6 +53,7 @@ export default function Home() {
     const subject = subjectsById.get(lecture.subjectId);
     return {
       id: lecture.subjectId,
+      slotIndex: lecture.slotIndex,
       name: subject ? subject.name : lecture.subjectId,
       type: lecture.type,
     };
@@ -144,7 +145,7 @@ export default function Home() {
               <p>No lectures today 🎉</p>
             ) : (
               todaySubjects.map((subject) => (
-                <p key={`${today}-${subject.id}`} className="truncate">
+                <p key={`${today}-${subject.id}-${subject.slotIndex ?? 0}`} className="truncate">
                   • {subject.name} ({subject.type})
                 </p>
               ))

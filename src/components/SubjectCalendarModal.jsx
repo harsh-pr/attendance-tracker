@@ -104,14 +104,22 @@ export default function SubjectCalendarModal({ open, onClose, data }) {
       const isWeekend = date.getDay() === 0 || date.getDay() === 6;
 
       const dayEntry          = attendanceData.find(d => d.date === dateKey);
-      const loggedLecture     = dayEntry?.lectures?.find(l => l.subjectId === subject.id);
+      const loggedLectures    = (dayEntry?.lectures || []).filter(l => l.subjectId === subject.id);
       const timetableLectures = getLecturesForDate(dateKey, currentSemester);
       const isScheduled       = timetableLectures.some(l => l.subjectId === subject.id);
 
       let statusKey = "unscheduled";
 
-      if (loggedLecture) {
-        statusKey = loggedLecture.status || "none";
+      if (loggedLectures.length > 0) {
+        // Determine composite status from all matching lectures
+        const statuses = loggedLectures.map(l => l.status).filter(Boolean);
+        const hasPresent = statuses.some(s => s === "present" || s === "free");
+        const hasAbsent  = statuses.some(s => s === "absent");
+        if (hasPresent && !hasAbsent) statusKey = "present";
+        else if (hasAbsent && !hasPresent) statusKey = "absent";
+        else if (hasPresent && hasAbsent) statusKey = "present"; // partial, show as present
+        else if (statuses.length > 0) statusKey = statuses[0];
+        else statusKey = "none";
       } else if (dayEntry?.dayType === "holiday" || dayEntry?.dayType === "exam") {
         if (isWeekend) {
           statusKey = "holiday";

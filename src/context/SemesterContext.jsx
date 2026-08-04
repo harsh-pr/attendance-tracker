@@ -196,6 +196,7 @@ export function SemesterProvider({ children }) {
     return getLecturesForDate(targetDate, semWithData).map((l) => ({
       subjectId: l.subjectId,
       type: l.type,
+      slotIndex: l.slotIndex,
       status,
     }));
   }
@@ -472,18 +473,24 @@ export function SemesterProvider({ children }) {
     persistMeta(currentSemesterId, nextSemesters);
   }
 
-  function markTodayAttendance(subjectId, status) {
+  function markTodayAttendance(subjectId, status, slotIndex) {
     const today = getTodayDate();
     ensureDayExists(currentSemester, today);
     let updatedAttendance = [];
 
     const nextSemesters = semesters.map((sem) => {
       if (sem.id !== currentSemesterId) return sem;
-      const newData = sem.attendanceData.map((day) =>
-        day.date === today
-          ? { ...day, lectures: day.lectures.map((l) => l.subjectId === subjectId ? { ...l, status } : l) }
-          : day
-      );
+      const newData = sem.attendanceData.map((day) => {
+        if (day.date !== today) return day;
+        const newLectures = day.lectures.map((l) => {
+          // Match by both subjectId and slotIndex when slotIndex is available
+          if (slotIndex != null) {
+            return (l.subjectId === subjectId && l.slotIndex === slotIndex) ? { ...l, status } : l;
+          }
+          return l.subjectId === subjectId ? { ...l, status } : l;
+        });
+        return { ...day, lectures: newLectures };
+      });
       updatedAttendance = newData;
       return { ...sem, attendanceData: newData };
     });
@@ -497,6 +504,9 @@ export function SemesterProvider({ children }) {
     const targetDate = normalizeDateString(date);
     let updatedAttendance = [];
 
+    // Helper: build a composite key for looking up in the selection object
+    const lectureKey = (l) => l.slotIndex != null ? `${l.subjectId}::${l.slotIndex}` : l.subjectId;
+
     const nextSemesters = semesters.map((sem) => {
       if (sem.id !== currentSemesterId) return sem;
 
@@ -504,17 +514,24 @@ export function SemesterProvider({ children }) {
       let newLectures = [];
       if (existingIndex >= 0 && sem.attendanceData[existingIndex].lectures?.length > 0) {
         const existingDay = sem.attendanceData[existingIndex];
-        newLectures = existingDay.lectures.map((l) => ({
-          ...l,
-          status: selection[l.subjectId] !== undefined ? selection[l.subjectId] : (l.status ?? "absent"),
-        }));
+        newLectures = existingDay.lectures.map((l) => {
+          const key = lectureKey(l);
+          return {
+            ...l,
+            status: selection[key] !== undefined ? selection[key] : (l.status ?? "absent"),
+          };
+        });
       } else {
         const timetableLectures = getLecturesForDate(targetDate, currentSemester);
-        newLectures = timetableLectures.map((l) => ({
-          subjectId: l.subjectId,
-          type: l.type,
-          status: selection[l.subjectId] !== undefined ? selection[l.subjectId] : "absent",
-        }));
+        newLectures = timetableLectures.map((l) => {
+          const key = lectureKey(l);
+          return {
+            subjectId: l.subjectId,
+            type: l.type,
+            slotIndex: l.slotIndex,
+            status: selection[key] !== undefined ? selection[key] : "absent",
+          };
+        });
       }
 
       let newData;

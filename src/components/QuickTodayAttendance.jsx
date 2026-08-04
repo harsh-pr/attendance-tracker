@@ -37,9 +37,11 @@ export default function QuickTodayAttendance({ open, onClose }) {
     (day) => day.date === today
   );
   const timetableLectures = getLecturesForDate(today, currentSemester);
-  const statusBySubjectId = new Map(
+  const lectureKey = (l) => l.slotIndex != null ? `${l.subjectId}::${l.slotIndex}` : l.subjectId;
+
+  const statusByLectureKey = new Map(
     (todayEntry?.lectures || []).map((lecture) => [
-      lecture.subjectId,
+      lectureKey(lecture),
       lecture.status,
     ])
   );
@@ -48,7 +50,7 @@ export default function QuickTodayAttendance({ open, onClose }) {
     date: today,
     lectures: timetableLectures.map((lecture) => ({
       ...lecture,
-      status: statusBySubjectId.get(lecture.subjectId) ?? null,
+      status: statusByLectureKey.get(lectureKey(lecture)) ?? null,
     })),
   };
   const subjectsById = new Map(
@@ -68,9 +70,9 @@ export default function QuickTodayAttendance({ open, onClose }) {
     );
   }
 
-  function getStatus(subjectId) {
+  function getStatus(lecture) {
     return todayData.lectures.find(
-      l => l.subjectId === subjectId
+      l => l.subjectId === lecture.subjectId && l.slotIndex === lecture.slotIndex
     )?.status;
   }
 
@@ -89,11 +91,12 @@ export default function QuickTodayAttendance({ open, onClose }) {
             lecture.subjectId
           );
           if (!subject) return null;
-          const status = getStatus(lecture.subjectId);
+          const status = getStatus(lecture);
+          const uniqueKey = `${today}-${lecture.subjectId}-${lecture.slotIndex ?? 0}`;
 
           return (
             <div
-              key={`${today}-${lecture.subjectId}`}
+              key={uniqueKey}
               className="rounded-2xl p-4 border border-gray-100 dark:border-gray-800/80 bg-gray-50/50 dark:bg-gray-900/40 space-y-3"
             >
               <div>
@@ -113,7 +116,7 @@ export default function QuickTodayAttendance({ open, onClose }) {
                     <button
                       key={action}
                       type="button"
-                      onClick={() => markTodayAttendance(subject.id, action)}
+                      onClick={() => markTodayAttendance(subject.id, action, lecture.slotIndex)}
                       className={`
                         px-2 py-1.5 rounded-lg text-xs font-semibold capitalize transition duration-200 cursor-pointer text-center
                         border ${isSelected ? style.selected : style.unselected}

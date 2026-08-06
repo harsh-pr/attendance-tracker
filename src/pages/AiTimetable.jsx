@@ -4,7 +4,6 @@ import { useSemester } from "../context/SemesterContext";
 import { getCollegeTimetable, saveCollegeTimetable } from "../firebase/firestoreService";
 import DynamicText from "../components/DynamicText";
 import HoldButton from "../components/HoldButton";
-import ShareTimetableModal from "../components/ShareTimetableModal";
 
 // Default metadata for Semester 3
 const DEFAULT_METADATA = {
@@ -1417,11 +1416,6 @@ export default function AiTimetable() {
           </div>
         )}
       </AnimatePresence>
-
-      <ShareTimetableModal
-        isOpen={isShareModalOpen}
-        onClose={() => setIsShareModalOpen(false)}
-      />
     </motion.div>
   );
 }

@@ -4,6 +4,7 @@ import { useSemester } from "../context/SemesterContext";
 import { getCollegeTimetable, saveCollegeTimetable } from "../firebase/firestoreService";
 import DynamicText from "../components/DynamicText";
 import HoldButton from "../components/HoldButton";
+import ShareTimetableModal from "../components/ShareTimetableModal";
 
 // Default metadata for Semester 3
 const DEFAULT_METADATA = {
@@ -142,6 +143,9 @@ export default function AiTimetable() {
 
   // Metadata modal drafts
   const [draftMetadata, setDraftMetadata] = useState({});
+
+  // Share timetable modal state
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
 
   // Cell edit modal drafts
   const [cellSubject, setCellSubject] = useState("");
@@ -699,6 +703,16 @@ export default function AiTimetable() {
             className="px-4 h-9 bg-zinc-200 hover:bg-zinc-300 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-800 dark:text-zinc-200 text-xs font-bold rounded-xl transition cursor-pointer flex items-center justify-center gap-1.5"
           >
             ⚙️ Edit Details
+          </motion.button>
+
+          <motion.button
+            whileHover={{ scale: 1.03 }}
+            whileTap={{ scale: 0.95 }}
+            type="button"
+            onClick={() => setIsShareModalOpen(true)}
+            className="px-4 h-9 bg-violet-600 hover:bg-violet-500 text-white text-xs font-bold rounded-xl shadow-sm transition cursor-pointer flex items-center justify-center gap-1.5"
+          >
+            🔗 Share / Import
           </motion.button>
 
           <HoldButton
@@ -1364,6 +1378,11 @@ export default function AiTimetable() {
           </div>
         )}
       </AnimatePresence>
+
+      <ShareTimetableModal
+        isOpen={isShareModalOpen}
+        onClose={() => setIsShareModalOpen(false)}
+      />
     </motion.div>
   );
 }

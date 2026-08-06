@@ -3,6 +3,7 @@ import {
   doc,
   getDoc,
   setDoc,
+  deleteDoc,
   writeBatch,
 } from "firebase/firestore";
 import { db, auth } from "./config";
@@ -283,3 +284,84 @@ export async function deleteAllUserData(userId) {
     throw error;
   }
 }
+
+// ─── TEMPORARY SHARE TIMETABLE FUNCTIONS ─────────────────────────────────────
+
+function generateShareCode() {
+  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  let code = "";
+  for (let i = 0; i < 6; i++) {
+    code += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return code;
+}
+
+export async function createTemporaryShareCode(payload) {
+  try {
+    const code = generateShareCode();
+    const shareRef = doc(db, "temp_shared_timetables", code);
+
+    const now = Date.now();
+    const expiresAt = now + 24 * 60 * 60 * 1000; // 24 hours
+
+    const userEmail = auth.currentUser?.email || "Anonymous";
+
+    const shareData = {
+      code,
+      payload,
+      sharedBy: userEmail,
+      createdAt: now,
+      expiresAt,
+    };
+
+    await setDoc(shareRef, shareData);
+    return { code, expiresAt };
+  } catch (error) {
+    console.error("[Firestore] Error creating share code:", error);
+    throw error;
+  }
+}
+
+export async function peekShareCode(code) {
+  if (!code) throw new Error("Share code is required.");
+  const cleanCode = code.trim().toUpperCase();
+  const shareRef = doc(db, "temp_shared_timetables", cleanCode);
+  const snap = await getDoc(shareRef);
+
+  if (!snap.exists()) {
+    throw new Error("Invalid or expired share code. Please check the code and try again.");
+  }
+
+  const data = snap.data();
+  if (data.expiresAt && Date.now() > data.expiresAt) {
+    await deleteDoc(shareRef).catch(() => {});
+    throw new Error("This share code has expired.");
+  }
+
+  return data;
+}
+
+export async function consumeShareCode(code) {
+  if (!code) throw new Error("Share code is required.");
+  const cleanCode = code.trim().toUpperCase();
+  const shareRef = doc(db, "temp_shared_timetables", cleanCode);
+  const snap = await getDoc(shareRef);
+
+  if (!snap.exists()) {
+    throw new Error("Invalid or expired share code. Please ask your friend to generate a new code.");
+  }
+
+  const data = snap.data();
+  if (data.expiresAt && Date.now() > data.expiresAt) {
+    await deleteDoc(shareRef).catch(() => {});
+    throw new Error("This share code has expired.");
+  }
+
+  try {
+    await deleteDoc(shareRef);
+  } catch (err) {
+    console.warn("[Firestore] Failed to delete consumed code:", err);
+  }
+
+  return data.payload;
+}

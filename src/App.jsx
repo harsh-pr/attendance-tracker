@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useLocation, Navigate } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 
 import Home from "./pages/Home";
@@ -59,7 +59,8 @@ function AnimatedRoutes() {
           <Route path="/" element={<Home />} />
           <Route path="/today" element={<Today />} />
           <Route path="/calendar" element={<Calendar />} />
-          <Route path="/ai-timetable" element={<AiTimetable />} />
+          <Route path="/timetable" element={<AiTimetable />} />
+          <Route path="/ai-timetable" element={<Navigate to="/timetable" replace />} />
         </Routes>
       </motion.div>
     </AnimatePresence>

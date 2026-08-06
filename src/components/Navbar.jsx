@@ -1,8 +1,17 @@
 import { NavLink } from "react-router-dom";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
+
+function ShareIcon({ className = "w-3.5 h-3.5" }) {
+  return (
+    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+    </svg>
+  );
+}
 import Modal from "./Modal";
 import HoldButton from "./HoldButton";
+import ShareTimetableModal from "./ShareTimetableModal";
 import { useSemester } from "../context/SemesterContext";
 import { useTheme } from "../context/ThemeContext";
 import { useAuth } from "../context/AuthContext";
@@ -55,6 +64,7 @@ export default function Navbar() {
 
   // User Profile Dropdown Menu & Delete Account Modal State
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [isDeleteAccountWarningOpen, setIsDeleteAccountWarningOpen] = useState(false);
   const [isDeletingAccount, setIsDeletingAccount] = useState(false);
 
@@ -338,11 +348,23 @@ export default function Navbar() {
             <NavItem to="/">Home</NavItem>
             <NavItem to="/today">Detailed</NavItem>
             <NavItem to="/calendar">Calendar</NavItem>
-            <NavItem to="/ai-timetable">Class Timetable</NavItem>
+            <NavItem to="/timetable">Class Timetable</NavItem>
           </nav>
 
           {/* Right Actions & Profile Dropdown */}
           <div className="flex items-center gap-2">
+            {/* Share Timetable Desktop Button */}
+            <motion.button
+              whileHover={{ scale: 1.04 }}
+              whileTap={{ scale: 0.96 }}
+              type="button"
+              onClick={() => setIsShareModalOpen(true)}
+              className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-violet-500/10 hover:bg-violet-500/20 text-violet-600 dark:text-violet-400 border border-violet-500/20 text-xs font-bold transition-all"
+            >
+              <ShareIcon className="w-3.5 h-3.5" />
+              <span>Share</span>
+            </motion.button>
+
             {/* KOKONUT PROFILE DROPDOWN */}
             {user && (
               <div ref={profileMenuRef} className="relative inline-block text-left">
@@ -425,6 +447,17 @@ export default function Navbar() {
                           className="w-full flex items-center justify-between px-3 py-2 rounded-xl hover:bg-zinc-100 dark:hover:bg-zinc-800/60 text-left text-indigo-600 dark:text-indigo-400 cursor-pointer transition-colors font-bold"
                         >
                           <span className="flex items-center gap-2">✎ Edit Timetable</span>
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setIsShareModalOpen(true);
+                            setIsProfileMenuOpen(false);
+                          }}
+                          className="w-full flex items-center justify-between px-3 py-2 rounded-xl hover:bg-zinc-100 dark:hover:bg-zinc-800/60 text-left text-violet-600 dark:text-violet-400 cursor-pointer transition-colors font-bold"
+                        >
+                          <span className="flex items-center gap-2">🔗 Share / Import Timetable</span>
                         </button>
 
                         <div className="pt-1">
@@ -813,6 +846,11 @@ export default function Navbar() {
           </div>
         </div>
       </Modal>
+
+      <ShareTimetableModal
+        isOpen={isShareModalOpen}
+        onClose={() => setIsShareModalOpen(false)}
+      />
     </>
   );
 }

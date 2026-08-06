@@ -14,6 +14,11 @@ import {
   saveSubjects,
   saveTimetables,
   saveReminders,
+  createTemporaryShareCode,
+  peekShareCode,
+  consumeShareCode,
+  getCollegeTimetable,
+  saveCollegeTimetable,
 } from "../firebase/firestoreService";
 import LoadingScreen from "../components/LoadingScreen";
 
@@ -582,12 +587,97 @@ export function SemesterProvider({ children }) {
     persistReminders(nextReminders);
   }
 
+  // ── TIMETABLE SHARE & IMPORT FUNCTIONS ─────────────────────────────────────
+  async function generateShareCodeForSemester({
+    sourceSemesterId,
+    includeSubjects = true,
+    includeTimetable = true,
+    includeCollegeTimetable = false,
+  }) {
+    const semId = sourceSemesterId || currentSemesterId;
+    const targetSemObj = semesters.find((s) => s.id === semId);
+    const sourceSemName = targetSemObj ? targetSemObj.name : semId;
+
+    const subjects = includeSubjects ? (subjectsBySemester[semId] || []) : [];
+    const timetable = includeTimetable ? getLatestTimetable(timetablesBySemester[semId]) : null;
+    let collegeTimetableData = null;
+
+    if (includeCollegeTimetable) {
+      collegeTimetableData = await getCollegeTimetable(semId);
+    }
+
+    const payload = {
+      sourceSemName,
+      includeSubjects,
+      includeTimetable,
+      includeCollegeTimetable,
+      subjects,
+      timetable,
+      collegeTimetable: collegeTimetableData,
+    };
+
+    return await createTemporaryShareCode(payload);
+  }
+
+  async function inspectSharedCode(code) {
+    return await peekShareCode(code);
+  }
+
+  async function importSharedTimetable(code, targetSemesterId, options = { mode: "replace" }) {
+    const semId = targetSemesterId || currentSemesterId;
+    const payload = await consumeShareCode(code);
+
+    const {
+      subjects = [],
+      timetable = null,
+      collegeTimetable = null,
+      includeSubjects = true,
+      includeTimetable = true,
+      includeCollegeTimetable = false,
+    } = payload;
+
+    if (includeSubjects && subjects.length > 0) {
+      let nextSubjectsList = [];
+      if (options.mode === "merge") {
+        const existingSubjects = subjectsBySemester[semId] || [];
+        const existingIds = new Set(existingSubjects.map((s) => s.id));
+        const newUnique = subjects.filter((s) => !existingIds.has(s.id));
+        nextSubjectsList = [...existingSubjects, ...newUnique];
+      } else {
+        nextSubjectsList = [...subjects];
+      }
+      const nextSubjects = {
+        ...subjectsBySemester,
+        [semId]: nextSubjectsList,
+      };
+      setSubjectsBySemester(nextSubjects);
+      persistSubjects(nextSubjects);
+    }
+
+    if (includeTimetable && timetable) {
+      const nextTimetables = {
+        ...timetablesBySemester,
+        [semId]: timetable,
+      };
+      setTimetablesBySemester(nextTimetables);
+      persistTimetables(nextTimetables);
+    }
+
+    if (includeCollegeTimetable && collegeTimetable) {
+      await saveCollegeTimetable(semId, collegeTimetable);
+    }
+
+    return payload;
+  }
+
   // ── CONTEXT VALUE ──────────────────────────────────────────────────────────
   const contextValue = {
     semesters,
     currentSemester,
     currentSemesterId,
     currentTimetable,
+    subjectsBySemester,
+    timetablesBySemester,
     hasLoaded,
     setCurrentSemesterId,
     addSemester,
@@ -603,6 +693,9 @@ export function SemesterProvider({ children }) {
     addReminder,
     updateReminder,
     removeReminder,
+    generateShareCodeForSemester,
+    inspectSharedCode,
+    importSharedTimetable,
     weekDays: WEEK_DAYS,
     remindersBySemester,
     reloadAllData,

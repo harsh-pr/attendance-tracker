@@ -557,6 +557,27 @@ export function SemesterProvider({ children }) {
     persistMeta(currentSemesterId, nextSemesters);
   }
 
+  function batchSavePastAttendance(newRecords) {
+    if (!newRecords || newRecords.length === 0) return;
+    let updatedAttendance = [];
+
+    const nextSemesters = semesters.map((sem) => {
+      if (sem.id !== currentSemesterId) return sem;
+
+      const currentMap = new Map((sem.attendanceData || []).map((d) => [d.date, d]));
+      newRecords.forEach((record) => {
+        currentMap.set(record.date, record);
+      });
+
+      updatedAttendance = Array.from(currentMap.values());
+      return { ...sem, attendanceData: updatedAttendance };
+    });
+
+    setSemesters(nextSemesters);
+    persistAttendance(currentSemesterId, updatedAttendance);
+    persistMeta(currentSemesterId, nextSemesters);
+  }
+
   // ── REMINDERS ─────────────────────────────────────────────────────────────
   function addReminder(reminder) {
     const nextReminders = {
@@ -690,6 +711,7 @@ export function SemesterProvider({ children }) {
     markDayStatus,
     markDayLectureStatuses,
     removeDayAttendance,
+    batchSavePastAttendance,
     addReminder,
     updateReminder,
     removeReminder,

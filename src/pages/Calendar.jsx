@@ -1,5 +1,6 @@
 import Modal from "../components/Modal";
 import NotificationPermissionModal from "../components/NotificationPermissionModal";
+import QuickBackfillModal from "../components/QuickBackfillModal";
 import { useNotificationPermission } from "../hooks/useNotificationPermission";
 import { useSemester } from "../context/SemesterContext";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -157,6 +158,7 @@ export default function Calendar() {
   const [selectedDay,       setSelectedDay]       = useState(null);
   const [allRemindersOpen,  setAllRemindersOpen]  = useState(false);
   const [addReminderOpen,   setAddReminderOpen]   = useState(false);
+  const [backfillModalOpen, setBackfillModalOpen] = useState(false);
   const [editingReminder,   setEditingReminder]   = useState(null);
   const [editDayOpen,       setEditDayOpen]       = useState(false);
   const [partialMarkOpen,   setPartialMarkOpen]   = useState(false);
@@ -810,13 +812,17 @@ export default function Calendar() {
           <h1 className="text-3xl font-bold text-zinc-900 dark:text-zinc-100 font-[Poppins]">Your attendance, beautifully tracked</h1>
           <p className="text-zinc-600 dark:text-zinc-400 text-sm">See full-day, partial, absent, and holiday patterns at a glance.</p>
         </div>
-        <div className="flex flex-wrap gap-3">
+        <div className="flex flex-wrap gap-2.5 sm:gap-3">
+          <button type="button" onClick={() => setBackfillModalOpen(true)}
+            className="rounded-xl border border-amber-500/30 bg-amber-500/10 hover:bg-amber-500/20 text-amber-700 dark:text-amber-300 px-3.5 sm:px-4 py-2 text-xs font-bold shadow-sm transition hover:-translate-y-0.5 cursor-pointer flex items-center gap-1.5">
+            <span>⚡ Backfill Past Days</span>
+          </button>
           <button type="button" onClick={handleExportMonth}
-            className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/80 px-4 py-2 text-xs font-bold text-zinc-700 dark:text-zinc-200 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md cursor-pointer">
+            className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/80 px-3.5 sm:px-4 py-2 text-xs font-bold text-zinc-700 dark:text-zinc-200 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md cursor-pointer">
             Export Month
           </button>
           <button type="button" onClick={() => { setEditingReminder(null); setReminderForm({ title: "", date: "", time: "" }); setAddReminderOpen(true); }}
-            className="rounded-xl bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 px-4 py-2 text-xs font-bold shadow-md transition hover:-translate-y-0.5 hover:shadow-lg cursor-pointer">
+            className="rounded-xl bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 px-3.5 sm:px-4 py-2 text-xs font-bold shadow-md transition hover:-translate-y-0.5 hover:shadow-lg cursor-pointer">
             + Add Reminder
           </button>
         </div>
@@ -1234,6 +1240,11 @@ export default function Calendar() {
             className="rounded-full bg-gray-900 px-4 py-2 text-sm font-semibold text-white dark:bg-white dark:text-gray-900 cursor-pointer hover:scale-[1.02] transition">Save Partial Marking</button>
         </div>
       </Modal>
+
+      <QuickBackfillModal
+        isOpen={backfillModalOpen}
+        onClose={() => setBackfillModalOpen(false)}
+      />
     </div>
   );
 }

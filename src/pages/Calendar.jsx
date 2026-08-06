@@ -165,24 +165,15 @@ export default function Calendar() {
 
   const [reminderForm, setReminderForm] = useState({ title: "", date: "", time: "" });
 
-  const initialMonthDate = useMemo(() => {
-    if (!attendanceData.length) return new Date();
-    return attendanceData.reduce((latest, entry) => {
-      const parsed = parseDateString(entry.date);
-      if (!parsed) return latest;
-      return parsed > latest ? parsed : latest;
-    }, new Date(0));
-  }, [attendanceData]);
-
-  const [activeMonthDate, setActiveMonthDate] = useState(
-    new Date(initialMonthDate.getFullYear(), initialMonthDate.getMonth(), 1)
-  );
+  const [activeMonthDate, setActiveMonthDate] = useState(() => {
+    const now = new Date();
+    return new Date(now.getFullYear(), now.getMonth(), 1);
+  });
 
   useEffect(() => {
-    setActiveMonthDate(
-      new Date(initialMonthDate.getFullYear(), initialMonthDate.getMonth(), 1)
-    );
-  }, [currentSemester.id, initialMonthDate]);
+    const now = new Date();
+    setActiveMonthDate(new Date(now.getFullYear(), now.getMonth(), 1));
+  }, [currentSemester.id]);
 
   const monthLabel      = formatMonthLabel(activeMonthDate);
   const year            = activeMonthDate.getFullYear();

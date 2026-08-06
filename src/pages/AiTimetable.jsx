@@ -1,4 +1,4 @@
-import { useState, useEffect, Fragment } from "react";
+import { useState, useEffect, useRef, Fragment } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useSemester } from "../context/SemesterContext";
 import { getCollegeTimetable, saveCollegeTimetable } from "../firebase/firestoreService";
@@ -141,11 +141,21 @@ export default function AiTimetable() {
   const [draftBreaks, setDraftBreaks] = useState([]);
   const [draftActiveDays, setDraftActiveDays] = useState([]);
 
-  // Metadata modal drafts
-  const [draftMetadata, setDraftMetadata] = useState({});
+  // Options dropdown state & ref
+  const [isOptionsMenuOpen, setIsOptionsMenuOpen] = useState(false);
+  const optionsMenuRef = useRef(null);
 
-  // Share timetable modal state
-  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+  useEffect(() => {
+    function handleClickOutside(e) {
+      if (optionsMenuRef.current && !optionsMenuRef.current.contains(e.target)) {
+        setIsOptionsMenuOpen(false);
+      }
+    }
+    if (isOptionsMenuOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [isOptionsMenuOpen]);
 
   // Cell edit modal drafts
   const [cellSubject, setCellSubject] = useState("");
@@ -669,61 +679,90 @@ export default function AiTimetable() {
           </p>
         </div>
 
-        {/* Toolbar Buttons */}
-        <div className="flex flex-wrap items-center gap-2">
+        {/* Sleek Toolbar */}
+        <div className="flex items-center gap-2">
           <motion.button
-            whileHover={{ scale: 1.03 }}
-            whileTap={{ scale: 0.95 }}
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.96 }}
             type="button"
             onClick={() => setIsEditMode(!isEditMode)}
             className={`px-4 h-9 text-xs font-bold rounded-xl shadow-sm transition duration-150 cursor-pointer flex items-center justify-center gap-1.5 ${
               isEditMode
-                ? "bg-amber-600 hover:bg-amber-500 text-white"
-                : "bg-blue-600 hover:bg-blue-500 text-white"
+                ? "bg-amber-600 hover:bg-amber-500 text-white ring-2 ring-amber-500/30"
+                : "bg-blue-600 hover:bg-blue-500 text-white shadow-blue-500/20"
             }`}
           >
-            {isEditMode ? "💾 Save Layout" : "✏️ Edit Cells"}
+            {isEditMode ? "💾 Done Editing" : "✏️ Edit Cells"}
           </motion.button>
 
-          <motion.button
-            whileHover={{ scale: 1.03 }}
-            whileTap={{ scale: 0.95 }}
-            type="button"
-            onClick={openStructureModal}
-            className="px-4 h-9 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold rounded-xl shadow-sm transition cursor-pointer flex items-center justify-center gap-1.5"
-          >
-            🛠️ Customize Hours & Days
-          </motion.button>
+          {/* Actions Options Dropdown */}
+          <div ref={optionsMenuRef} className="relative">
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.96 }}
+              type="button"
+              onClick={() => setIsOptionsMenuOpen((prev) => !prev)}
+              className="px-3.5 h-9 bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-800 dark:text-zinc-200 text-xs font-bold rounded-xl border border-zinc-200/80 dark:border-zinc-700/80 transition-all cursor-pointer flex items-center gap-1.5 shadow-sm"
+            >
+              <span>⚙️ Actions</span>
+              <span className={`text-[10px] text-zinc-400 transition-transform duration-200 ${isOptionsMenuOpen ? "rotate-180" : ""}`}>
+                ▼
+              </span>
+            </motion.button>
 
-          <motion.button
-            whileHover={{ scale: 1.03 }}
-            whileTap={{ scale: 0.95 }}
-            type="button"
-            onClick={openMetadataModal}
-            className="px-4 h-9 bg-zinc-200 hover:bg-zinc-300 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-800 dark:text-zinc-200 text-xs font-bold rounded-xl transition cursor-pointer flex items-center justify-center gap-1.5"
-          >
-            ⚙️ Edit Details
-          </motion.button>
+            <AnimatePresence>
+              {isOptionsMenuOpen && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.95, y: 5 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.95, y: 5 }}
+                  transition={{ duration: 0.15, ease: "easeOut" }}
+                  className="absolute right-0 mt-2 w-56 p-1.5 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white/95 dark:bg-zinc-900/95 shadow-2xl backdrop-blur-xl z-50 space-y-1 text-xs font-bold"
+                >
+                  <button
+                    type="button"
+                    onClick={() => {
+                      openStructureModal();
+                      setIsOptionsMenuOpen(false);
+                    }}
+                    className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors text-left cursor-pointer"
+                  >
+                    <span>🛠️</span>
+                    <span>Customize Hours & Days</span>
+                  </button>
 
-          <motion.button
-            whileHover={{ scale: 1.03 }}
-            whileTap={{ scale: 0.95 }}
-            type="button"
-            onClick={() => setIsShareModalOpen(true)}
-            className="px-4 h-9 bg-violet-600 hover:bg-violet-500 text-white text-xs font-bold rounded-xl shadow-sm transition cursor-pointer flex items-center justify-center gap-1.5"
-          >
-            🔗 Share / Import
-          </motion.button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      openMetadataModal();
+                      setIsOptionsMenuOpen(false);
+                    }}
+                    className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors text-left cursor-pointer"
+                  >
+                    <span>⚙️</span>
+                    <span>Edit Class & Advisor Details</span>
+                  </button>
 
-          <HoldButton
-            onConfirm={resetToDefault}
-            holdDuration={1500}
-            variant="danger"
-            icon="🔄"
-            className="h-9 rounded-xl py-0"
-          >
-            Reset
-          </HoldButton>
+                  <div className="border-t border-zinc-200 dark:border-zinc-800 my-1" />
+
+                  <div className="p-0.5">
+                    <HoldButton
+                      onConfirm={() => {
+                        resetToDefault();
+                        setIsOptionsMenuOpen(false);
+                      }}
+                      holdDuration={1500}
+                      variant="danger"
+                      icon="🔄"
+                      className="w-full text-xs rounded-xl py-1.5 justify-center"
+                    >
+                      Reset Timetable
+                    </HoldButton>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
         </div>
       </div>
 

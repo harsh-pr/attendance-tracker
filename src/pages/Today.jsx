@@ -45,13 +45,18 @@ export default function Today() {
       animate="visible"
       className="max-w-6xl mx-auto px-4 pt-6 space-y-6"
     >
-      {/* ===== HEADER ===== */}
-      <motion.div variants={cardVariants}>
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
-          Subject-wise Attendance
-        </h1>
-        <p className="text-gray-600 dark:text-gray-400">
-          Theory & Lab attendance till date. Click a card to view calendar dates.
+      {/* ===== EXECUTIVE SECTION HEADER ===== */}
+      <motion.div variants={cardVariants} className="space-y-1">
+        <div className="flex items-center gap-2.5">
+          <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-zinc-900 dark:text-white font-[Poppins]">
+            Subject-wise <span className="bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500 dark:from-blue-400 dark:via-indigo-400 dark:to-purple-400 bg-clip-text text-transparent">Attendance</span>
+          </h1>
+          <span className="hidden sm:inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-extrabold bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20 shadow-xs">
+            <span>📚</span> Course Breakdown
+          </span>
+        </div>
+        <p className="text-xs sm:text-sm font-medium text-zinc-500 dark:text-zinc-400">
+          Theory & Lab attendance till date • Click any subject card to view interactive calendar logs
         </p>
       </motion.div>
 

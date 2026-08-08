@@ -402,6 +402,8 @@ export function SemesterProvider({ children }) {
       wednesday: timetable?.wednesday || [],
       thursday: timetable?.thursday || [],
       friday: timetable?.friday || [],
+      saturday: timetable?.saturday || [],
+      sunday: timetable?.sunday || [],
     };
 
     let versions = [];

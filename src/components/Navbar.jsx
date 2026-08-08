@@ -138,6 +138,8 @@ export default function Navbar() {
       wednesday: (source.wednesday || []).filter((lecture) => validIds.has(lecture.subjectId)).map((lecture) => ({ ...lecture })),
       thursday: (source.thursday || []).filter((lecture) => validIds.has(lecture.subjectId)).map((lecture) => ({ ...lecture })),
       friday: (source.friday || []).filter((lecture) => validIds.has(lecture.subjectId)).map((lecture) => ({ ...lecture })),
+      saturday: (source.saturday || []).filter((lecture) => validIds.has(lecture.subjectId)).map((lecture) => ({ ...lecture })),
+      sunday: (source.sunday || []).filter((lecture) => validIds.has(lecture.subjectId)).map((lecture) => ({ ...lecture })),
     });
     setIsTimetableOpen(true);
     setIsSemesterMenuOpen(false);
@@ -180,7 +182,7 @@ export default function Navbar() {
       ...prev,
       [dayKey]: [
         ...(prev[dayKey] || []),
-        { subjectId: fallbackSubjectId, type: "theory" },
+        { subjectId: fallbackSubjectId, type: subjects[0]?.type || "theory" },
       ],
     }));
   }
@@ -188,14 +190,7 @@ export default function Navbar() {
   function updateLectureRow(dayKey, index, field, value) {
     setTimetableDraft((prev) => ({
       ...prev,
-      [dayKey]: (prev[dayKey] || []).map((lecture, i) =>
-        i === index
-          ? {
-              ...lecture,
-              [field]: value,
-            }
-          : lecture
-      ),
+      [dayKey]: (prev[dayKey] || []).map((item, i) => (i === index ? { ...item, [field]: value } : item)),
     }));
   }
 
@@ -213,14 +208,32 @@ export default function Navbar() {
       .replace(/^_+|_+$/g, "") || "subject";
   }
 
-  function saveSubjectsDraft() {
-    if (typeof setSemesterSubjects === "function") {
-      setSemesterSubjects(currentSemesterId, subjectsDraft);
-    }
-  }
-
   function saveTimetable() {
-    const validIds = new Set(subjectsDraft.map((subject) => subject.id));
+    let finalSubjects = [...subjectsDraft];
+
+    // If user typed a subject name but clicked "Save timetable" directly, auto-add it!
+    const pendingName = newSubjectName.trim();
+    if (pendingName) {
+      const base = slugifySubjectId(pendingName);
+      let nextId = base;
+      let i = 2;
+      while (finalSubjects.some((s) => s.id === nextId)) {
+        nextId = `${base}_${i}`;
+        i++;
+      }
+      finalSubjects.push({ id: nextId, name: pendingName, type: newSubjectType });
+      setNewSubjectName("");
+    }
+
+    // If user was renaming a subject, auto-commit it!
+    if (editingSubjectId && editingSubjectName.trim()) {
+      finalSubjects = finalSubjects.map((s) =>
+        s.id === editingSubjectId ? { ...s, name: editingSubjectName.trim() } : s
+      );
+      setEditingSubjectId(null);
+    }
+
+    const validIds = new Set(finalSubjects.map((subject) => subject.id));
 
     const cleanedTimetable = {
       monday: (timetableDraft.monday || []).filter((lecture) => validIds.has(lecture.subjectId)),
@@ -228,9 +241,13 @@ export default function Navbar() {
       wednesday: (timetableDraft.wednesday || []).filter((lecture) => validIds.has(lecture.subjectId)),
       thursday: (timetableDraft.thursday || []).filter((lecture) => validIds.has(lecture.subjectId)),
       friday: (timetableDraft.friday || []).filter((lecture) => validIds.has(lecture.subjectId)),
+      saturday: (timetableDraft.saturday || []).filter((lecture) => validIds.has(lecture.subjectId)),
+      sunday: (timetableDraft.sunday || []).filter((lecture) => validIds.has(lecture.subjectId)),
     };
 
-    saveSubjectsDraft();
+    if (typeof setSemesterSubjects === "function") {
+      setSemesterSubjects(currentSemesterId, finalSubjects);
+    }
     setSemesterTimetable(currentSemesterId, cleanedTimetable);
     setIsTimetableOpen(false);
   }
@@ -264,6 +281,8 @@ export default function Navbar() {
       wednesday: (prev.wednesday || []).filter((lecture) => lecture.subjectId !== subjectId),
       thursday: (prev.thursday || []).filter((lecture) => lecture.subjectId !== subjectId),
       friday: (prev.friday || []).filter((lecture) => lecture.subjectId !== subjectId),
+      saturday: (prev.saturday || []).filter((lecture) => lecture.subjectId !== subjectId),
+      sunday: (prev.sunday || []).filter((lecture) => lecture.subjectId !== subjectId),
     }));
   }
 

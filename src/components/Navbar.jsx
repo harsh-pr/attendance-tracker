@@ -67,6 +67,21 @@ export default function Navbar() {
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [isDeleteAccountWarningOpen, setIsDeleteAccountWarningOpen] = useState(false);
   const [isDeletingAccount, setIsDeletingAccount] = useState(false);
+  const [showGuestNoticeModal, setShowGuestNoticeModal] = useState(false);
+
+  useEffect(() => {
+    if (user?.isGuest) {
+      const hasSeenNotice = sessionStorage.getItem("has_seen_guest_notice");
+      if (!hasSeenNotice) {
+        setShowGuestNoticeModal(true);
+      }
+    }
+  }, [user]);
+
+  function handleDismissGuestNotice() {
+    sessionStorage.setItem("has_seen_guest_notice", "true");
+    setShowGuestNoticeModal(false);
+  }
 
   const menuRef = useRef(null);
   const profileMenuRef = useRef(null);
@@ -276,7 +291,23 @@ export default function Navbar() {
 
   return (
     <>
-      <header className="fixed top-0 left-0 right-0 z-50 px-3 sm:px-6 pt-3 pb-2 bg-gradient-to-b from-zinc-50/90 via-zinc-50/60 to-transparent dark:from-zinc-950/90 dark:via-zinc-950/60 dark:to-transparent backdrop-blur-md">
+      <header className="fixed top-0 left-0 right-0 z-50 px-3 sm:px-6 pt-2 pb-2 bg-gradient-to-b from-zinc-50/95 via-zinc-50/80 to-transparent dark:from-zinc-950/95 dark:via-zinc-950/80 dark:to-transparent backdrop-blur-md">
+        {user?.isGuest && (
+          <div className="max-w-6xl mx-auto mb-1.5 px-3 py-1 rounded-full bg-gradient-to-r from-amber-500/90 via-orange-500/90 to-amber-600/90 text-white text-[11px] font-extrabold flex items-center justify-between shadow-sm backdrop-blur-xl border border-amber-400/40">
+            <div className="flex items-center gap-1.5 truncate">
+              <span className="text-xs">🎭</span>
+              <span className="truncate">Guest Demo Mode — Data is temporary & cleared when tab is closed</span>
+            </div>
+            <button
+              type="button"
+              onClick={logout}
+              className="ml-2 px-2.5 py-0.5 rounded-full bg-black/30 hover:bg-black/50 text-white text-[10px] uppercase font-black tracking-wider cursor-pointer shrink-0 transition"
+            >
+              Exit Demo
+            </button>
+          </div>
+        )}
+
         <div className="max-w-6xl mx-auto h-12 sm:h-14 px-1 sm:px-5 rounded-full bg-transparent sm:bg-white/80 sm:dark:bg-zinc-900/80 border-0 sm:border sm:border-zinc-200/80 sm:dark:border-zinc-800/80 shadow-none sm:shadow-[0_8px_30px_rgb(0,0,0,0.08)] sm:dark:shadow-[0_8px_30px_rgb(0,0,0,0.4)] flex items-center justify-between backdrop-blur-none sm:backdrop-blur-2xl transition-all duration-300">
           
           {/* Logo & Desktop Semester Selector */}
@@ -866,6 +897,49 @@ export default function Navbar() {
         isOpen={isShareModalOpen}
         onClose={() => setIsShareModalOpen(false)}
       />
+
+      {/* GUEST DEMO MODE DETAILED INFO MODAL */}
+      <Modal
+        open={showGuestNoticeModal}
+        onClose={handleDismissGuestNotice}
+        size="md"
+        showCloseButton={false}
+      >
+        <div className="space-y-4 text-center p-2">
+          <div className="w-14 h-14 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-500 flex items-center justify-center text-3xl mx-auto shadow-inner">
+            🎭
+          </div>
+
+          <div>
+            <h3 className="text-lg font-black text-zinc-900 dark:text-white font-[Poppins]">
+              Welcome to Guest Demo Mode!
+            </h3>
+            <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1 font-medium">
+              Explore and test all features without creating an account.
+            </p>
+          </div>
+
+          <div className="p-4 rounded-2xl bg-amber-500/10 dark:bg-amber-950/40 border border-amber-200/80 dark:border-amber-900/60 text-left text-xs space-y-2 text-amber-800 dark:text-amber-200">
+            <p className="font-bold flex items-center gap-1.5 text-amber-900 dark:text-amber-100">
+              <span>⚠️</span> Important Info About Guest Data:
+            </p>
+            <ul className="list-disc list-inside space-y-1.5 opacity-90 text-[11px] font-medium leading-relaxed">
+              <li>All features, timetables & attendance tracking are fully functional.</li>
+              <li>Data created is stored temporarily in your browser's <code className="font-mono bg-amber-200/60 dark:bg-amber-900/60 px-1 rounded text-[10px]">localStorage</code>.</li>
+              <li><strong className="text-red-600 dark:text-red-400 font-extrabold uppercase">ALL GUEST WORK WILL BE DELETED ONCE THE WEBSITE IS CLOSED</strong>.</li>
+              <li>Use Guest Mode for showcasing or testing features to others.</li>
+            </ul>
+          </div>
+
+          <button
+            type="button"
+            onClick={handleDismissGuestNotice}
+            className="w-full py-3 rounded-2xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-white text-xs font-bold transition cursor-pointer shadow-md shadow-amber-500/20"
+          >
+            Got it, start exploring! 🚀
+          </button>
+        </div>
+      </Modal>
     </>
   );
 }

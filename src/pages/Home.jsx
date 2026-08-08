@@ -301,10 +301,10 @@ export default function Home() {
                       return (
                         <div
                           key={`${day.date}-${lecture.subjectId}-${index}`}
-                          className="flex items-center justify-between gap-2 rounded-xl border border-zinc-200/80 dark:border-zinc-800/80 bg-zinc-50/50 dark:bg-zinc-800/30 px-3 py-2 text-xs text-zinc-700 dark:text-zinc-200"
+                          className="flex items-center justify-between gap-2 rounded-xl border border-zinc-200/80 dark:border-zinc-800/80 bg-zinc-50/50 dark:bg-zinc-800/30 px-3 py-2 text-xs text-zinc-700 dark:text-zinc-200 min-w-0 overflow-hidden"
                         >
-                          <div className="min-w-0">
-                            <p className="truncate font-semibold">
+                          <div className="min-w-0 flex-1">
+                            <p className="truncate font-semibold text-zinc-900 dark:text-zinc-100" title={label}>
                               {label}
                             </p>
                             <p className="text-[10px] text-zinc-500 dark:text-zinc-400 font-medium">
@@ -355,7 +355,7 @@ export default function Home() {
             logs.map((day) => (
               <div
                 key={`modal-${day.date}`}
-                className="rounded-2xl bg-zinc-50 dark:bg-zinc-800/40 p-4 border border-zinc-200 dark:border-zinc-800"
+                className="rounded-2xl bg-zinc-50 dark:bg-zinc-800/40 p-4 border border-zinc-200 dark:border-zinc-800 overflow-hidden"
               >
                 <p className="text-sm font-bold text-zinc-900 dark:text-zinc-100">
                   {new Date(day.date).toLocaleDateString(
@@ -385,10 +385,10 @@ export default function Home() {
                       return (
                         <div
                           key={`modal-${day.date}-${lecture.subjectId}-${index}`}
-                          className="flex items-center justify-between gap-3 rounded-xl border border-zinc-200 dark:border-zinc-700/60 bg-white dark:bg-zinc-900 px-3 py-2 text-xs text-zinc-700 dark:text-zinc-200"
+                          className="flex items-center justify-between gap-2.5 rounded-xl border border-zinc-200 dark:border-zinc-700/60 bg-white dark:bg-zinc-900 px-3 py-2 text-xs text-zinc-700 dark:text-zinc-200 min-w-0 overflow-hidden"
                         >
-                          <div className="min-w-0">
-                            <p className="truncate font-semibold">
+                          <div className="min-w-0 flex-1">
+                            <p className="truncate font-semibold text-zinc-900 dark:text-zinc-100" title={label}>
                               {label}
                             </p>
                             <p className="text-[10px] text-zinc-500 dark:text-zinc-400 font-medium">

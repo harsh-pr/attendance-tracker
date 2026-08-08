@@ -92,12 +92,17 @@ export default function Home() {
 
   return (
     <div className="w-full max-w-6xl mx-auto px-4 pt-6 pb-24 space-y-8 overflow-x-hidden">
-      {/* ===== HEADER ===== */}
-      <div className="flex flex-col gap-2 sm:block">
-        <div className="flex items-center justify-between sm:block">
-          <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-zinc-900 dark:text-zinc-100">
-            Dashboard
-          </h1>
+      {/* ===== PREMIUM EXECUTIVE DASHBOARD HEADER ===== */}
+      <div className="space-y-1">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2.5">
+            <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-zinc-900 dark:text-white font-[Poppins]">
+              Attendance <span className="bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500 dark:from-blue-400 dark:via-indigo-400 dark:to-purple-400 bg-clip-text text-transparent">Overview</span>
+            </h1>
+            <span className="hidden sm:inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-extrabold bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20 shadow-xs">
+              <span>📊</span> Live Sync
+            </span>
+          </div>
 
           {/* ===== MOBILE ONLY SEMESTER SELECTOR ===== */}
           <div className="sm:hidden">
@@ -122,8 +127,8 @@ export default function Home() {
           </div>
         </div>
 
-        <p className="text-sm font-medium text-zinc-500 dark:text-zinc-400">
-          Attendance overview
+        <p className="text-xs sm:text-sm font-medium text-zinc-500 dark:text-zinc-400">
+          Real-time lecture tracking & semester 75% criterion status
         </p>
       </div>
 

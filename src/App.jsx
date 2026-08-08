@@ -80,19 +80,17 @@ function AppContent() {
       {/* Runs on every page — schedules reminder notifications globally */}
       <ReminderScheduler />
 
-      {/* PC-ONLY UNIQUE DARK AMBIENT BACKGROUND (Pure stealth dark ambient theme) */}
+      {/* PC-ONLY ULTRA-LIGHTWEIGHT STATIC DARK AMBIENT BACKGROUND (0% animation overhead) */}
       <div className="hidden lg:block pointer-events-none select-none fixed inset-0 z-0 overflow-hidden">
         {/* Deep Dark Ambient Base Canvas */}
         <div className="absolute inset-0 bg-gradient-to-br from-zinc-100 via-zinc-50 to-zinc-100 dark:from-zinc-950 dark:via-zinc-900/90 dark:to-zinc-950 transition-colors duration-500" />
 
-        {/* Top-Left Dark Ambient Glow */}
-        <div className="animate-bg-float-1 transform-gpu absolute -top-24 -left-20 w-[42rem] h-[42rem] bg-gradient-to-tr from-zinc-300/30 via-zinc-200/20 to-transparent dark:from-zinc-800/35 dark:via-zinc-850/25 dark:to-transparent rounded-full blur-[100px]" />
+        {/* Static Ambient Dark Radial Glows */}
+        <div className="absolute -top-24 -left-20 w-[40rem] h-[40rem] bg-zinc-300/25 dark:bg-zinc-800/30 rounded-full blur-[100px]" />
+        <div className="absolute -bottom-32 -right-20 w-[42rem] h-[42rem] bg-zinc-400/20 dark:bg-zinc-800/30 rounded-full blur-[110px]" />
 
-        {/* Bottom-Right Slate Ambient Glow */}
-        <div className="animate-bg-float-2 transform-gpu absolute -bottom-32 -right-20 w-[44rem] h-[44rem] bg-gradient-to-tr from-zinc-400/25 via-slate-300/20 to-transparent dark:from-zinc-800/35 dark:via-slate-900/25 dark:to-transparent rounded-full blur-[110px]" />
-
-        {/* Geometric Grid / Dot Overlay with Radial Falloff */}
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808014_1px,transparent_1px),linear-gradient(to_bottom,#80808014_1px,transparent_1px)] bg-[size:32px_32px] [mask-image:radial-gradient(ellipse_80%_80%_at_50%_50%,#000_80%,transparent_100%)] opacity-50 dark:opacity-25" />
+        {/* Geometric Grid / Dot Overlay */}
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:32px_32px] [mask-image:radial-gradient(ellipse_80%_80%_at_50%_50%,#000_80%,transparent_100%)] opacity-40 dark:opacity-20" />
       </div>
 
       <Navbar />

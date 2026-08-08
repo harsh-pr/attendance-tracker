@@ -154,36 +154,39 @@ src/
 
 # 📸 Application Screenshots
 
-*(Replace image paths in `./assets/` with your updated screenshots)*
-
 ### 🔐 Authentication & Guest Mode
-![Authentication](./assets/authentication.png)
+
+---
 
 ### 🏠 Dashboard (Light & Dark Theme)
-![Light Dashboard](./assets/dashboard-light.png)
-![Dark Dashboard](./assets/dashboard-dark.png)
+
+---
 
 ### 📊 Attendance Analytics & Graph
-![Attendance Analytics](./assets/dashboard-analytics.png)
+
+---
 
 ### 📚 Subject-wise Attendance & Details
-![Theory Attendance](./assets/theory-subjects.png)
-![Lab Attendance](./assets/lab-subjects.png)
+
+---
 
 ### 📅 Subject Attendance History Calendar
-![Subject History](./assets/subject-history.png)
+
+---
 
 ### ⚡ Quick Today's Attendance
-![Quick Attendance](./assets/quick-attendance-actions.png)
+
+---
 
 ### 🗓 Attendance Calendar & Highlights
-![Calendar](./assets/calendar.png)
+
+---
 
 ### 📄 Monthly PDF Report
-![Monthly Report](./assets/monthly-report.png)
+
+---
 
 ### ⚙ Timetable Management & Sharing
-![Timetable Editor](./assets/timetable-editor.png)
 
 ---
 

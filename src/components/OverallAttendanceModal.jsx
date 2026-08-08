@@ -15,8 +15,8 @@ function CustomTooltip({ active, payload, label }) {
   if (!active || !payload || !payload.length) return null;
 
   return (
-    <div className="rounded-2xl px-4 py-3 bg-white/95 dark:bg-gray-950/90 text-gray-950 dark:text-gray-100 shadow-xl border border-gray-200/50 dark:border-gray-800/80 backdrop-blur-md">
-      <p className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">{label}</p>
+    <div className="rounded-2xl px-4 py-3 bg-white/95 dark:bg-zinc-950/90 text-zinc-900 dark:text-zinc-100 shadow-xl border border-zinc-200/50 dark:border-zinc-800/80 backdrop-blur-md">
+      <p className="text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">{label}</p>
       <p className="text-emerald-600 dark:text-emerald-400 text-sm font-bold mt-1">
         Attendance: <span className="text-lg font-extrabold">{payload[0].value}%</span>
       </p>

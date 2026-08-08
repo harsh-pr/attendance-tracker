@@ -1048,10 +1048,10 @@ export default function Calendar() {
           <>
             <div className="flex items-start justify-between gap-4">
               <div>
-                <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
+                <h2 className="text-xl font-semibold text-zinc-900 dark:text-zinc-100">
                   {selectedDay.date.toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" })}
                 </h2>
-                <p className="text-sm text-gray-500 dark:text-gray-400">Attendance details for the day</p>
+                <p className="text-sm text-zinc-500 dark:text-zinc-400">Attendance details for the day</p>
               </div>
               {selectedDay.status && (
                 <span className={`rounded-full px-3 py-1 text-xs font-semibold ${statusConfig[selectedDay.status]?.badge}`}>
@@ -1066,10 +1066,10 @@ export default function Calendar() {
                   const statusLabel = lecture.status || "pending";
                   return (
                     <div key={`${selectedDay.day}-${lecture.subjectId}-${index}`}
-                      className="flex items-center justify-between gap-3 rounded-2xl border border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-900/70 p-4">
+                      className="flex items-center justify-between gap-3 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/90 p-4">
                       <div>
-                        <p className="text-sm font-semibold text-gray-900 dark:text-white">{subject?.name ?? lecture.subjectId}</p>
-                        <p className="text-xs text-gray-500 dark:text-gray-400">{lecture.type ?? subject?.type ?? "lecture"}</p>
+                        <p className="text-sm font-semibold text-zinc-900 dark:text-white">{subject?.name ?? lecture.subjectId}</p>
+                        <p className="text-xs text-zinc-500 dark:text-zinc-400">{lecture.type ?? subject?.type ?? "lecture"}</p>
                       </div>
                       <span className={`rounded-full px-3 py-1 text-xs font-semibold capitalize ${lectureStatusStyles[statusLabel] || lectureStatusStyles.pending}`}>
                         {statusLabel}
@@ -1078,14 +1078,14 @@ export default function Calendar() {
                   );
                 })
               ) : (
-                <div className="rounded-xl border border-dashed border-gray-300 dark:border-gray-700 p-4 text-sm text-gray-500 dark:text-gray-400">
+                <div className="rounded-xl border border-dashed border-zinc-300 dark:border-zinc-800 p-4 text-sm text-zinc-500 dark:text-zinc-400">
                   {selectedDay.status === "holiday" ? "Holiday · No lectures" : "No lectures recorded for this day."}
                 </div>
               )}
             </div>
             <div className="mt-6 flex flex-wrap justify-end gap-2">
               <button type="button" onClick={() => setEditDayOpen(true)}
-                className="rounded-full border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-4 py-2 text-xs font-semibold text-gray-700 dark:text-gray-200">
+                className="rounded-full border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-4 py-2 text-xs font-semibold text-zinc-700 dark:text-zinc-200">
                 Mark / Edit Day
               </button>
             </div>

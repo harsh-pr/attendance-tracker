@@ -390,18 +390,6 @@ export default function Navbar() {
               <ThemeToggle />
             </div>
 
-            {/* Share Timetable Desktop Button */}
-            <motion.button
-              whileHover={{ scale: 1.04 }}
-              whileTap={{ scale: 0.96 }}
-              type="button"
-              onClick={() => setIsShareModalOpen(true)}
-              className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-violet-500/10 hover:bg-violet-500/20 text-violet-600 dark:text-violet-400 border border-violet-500/20 text-xs font-bold transition-all"
-            >
-              <ShareIcon className="w-3.5 h-3.5" />
-              <span>Share</span>
-            </motion.button>
-
             {/* KOKONUT PROFILE DROPDOWN */}
             {user && (
               <div ref={profileMenuRef} className="relative inline-block text-left">

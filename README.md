@@ -3,118 +3,88 @@
 <div align="center">
 
 ![React](https://img.shields.io/badge/React-19-61DAFB?style=for-the-badge&logo=react)
+![Vite](https://img.shields.io/badge/Vite-7.3-646CFF?style=for-the-badge&logo=vite)
 ![Firebase](https://img.shields.io/badge/Firebase-Cloud-FFCA28?style=for-the-badge&logo=firebase)
 ![Google Auth](https://img.shields.io/badge/Google-Authentication-4285F4?style=for-the-badge&logo=google)
 ![Firestore](https://img.shields.io/badge/Firestore-Database-FFCA28?style=for-the-badge&logo=firebase)
 ![Recharts](https://img.shields.io/badge/Recharts-Analytics-8884D8?style=for-the-badge)
 ![Framer Motion](https://img.shields.io/badge/Framer-Motion-0055FF?style=for-the-badge&logo=framer)
+![Tailwind CSS](https://img.shields.io/badge/Tailwind-CSS-38B2AC?style=for-the-badge&logo=tailwind-css)
 ![Responsive](https://img.shields.io/badge/Responsive-Mobile%20Friendly-success?style=for-the-badge)
 
-A modern, responsive attendance management application built with **React** and **Firebase** to help students effortlessly track attendance, monitor eligibility, and stay organized throughout the semester.
+A modern, responsive attendance management web application built with **React**, **Firebase**, and **Tailwind CSS** to help college students effortlessly track attendance, monitor 75% eligibility criteria, and stay organized throughout the semester.
 
 </div>
 
 ---
 
-# AttendanceManager
+## ✨ Key Features
 
-A modern attendance management web application built with React, Firebase, and Tailwind CSS.
-
-<p align="center">
-  <img src="./assets/demo.gif" alt="AttendanceManager Demo" width="100%">
-</p>
+### 🎭 Guest / Demo Mode *(New)*
+- **Instant Feature Testing**: Try out all features without creating an account.
+- **Temporary Storage**: All demo data is stored in browser `localStorage`.
+- **Auto Cleanup**: All guest data is automatically cleared once the browser tab/session is closed.
+- **Welcome Notice Modal**: Detailed instructions explaining guest session mechanics upon login.
 
 ---
-
-## ✨ Features
 
 ### 📅 Attendance Tracking
-
-- Mark lectures as:
-  - ✅ Present
-  - ❌ Absent
-  - 🟢 Free Lecture
-  - ⚪ Cancelled
-- Subject-wise attendance statistics
-- Automatic attendance percentage calculation
-- Daily attendance logging
+- **Multiple Attendance Statuses**:
+  - ✅ **Present**
+  - ❌ **Absent**
+  - 🟢 **Free Lecture**
+  - ⚪ **Cancelled Lecture**
+- **Automatic Calculation**: Real-time updates on overall and subject-wise percentages.
+- **Daily Attendance Logging**: Record, backfill, and edit past dates easily.
 
 ---
 
-### 📊 Attendance Analytics
-
-- Overall attendance dashboard
-- Interactive attendance graphs using Recharts
-- Weekly attendance trends
-- Subject-wise attendance breakdown
-- Attendance history visualization
+### 🎯 75% Attendance Criterion Calculator
+- **Eligibility Indicator**: Displays real-time status (Safe Zone vs. Risk Zone).
+- **Required Classes Math**: Calculates exactly how many upcoming lectures to attend to reach 75%.
+- **Bunk Calculator**: Calculates how many upcoming lectures can be safely skipped while staying above 75%.
 
 ---
 
-### 🎯 75% Attendance Calculator
-
-Automatically calculates:
-
-- Current attendance percentage
-- Classes required to reach 75%
-- Classes that can safely be skipped
-- Real-time updates after every attendance entry
+### 📊 Attendance Analytics & Dashboard
+- **Interactive Recharts**: 7-day attendance trends and lecture history.
+- **Executive Header**: Real-time status indicators and course breakdowns.
+- **Subject Cards**: Separate progress bars for Theory and Lab subjects.
 
 ---
 
-### 📆 Timetable Management
-
-- Create semester timetable
-- Weekly lecture scheduling
-- Edit timetable anytime
-- Holiday support
-- Automatic lecture generation based on timetable
+### 📆 Timetable Management & Sharing *(New)*
+- **Weekly Class Schedule**: Drag-free lecture slot assignment with breaks and room numbers.
+- **Semester Structure Editor**: Customize time slots, recess/lunch breaks, and active weekdays.
+- **Timetable Sharing Modal**: Share weekly class schedules instantly via custom link or copy formats.
 
 ---
 
-### 🗓 Calendar View
-
-- Monthly attendance calendar
-- Attendance history
-- Holiday indicators
-- Daily lecture summary
-- PDF attendance export
+### 🗓 Attendance Calendar & PDF Reports
+- **Semester Calendar**: Full Day, Partial, Absent, Holiday, and Exam Day pattern tracking.
+- **PDF Export**: Generate printable PDF monthly attendance reports with calendar grids and summary tables.
+- **Quick Backfill**: Batch update attendance for past days.
 
 ---
 
-### ⚡ Quick Attendance
-
-- Fast popup attendance marking
-- One-click lecture updates
-- Optimized for mobile devices
+### 🔔 Smart Reminders & Notifications
+- **Global Scheduler**: Schedule lecture reminders and browser notifications.
+- **Permission Modal**: Integrated browser permission prompt for alerts.
 
 ---
 
-### 🔔 Smart Reminders
-
-- Lecture reminders
-- Browser notifications
-- Attendance alerts
-- Custom reminder scheduling
+### ☁ Cloud Sync & Security
+- **Firebase Authentication**: Email/Password login and Google One-Tap/Popup sign-in.
+- **Cloud Firestore**: Real-time cloud sync across desktop and mobile devices.
+- **Account Auto-Cleanup**: Hold-to-confirm account deletion and Firestore orphan cleaner script (`npm run clean-orphans`).
 
 ---
 
-### ☁ Cloud Sync
-
-- Google Authentication
-- Firebase Firestore
-- Secure cloud backup
-- Automatic synchronization across multiple devices
-- Access your attendance anywhere after signing in
-
----
-
-### 🌙 Modern UI
-
-- Responsive design
-- Dark & Light themes
-- Smooth animations
-- Mobile-first interface
+### ⚡ Performance & Stealth Design *(New)*
+- **0% Animation Overhead**: Hardware-optimized static dark ambient background on PC.
+- **Lag-Free Theme Switcher**: 60fps instant light/dark mode transition on mobile & PC.
+- **Dark Ambient Stealth Theme**: Executive dark aesthetic without heavy neon color tints.
+- **Zero-Scroll Auth Layout**: Compact responsive authentication card that stays fixed without page scrollbars.
 
 ---
 
@@ -122,14 +92,14 @@ Automatically calculates:
 
 | Technology | Purpose |
 |------------|---------|
-| React | Frontend |
-| React Router | Routing |
-| Firebase Authentication | User Login |
-| Cloud Firestore | Database |
-| Framer Motion | Animations |
-| Recharts | Charts & Analytics |
-| jsPDF | PDF Export |
-| html2canvas | PDF Screenshot Generation |
+| **React 19** | Frontend UI Library |
+| **Vite 7** | Fast Build Tool & Dev Server |
+| **Firebase Auth** | Google & Email Authentication |
+| **Cloud Firestore** | Real-time Database |
+| **Framer Motion** | Fluid Component Animations |
+| **Tailwind CSS** | Custom Design System & Responsive Layouts |
+| **Recharts** | Data Analytics & Charts |
+| **jsPDF & html2canvas** | PDF Report Generation |
 
 ---
 
@@ -139,251 +109,113 @@ Automatically calculates:
 src/
 │
 ├── components/
-│   ├── AttendanceOverviewChart
-│   ├── MobileNav
-│   ├── Modal
-│   ├── Navbar
-│   ├── OverallAttendanceModal
-│   ├── QuickTodayAttendance
-│   ├── ReminderScheduler
-│   ├── ThemeToggle
-│   └── NotificationPermissionModal
+│   ├── AttendanceOverviewChart.jsx
+│   ├── DynamicText.jsx
+│   ├── HoldButton.jsx
+│   ├── LoadingScreen.jsx
+│   ├── MobileNav.jsx
+│   ├── Modal.jsx
+│   ├── Navbar.jsx
+│   ├── NotificationPermissionModal.jsx
+│   ├── OverallAttendanceModal.jsx
+│   ├── QuickBackfillModal.jsx
+│   ├── QuickTodayAttendance.jsx
+│   ├── ReminderScheduler.jsx
+│   ├── ShareTimetableModal.jsx
+│   ├── SubjectCalendarModal.jsx
+│   └── ThemeToggle.jsx
 │
 ├── pages/
-│   ├── Home
-│   ├── Today
-│   ├── Calendar
-│   ├── Auth
-│   └── OnboardingSetup
+│   ├── AiTimetable.jsx
+│   ├── Auth.jsx
+│   ├── Calendar.jsx
+│   ├── Home.jsx
+│   ├── OnboardingSetup.jsx
+│   └── Today.jsx
 │
 ├── context/
-│   ├── AuthContext
-│   ├── SemesterContext
-│   └── ThemeContext
+│   ├── AuthContext.jsx
+│   ├── SemesterContext.jsx
+│   └── ThemeContext.jsx
 │
 ├── firebase/
-│   ├── config
-│   └── firestoreService
-│
-├── hooks/
-│   └── useNotificationPermission
+│   ├── config.js
+│   └── firestoreService.js
 │
 ├── store/
-│   └── attendanceStore
+│   └── attendanceStore.js
 │
-├── utils/
-│   ├── attendanceUtils
-│   └── timetableUtils
-│
-└── data/
-    └── defaultSemesters
+└── utils/
+    ├── attendanceUtils.js
+    └── timetableUtils.js
 ```
 
 ---
 
----
+# 📸 Application Screenshots
 
----
+*(Replace image paths in `./assets/` with your updated screenshots)*
 
-# 📸 Application Preview
-
-> 🎬 **Demo**
->
-> *(Demo GIF coming soon.)*
-
----
-
-## 🔐 Authentication
-
-Secure email/password and Google Sign-In using Firebase Authentication.
-
+### 🔐 Authentication & Guest Mode
 ![Authentication](./assets/authentication.png)
 
----
-
-## 🏠 Dashboard
-
-A modern dashboard with support for both **Light** and **Dark** themes.
-
-### 🌞 Light Theme
-
+### 🏠 Dashboard (Light & Dark Theme)
 ![Light Dashboard](./assets/dashboard-light.png)
-
-### 🌙 Dark Theme
-
 ![Dark Dashboard](./assets/dashboard-dark.png)
 
----
-
-## 📊 Attendance Analytics
-
-Track attendance over the last 7 days with interactive graphs showing:
-
-- Lectures conducted
-- Lectures attended
-- Overall attendance percentage
-
+### 📊 Attendance Analytics & Graph
 ![Attendance Analytics](./assets/dashboard-analytics.png)
 
----
-
-## 📚 Subject-wise Attendance
-
-Monitor every subject separately with attendance percentage, risk indicators, and detailed lecture statistics.
-
-### Theory Subjects
-
+### 📚 Subject-wise Attendance & Details
 ![Theory Attendance](./assets/theory-subjects.png)
-
-### Lab Subjects
-
 ![Lab Attendance](./assets/lab-subjects.png)
 
----
-
-## 📅 Subject Attendance History
-
-Click any subject to view its complete attendance calendar with Present, Absent, Free, Cancelled, Holiday, Exam Day, and No Data statuses.
-
+### 📅 Subject Attendance History Calendar
 ![Subject History](./assets/subject-history.png)
 
----
+### ⚡ Quick Today's Attendance
+![Quick Attendance](./assets/quick-attendance-actions.png)
 
-## ⚡ Quick Today's Attendance
-
-Quickly mark attendance for all lectures scheduled on the current day without navigating through multiple screens.
-
-Supported statuses for every scheduled lecture:
-
-- ✅ Present
-- ❌ Absent
-- 🆓 Free Lecture
-- 🚫 Cancelled Lecture
-
-This makes daily attendance updates fast and effortless while keeping subject-wise statistics accurate.
-
-![Quick Today's Attendance](./assets/quick-attendance-actions.png)
-
----
-
-## 📝 Detailed Attendance Editor
-
-Need to update attendance for a previous date or correct a missed entry?
-
-The Detailed Attendance Editor allows you to mark each scheduled lecture individually with:
-
-- ✅ Present
-- ❌ Absent
-- 🆓 Free Lecture
-- 🚫 Cancelled Lecture
-
-This makes it easy to correct attendance records or fill in days that were missed earlier.
-
-![Detailed Attendance Editor](./assets/detailed-attendance-editor.png)
-
----
-
-## 🗓 Attendance Calendar
-
-A complete semester calendar with:
-
-- Full Day
-- Partial Day
-- Absence
-- Holiday
-- Exam Day
-
-along with monthly highlights and reminders.
-
+### 🗓 Attendance Calendar & Highlights
 ![Calendar](./assets/calendar.png)
 
----
-
-## ⏰ Reminder System
-
-Create reminders for lectures, labs or important attendance events.
-
-![Reminder](./assets/reminder.png)
-
----
-
-## 📄 Monthly Attendance Report
-
-Export a printable attendance report containing:
-
-- Calendar summary
-- Overall attendance
-- Classes conducted
-- Detailed daily logs
-
+### 📄 Monthly PDF Report
 ![Monthly Report](./assets/monthly-report.png)
 
----
-
-## ⚙ Timetable Management
-
-Create and edit semester timetables with separate Theory and Lab subjects.
-
-- Add/Delete subjects
-- Weekly timetable editor
-- Drag-free scheduling
-- Multiple lectures per day
-
+### ⚙ Timetable Management & Sharing
 ![Timetable Editor](./assets/timetable-editor.png)
-
----
-
-## 📂 Subject Selection
-
-Choose any registered theory or lab subject while editing the timetable.
-
-![Subject Picker](./assets/subject-picker.png)
-
----
-
-## 👤 User Profile
-
-View account information, attendance summary, authentication provider and securely sign out.
-
-![Profile](./assets/profile.png)
 
 ---
 
 # 🚀 Getting Started
 
-### Clone the repository
-
+### 1. Clone the repository
 ```bash
 git clone https://github.com/harsh-pr/attendance-tracker.git
 ```
 
-### Navigate to the project
-
+### 2. Navigate to the project directory
 ```bash
 cd attendance-tracker
 ```
 
-### Install dependencies
-
+### 3. Install dependencies
 ```bash
 npm install
 ```
 
-### Configure Firebase
-
-Create a `.env.local` file.
-
+### 4. Configure Firebase
+Create a `.env.local` file in the root directory:
 ```env
-VITE_FIREBASE_API_KEY=your_key
-VITE_FIREBASE_AUTH_DOMAIN=your_domain
-VITE_FIREBASE_PROJECT_ID=your_project
-VITE_FIREBASE_STORAGE_BUCKET=your_bucket
+VITE_FIREBASE_API_KEY=your_api_key
+VITE_FIREBASE_AUTH_DOMAIN=your_auth_domain
+VITE_FIREBASE_PROJECT_ID=your_project_id
+VITE_FIREBASE_STORAGE_BUCKET=your_storage_bucket
 VITE_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
 VITE_FIREBASE_APP_ID=your_app_id
 ```
 
-### Start the development server
-
+### 5. Start the development server
 ```bash
 npm run dev
 ```
@@ -392,26 +224,22 @@ npm run dev
 
 # 🧹 Database Maintenance
 
-### Purge Leftover Data of Deleted Users
-
-When you delete users from the Firebase Authentication Dashboard, their Firestore documents are not deleted automatically (due to decoupling). To clean up Firestore data of deleted users, run:
+### Purge Orphan Data of Deleted Users
+When deleting users from the Firebase Authentication Dashboard, run the orphan cleanup script to automatically delete residual Firestore documents:
 
 ```bash
 npm run clean-orphans
 ```
-
-*Note: This script queries active UIDs using `serviceAccountKey.json` and recursively purges the Firestore documents and subcollections of any deleted users, keeping active data (and the default mock user) completely safe.*
 
 ---
 
 # 📱 Responsive Design
 
 Optimized for:
-
-- 💻 Desktop
-- 📱 Mobile
-- 📟 Tablet
+- 💻 **Desktop & Laptops**: Split showcase layout & static dark ambient canvas
+- 📱 **Mobile Devices**: Touch-first navigation & 60fps lag-free theme toggle
+- 📟 **Tablets**: Fluid grid scaling & responsive modals
 
 ---
 
-### ⭐ If you found this project useful, consider giving it a star on GitHub!
+### ⭐ If you found this project helpful, give it a star on GitHub!

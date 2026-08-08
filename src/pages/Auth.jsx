@@ -89,13 +89,13 @@ export default function Auth() {
   }
 
   return (
-    <div className="relative min-h-screen flex items-center justify-center px-4 py-8 sm:py-12 overflow-hidden transition-colors duration-300">
+    <div className="relative min-h-screen lg:h-screen lg:max-h-screen flex items-center justify-center px-4 py-4 sm:py-6 overflow-hidden transition-colors duration-300">
       {/* ─── GPU-ACCELERATED LAG-FREE BACKGROUND ─── */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none select-none">
         {/* Dynamic Gradient Canvas */}
         <div className="absolute inset-0 bg-gradient-to-br from-zinc-50 via-blue-50/30 to-indigo-50/50 dark:from-zinc-950 dark:via-zinc-900 dark:to-zinc-950 transition-colors duration-300" />
 
-        {/* GPU-Accelerated Hardware Blobs (CSS animated off-main-thread for zero lag) */}
+        {/* GPU-Accelerated Hardware Blobs */}
         <div className="animate-bg-float-1 transform-gpu absolute -top-24 -left-20 w-[20rem] sm:w-[36rem] h-[20rem] sm:h-[36rem] bg-gradient-to-tr from-blue-500/20 via-indigo-500/15 to-purple-500/15 dark:from-blue-600/20 dark:via-indigo-600/15 dark:to-purple-600/15 rounded-full blur-3xl sm:blur-[120px]" />
         <div className="animate-bg-float-2 transform-gpu absolute -bottom-28 -right-20 w-[20rem] sm:w-[38rem] h-[20rem] sm:h-[38rem] bg-gradient-to-tr from-indigo-500/15 via-purple-500/15 to-pink-500/10 dark:from-indigo-600/15 dark:via-purple-600/15 dark:to-blue-600/15 rounded-full blur-3xl sm:blur-[120px]" />
 
@@ -124,19 +124,19 @@ export default function Auth() {
       {/* ─── RESPONSIVE SPLIT PAGE LAYOUT (DESKTOP HERO & GLASS AUTH CARD) ─── */}
       <div className="relative z-10 w-full max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
         
-        {/* LEFT COLUMN: DESKTOP SHOWCASE HERO (Hidden or streamlined on small screens) */}
+        {/* LEFT COLUMN: DESKTOP SHOWCASE HERO */}
         <motion.div
           initial={{ opacity: 0, x: -24 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.4, ease: "easeOut" }}
-          className="lg:col-span-7 space-y-6 text-left hidden lg:block"
+          className="lg:col-span-7 space-y-5 text-left hidden lg:block"
         >
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-blue-500/10 dark:bg-blue-500/15 border border-blue-500/20 text-blue-600 dark:text-blue-400 text-xs font-black tracking-wide shadow-xs">
             <span>✨</span>
             <span>Smart College Attendance Manager</span>
           </div>
 
-          <div className="space-y-3">
+          <div className="space-y-2.5">
             <h1 className="text-4xl xl:text-5xl font-black tracking-tight text-zinc-900 dark:text-white font-[Poppins] leading-[1.15]">
               Never drop below your{" "}
               <span className="bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 dark:from-blue-400 dark:via-indigo-400 dark:to-purple-400 bg-clip-text text-transparent">
@@ -145,15 +145,15 @@ export default function Auth() {
               again.
             </h1>
             <p className="text-sm text-zinc-600 dark:text-zinc-300 font-medium max-w-xl leading-relaxed">
-              Track lecture logs, manage weekly class timetables, and monitor real-time attendance analytics with instant cloud & local sync.
+              Track lecture logs, manage weekly timetables, and monitor real-time attendance analytics.
             </p>
           </div>
 
           {/* INTERACTIVE DEMO PREVIEW CARD */}
-          <div className="p-5 rounded-3xl bg-white/70 dark:bg-zinc-900/70 border border-zinc-200/80 dark:border-zinc-800/80 shadow-xl backdrop-blur-xl space-y-4 max-w-lg">
+          <div className="p-4 sm:p-5 rounded-3xl bg-white/70 dark:bg-zinc-900/70 border border-zinc-200/80 dark:border-zinc-800/80 shadow-xl backdrop-blur-xl space-y-3.5 max-w-lg">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2.5">
-                <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-600 text-white flex items-center justify-center font-bold text-sm shadow-md">
+                <div className="w-9 h-9 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-600 text-white flex items-center justify-center font-bold text-sm shadow-md">
                   🏫
                 </div>
                 <div>
@@ -167,12 +167,12 @@ export default function Auth() {
             </div>
 
             {/* Attendance Progress Bar */}
-            <div className="space-y-1.5">
+            <div className="space-y-1">
               <div className="flex justify-between text-[11px] font-bold text-zinc-600 dark:text-zinc-400">
                 <span>Overall Attendance Progress</span>
                 <span className="text-zinc-900 dark:text-white font-extrabold">84.5%</span>
               </div>
-              <div className="w-full h-2.5 rounded-full bg-zinc-200 dark:bg-zinc-800 overflow-hidden p-0.5">
+              <div className="w-full h-2 rounded-full bg-zinc-200 dark:bg-zinc-800 overflow-hidden p-0.5">
                 <div className="h-full rounded-full bg-gradient-to-r from-blue-500 to-emerald-500 w-[84.5%] shadow-xs" />
               </div>
             </div>
@@ -199,22 +199,22 @@ export default function Auth() {
           transition={{ duration: 0.35, ease: "easeOut" }}
           className="lg:col-span-5 w-full max-w-md mx-auto"
         >
-          <div className="bg-white/80 dark:bg-zinc-900/80 border border-zinc-200/80 dark:border-zinc-800/80 shadow-[0_20px_60px_rgba(0,0,0,0.08)] dark:shadow-[0_20px_60px_rgba(0,0,0,0.45)] backdrop-blur-xl rounded-3xl p-6 sm:p-8 space-y-6">
+          <div className="bg-white/80 dark:bg-zinc-900/80 border border-zinc-200/80 dark:border-zinc-800/80 shadow-[0_20px_60px_rgba(0,0,0,0.08)] dark:shadow-[0_20px_60px_rgba(0,0,0,0.45)] backdrop-blur-xl rounded-3xl p-5 sm:p-6 space-y-4">
             {/* LOGO & HEADER */}
-            <div className="text-center space-y-2">
-              <div className="relative inline-flex items-center justify-center w-13 h-13 sm:w-14 sm:h-14 rounded-2xl bg-gradient-to-tr from-blue-600 via-indigo-600 to-purple-600 text-white font-black text-2xl shadow-lg shadow-blue-500/30">
+            <div className="text-center space-y-1.5">
+              <div className="relative inline-flex items-center justify-center w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-gradient-to-tr from-blue-600 via-indigo-600 to-purple-600 text-white font-black text-xl shadow-lg shadow-blue-500/30">
                 <span>A</span>
-                <span className="absolute -bottom-1 -right-1 w-4 h-4 bg-emerald-500 border-2 border-white dark:border-zinc-900 rounded-full" />
+                <span className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-emerald-500 border-2 border-white dark:border-zinc-900 rounded-full" />
               </div>
 
               <div>
-                <h2 className="text-2xl sm:text-3xl font-black tracking-tight text-zinc-900 dark:text-white font-[Poppins]">
+                <h2 className="text-xl sm:text-2xl font-black tracking-tight text-zinc-900 dark:text-white font-[Poppins]">
                   Attendance{" "}
                   <span className="bg-gradient-to-r from-blue-600 to-indigo-500 dark:from-blue-400 dark:to-indigo-400 bg-clip-text text-transparent">
                     Tracker
                   </span>
                 </h2>
-                <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1 font-medium">
+                <p className="text-[11px] text-zinc-500 dark:text-zinc-400 mt-0.5 font-medium">
                   Sync schedules, logs & analytics seamlessly
                 </p>
               </div>
@@ -225,7 +225,7 @@ export default function Auth() {
               <button
                 type="button"
                 onClick={() => handleSwitchTab(true)}
-                className={`relative flex-1 py-2.5 text-xs font-bold rounded-xl transition-colors cursor-pointer select-none z-10 ${
+                className={`relative flex-1 py-2 text-xs font-bold rounded-xl transition-colors cursor-pointer select-none z-10 ${
                   isLoginTab ? "text-zinc-900 dark:text-white" : "text-zinc-500 dark:text-zinc-400"
                 }`}
               >
@@ -242,7 +242,7 @@ export default function Auth() {
               <button
                 type="button"
                 onClick={() => handleSwitchTab(false)}
-                className={`relative flex-1 py-2.5 text-xs font-bold rounded-xl transition-colors cursor-pointer select-none z-10 ${
+                className={`relative flex-1 py-2 text-xs font-bold rounded-xl transition-colors cursor-pointer select-none z-10 ${
                   !isLoginTab ? "text-zinc-900 dark:text-white" : "text-zinc-500 dark:text-zinc-400"
                 }`}
               >
@@ -265,7 +265,7 @@ export default function Auth() {
                   animate={{ opacity: 1, y: 0, height: "auto" }}
                   exit={{ opacity: 0, y: -8, height: 0 }}
                   transition={{ duration: 0.2 }}
-                  className="p-3.5 rounded-2xl bg-red-500/10 dark:bg-red-950/40 border border-red-200 dark:border-red-900/60 text-xs text-red-600 dark:text-red-300 font-semibold flex items-center gap-2"
+                  className="p-3 rounded-2xl bg-red-500/10 dark:bg-red-950/40 border border-red-200 dark:border-red-900/60 text-xs text-red-600 dark:text-red-300 font-semibold flex items-center gap-2"
                 >
                   <span className="text-base shrink-0">⚠️</span>
                   <span>{errorMsg}</span>
@@ -274,7 +274,7 @@ export default function Auth() {
             </AnimatePresence>
 
             {/* FORM FIELDS */}
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-3">
               <AnimatePresence mode="wait">
                 {!isLoginTab && (
                   <motion.div
@@ -282,20 +282,20 @@ export default function Auth() {
                     animate={{ opacity: 1, height: "auto" }}
                     exit={{ opacity: 0, height: 0 }}
                     transition={{ duration: 0.2 }}
-                    className="space-y-1.5"
+                    className="space-y-1 text-left"
                   >
-                    <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 uppercase tracking-wider text-left">
+                    <label className="block text-[11px] font-bold text-zinc-700 dark:text-zinc-300 uppercase tracking-wider">
                       Full Name
                     </label>
                     <div className="relative">
-                      <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm text-zinc-400">
+                      <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-xs text-zinc-400">
                         👤
                       </span>
                       <input
                         type="text"
                         value={name}
                         onChange={(e) => setName(e.target.value)}
-                        className="w-full pl-10 pr-4 py-2.5 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white/70 dark:bg-zinc-950/70 text-zinc-900 dark:text-white text-xs font-medium focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition duration-200"
+                        className="w-full pl-9 pr-3 py-2 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white/70 dark:bg-zinc-950/70 text-zinc-900 dark:text-white text-xs font-medium focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition duration-200"
                         placeholder="John Doe"
                         required
                       />
@@ -304,38 +304,38 @@ export default function Auth() {
                 )}
               </AnimatePresence>
 
-              <div className="space-y-1.5 text-left">
-                <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 uppercase tracking-wider">
+              <div className="space-y-1 text-left">
+                <label className="block text-[11px] font-bold text-zinc-700 dark:text-zinc-300 uppercase tracking-wider">
                   Email Address
                 </label>
                 <div className="relative">
-                  <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm text-zinc-400">
+                  <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-xs text-zinc-400">
                     ✉️
                   </span>
                   <input
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2.5 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white/70 dark:bg-zinc-950/70 text-zinc-900 dark:text-white text-xs font-medium focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition duration-200"
+                    className="w-full pl-9 pr-3 py-2 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white/70 dark:bg-zinc-950/70 text-zinc-900 dark:text-white text-xs font-medium focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition duration-200"
                     placeholder="name@university.edu"
                     required
                   />
                 </div>
               </div>
 
-              <div className="space-y-1.5 text-left">
-                <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 uppercase tracking-wider">
+              <div className="space-y-1 text-left">
+                <label className="block text-[11px] font-bold text-zinc-700 dark:text-zinc-300 uppercase tracking-wider">
                   Password
                 </label>
                 <div className="relative">
-                  <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm text-zinc-400">
+                  <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-xs text-zinc-400">
                     🔒
                   </span>
                   <input
                     type={showPassword ? "text" : "password"}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="w-full pl-10 pr-10 py-2.5 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white/70 dark:bg-zinc-950/70 text-zinc-900 dark:text-white text-xs font-medium focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition duration-200"
+                    className="w-full pl-9 pr-9 py-2 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white/70 dark:bg-zinc-950/70 text-zinc-900 dark:text-white text-xs font-medium focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition duration-200"
                     placeholder="••••••••"
                     required
                   />
@@ -348,63 +348,32 @@ export default function Auth() {
                   </button>
                 </div>
 
-                {/* PASSWORD REQUIREMENTS INDICATOR */}
+                {/* ULTRA-COMPACT SINGLE-LINE PASSWORD REQUIREMENTS BADGE */}
                 {!isLoginTab && password.length > 0 && (
                   <motion.div
-                    initial={{ opacity: 0, y: -4 }}
+                    initial={{ opacity: 0, y: -2 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="p-3 rounded-2xl bg-zinc-100/70 dark:bg-zinc-950/50 border border-zinc-200/80 dark:border-zinc-800/80 text-[11px] space-y-1.5 text-zinc-600 dark:text-zinc-400"
+                    className="flex flex-wrap items-center gap-1.5 pt-1 text-[10px] font-bold"
                   >
-                    <p className="font-bold text-[10px] uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
-                      Password Safety Requirements:
-                    </p>
-                    <div className="grid grid-cols-2 gap-x-2 gap-y-1">
-                      <div
-                        className={`flex items-center gap-1.5 transition-colors ${
-                          isMinLength
-                            ? "text-emerald-600 dark:text-emerald-400 font-bold"
-                            : "text-zinc-400"
-                        }`}
-                      >
-                        <span>{isMinLength ? "✓" : "•"}</span> 8+ characters
-                      </div>
-                      <div
-                        className={`flex items-center gap-1.5 transition-colors ${
-                          hasUpper
-                            ? "text-emerald-600 dark:text-emerald-400 font-bold"
-                            : "text-zinc-400"
-                        }`}
-                      >
-                        <span>{hasUpper ? "✓" : "•"}</span> Uppercase letter
-                      </div>
-                      <div
-                        className={`flex items-center gap-1.5 transition-colors ${
-                          hasLower
-                            ? "text-emerald-600 dark:text-emerald-400 font-bold"
-                            : "text-zinc-400"
-                        }`}
-                      >
-                        <span>{hasLower ? "✓" : "•"}</span> Lowercase letter
-                      </div>
-                      <div
-                        className={`flex items-center gap-1.5 transition-colors ${
-                          hasDigit
-                            ? "text-emerald-600 dark:text-emerald-400 font-bold"
-                            : "text-zinc-400"
-                        }`}
-                      >
-                        <span>{hasDigit ? "✓" : "•"}</span> One number
-                      </div>
-                      <div
-                        className={`flex items-center gap-1.5 transition-colors ${
-                          hasSpecial
-                            ? "text-emerald-600 dark:text-emerald-400 font-bold"
-                            : "text-zinc-400"
-                        }`}
-                      >
-                        <span>{hasSpecial ? "✓" : "•"}</span> Special character
-                      </div>
-                    </div>
+                    <span className={isMinLength ? "text-emerald-500 font-extrabold" : "text-zinc-400 dark:text-zinc-500"}>
+                      {isMinLength ? "✓" : "•"} 8+ chars
+                    </span>
+                    <span className="text-zinc-300 dark:text-zinc-700">•</span>
+                    <span className={hasUpper ? "text-emerald-500 font-extrabold" : "text-zinc-400 dark:text-zinc-500"}>
+                      {hasUpper ? "✓" : "•"} Upper
+                    </span>
+                    <span className="text-zinc-300 dark:text-zinc-700">•</span>
+                    <span className={hasLower ? "text-emerald-500 font-extrabold" : "text-zinc-400 dark:text-zinc-500"}>
+                      {hasLower ? "✓" : "•"} Lower
+                    </span>
+                    <span className="text-zinc-300 dark:text-zinc-700">•</span>
+                    <span className={hasDigit ? "text-emerald-500 font-extrabold" : "text-zinc-400 dark:text-zinc-500"}>
+                      {hasDigit ? "✓" : "•"} Number
+                    </span>
+                    <span className="text-zinc-300 dark:text-zinc-700">•</span>
+                    <span className={hasSpecial ? "text-emerald-500 font-extrabold" : "text-zinc-400 dark:text-zinc-500"}>
+                      {hasSpecial ? "✓" : "•"} Symbol
+                    </span>
                   </motion.div>
                 )}
               </div>
@@ -414,7 +383,7 @@ export default function Auth() {
                 whileTap={{ scale: 0.98 }}
                 type="submit"
                 disabled={loading}
-                className="w-full py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white rounded-2xl font-bold text-xs shadow-lg shadow-blue-500/25 transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white rounded-2xl font-bold text-xs shadow-md shadow-blue-500/25 transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {loading ? (
                   <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
@@ -425,7 +394,7 @@ export default function Auth() {
             </form>
 
             {/* DIVIDER */}
-            <div className="relative my-4 flex items-center justify-center">
+            <div className="relative my-2.5 flex items-center justify-center">
               <div className="absolute inset-0 flex items-center">
                 <div className="w-full border-t border-zinc-200 dark:border-zinc-800" />
               </div>
@@ -441,7 +410,7 @@ export default function Auth() {
               type="button"
               onClick={handleGoogleSignIn}
               disabled={loading}
-              className="w-full py-2.5 flex items-center justify-center gap-3 border border-zinc-200 dark:border-zinc-800 bg-zinc-50/80 hover:bg-zinc-100 dark:bg-zinc-950/60 dark:hover:bg-zinc-800/80 text-zinc-800 dark:text-zinc-200 rounded-2xl text-xs font-bold transition-all duration-200 cursor-pointer shadow-sm disabled:opacity-50"
+              className="w-full py-2 flex items-center justify-center gap-2.5 border border-zinc-200 dark:border-zinc-800 bg-zinc-50/80 hover:bg-zinc-100 dark:bg-zinc-950/60 dark:hover:bg-zinc-800/80 text-zinc-800 dark:text-zinc-200 rounded-2xl text-xs font-bold transition-all duration-200 cursor-pointer shadow-xs disabled:opacity-50"
             >
               <svg className="w-4 h-4" viewBox="0 0 24 24">
                 <path
@@ -465,14 +434,14 @@ export default function Auth() {
             </motion.button>
 
             {/* GUEST DEMO MODE SECTION */}
-            <div className="pt-2 border-t border-zinc-200/80 dark:border-zinc-800/80 space-y-1.5 text-center">
+            <div className="pt-2 border-t border-zinc-200/80 dark:border-zinc-800/80 space-y-1 text-center">
               <motion.button
                 whileHover={{ scale: 1.01 }}
                 whileTap={{ scale: 0.98 }}
                 type="button"
                 onClick={loginAsGuest}
                 disabled={loading}
-                className="w-full py-2.5 bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 hover:from-amber-400 hover:to-orange-500 text-white rounded-2xl font-black text-xs shadow-md shadow-amber-500/20 transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+                className="w-full py-2 bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 hover:from-amber-400 hover:to-orange-500 text-white rounded-2xl font-black text-xs shadow-md shadow-amber-500/20 transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
               >
                 <span className="text-sm">🎭</span>
                 <span>Try Guest / Demo Mode</span>

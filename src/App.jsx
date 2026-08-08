@@ -80,25 +80,19 @@ function AppContent() {
       {/* Runs on every page — schedules reminder notifications globally */}
       <ReminderScheduler />
 
-      {/* PC-ONLY UNIQUE AMBIENT BACKGROUND (Strictly hidden on mobile for maximum speed) */}
+      {/* PC-ONLY UNIQUE DARK AMBIENT BACKGROUND (Pure stealth dark ambient theme) */}
       <div className="hidden lg:block pointer-events-none select-none fixed inset-0 z-0 overflow-hidden">
-        {/* Dynamic Gradient Mesh Base */}
-        <div className="absolute inset-0 bg-gradient-to-br from-slate-100 via-blue-50/60 to-indigo-100/50 dark:from-zinc-950 dark:via-slate-950 dark:to-zinc-950 transition-colors duration-500" />
+        {/* Deep Dark Ambient Base Canvas */}
+        <div className="absolute inset-0 bg-gradient-to-br from-zinc-100 via-zinc-50 to-zinc-100 dark:from-zinc-950 dark:via-zinc-900/90 dark:to-zinc-950 transition-colors duration-500" />
 
-        {/* Top-Left Blue/Indigo Neon Orb */}
-        <div className="animate-bg-float-1 transform-gpu absolute -top-20 -left-20 w-[40rem] h-[40rem] bg-gradient-to-tr from-blue-500/25 via-indigo-500/20 to-purple-500/20 dark:from-blue-600/30 dark:via-indigo-600/25 dark:to-purple-600/20 rounded-full blur-[100px]" />
+        {/* Top-Left Dark Ambient Glow */}
+        <div className="animate-bg-float-1 transform-gpu absolute -top-24 -left-20 w-[42rem] h-[42rem] bg-gradient-to-tr from-zinc-300/30 via-zinc-200/20 to-transparent dark:from-zinc-800/35 dark:via-zinc-850/25 dark:to-transparent rounded-full blur-[100px]" />
 
-        {/* Top-Right Emerald/Teal Accent Orb */}
-        <div className="animate-bg-float-2 transform-gpu absolute -top-16 -right-16 w-[36rem] h-[36rem] bg-gradient-to-tr from-emerald-500/20 via-teal-500/20 to-blue-500/15 dark:from-emerald-600/20 dark:via-teal-600/20 dark:to-blue-600/15 rounded-full blur-[100px]" />
-
-        {/* Bottom-Right Violet/Pink Orb */}
-        <div className="animate-bg-float-1 transform-gpu absolute -bottom-32 -right-20 w-[42rem] h-[42rem] bg-gradient-to-tr from-indigo-500/20 via-purple-500/20 to-pink-500/15 dark:from-indigo-600/25 dark:via-purple-600/25 dark:to-blue-600/20 rounded-full blur-[110px]" />
-
-        {/* Center Blue Glow */}
-        <div className="animate-bg-float-2 transform-gpu absolute top-1/3 left-1/3 w-[30rem] h-[30rem] bg-blue-500/15 dark:bg-blue-600/20 rounded-full blur-[120px]" />
+        {/* Bottom-Right Slate Ambient Glow */}
+        <div className="animate-bg-float-2 transform-gpu absolute -bottom-32 -right-20 w-[44rem] h-[44rem] bg-gradient-to-tr from-zinc-400/25 via-slate-300/20 to-transparent dark:from-zinc-800/35 dark:via-slate-900/25 dark:to-transparent rounded-full blur-[110px]" />
 
         {/* Geometric Grid / Dot Overlay with Radial Falloff */}
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,#8080801a_1px,transparent_1px),linear-gradient(to_bottom,#8080801a_1px,transparent_1px)] bg-[size:32px_32px] [mask-image:radial-gradient(ellipse_80%_80%_at_50%_50%,#000_70%,transparent_100%)] opacity-70 dark:opacity-40" />
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808014_1px,transparent_1px),linear-gradient(to_bottom,#80808014_1px,transparent_1px)] bg-[size:32px_32px] [mask-image:radial-gradient(ellipse_80%_80%_at_50%_50%,#000_80%,transparent_100%)] opacity-50 dark:opacity-25" />
       </div>
 
       <Navbar />

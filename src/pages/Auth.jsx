@@ -90,17 +90,17 @@ export default function Auth() {
 
   return (
     <div className="relative min-h-screen lg:h-screen lg:max-h-screen flex items-center justify-center px-4 py-4 sm:py-6 overflow-hidden transition-colors duration-300">
-      {/* ─── GPU-ACCELERATED LAG-FREE BACKGROUND ─── */}
+      {/* ─── GPU-ACCELERATED DARK AMBIENT STEALTH BACKGROUND ─── */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none select-none">
-        {/* Dynamic Gradient Canvas */}
-        <div className="absolute inset-0 bg-gradient-to-br from-zinc-50 via-blue-50/30 to-indigo-50/50 dark:from-zinc-950 dark:via-zinc-900 dark:to-zinc-950 transition-colors duration-300" />
+        {/* Deep Dark Ambient Base Canvas */}
+        <div className="absolute inset-0 bg-gradient-to-br from-zinc-50 via-zinc-100 to-zinc-50 dark:from-zinc-950 dark:via-zinc-900 dark:to-zinc-950 transition-colors duration-500" />
 
-        {/* GPU-Accelerated Hardware Blobs */}
-        <div className="animate-bg-float-1 transform-gpu absolute -top-24 -left-20 w-[20rem] sm:w-[36rem] h-[20rem] sm:h-[36rem] bg-gradient-to-tr from-blue-500/20 via-indigo-500/15 to-purple-500/15 dark:from-blue-600/20 dark:via-indigo-600/15 dark:to-purple-600/15 rounded-full blur-3xl sm:blur-[120px]" />
-        <div className="animate-bg-float-2 transform-gpu absolute -bottom-28 -right-20 w-[20rem] sm:w-[38rem] h-[20rem] sm:h-[38rem] bg-gradient-to-tr from-indigo-500/15 via-purple-500/15 to-pink-500/10 dark:from-indigo-600/15 dark:via-purple-600/15 dark:to-blue-600/15 rounded-full blur-3xl sm:blur-[120px]" />
+        {/* Dark Ambient Neutral Orbs */}
+        <div className="animate-bg-float-1 transform-gpu absolute -top-24 -left-20 w-[20rem] sm:w-[36rem] h-[20rem] sm:h-[36rem] bg-gradient-to-tr from-zinc-300/30 via-zinc-200/20 to-transparent dark:from-zinc-800/30 dark:via-zinc-850/20 dark:to-transparent rounded-full blur-3xl sm:blur-[120px]" />
+        <div className="animate-bg-float-2 transform-gpu absolute -bottom-28 -right-20 w-[20rem] sm:w-[38rem] h-[20rem] sm:h-[38rem] bg-gradient-to-tr from-zinc-400/25 via-slate-300/20 to-transparent dark:from-zinc-800/30 dark:via-slate-900/20 dark:to-transparent rounded-full blur-3xl sm:blur-[120px]" />
 
         {/* Geometric Grid / Dot Overlay */}
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px] sm:bg-[size:32px_32px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_50%,#000_70%,transparent_100%)] opacity-60 dark:opacity-30" />
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px] sm:bg-[size:32px_32px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_50%,#000_70%,transparent_100%)] opacity-50 dark:opacity-25" />
       </div>
 
       {/* TOP FLOATING THEME TOGGLE */}

@@ -437,11 +437,6 @@ export default function Navbar() {
                         </div>
 
                         <div className="flex items-center justify-between px-3 py-2 rounded-xl hover:bg-zinc-100 dark:hover:bg-zinc-800/60 transition-colors">
-                          <span className="flex items-center gap-2 font-bold">🌗 Theme Mode</span>
-                          <ThemeToggle />
-                        </div>
-
-                        <div className="flex items-center justify-between px-3 py-2 rounded-xl hover:bg-zinc-100 dark:hover:bg-zinc-800/60 transition-colors">
                           <span className="flex items-center gap-2 font-bold">⚡ Active Semester</span>
                           <select
                             value={currentSemesterId}

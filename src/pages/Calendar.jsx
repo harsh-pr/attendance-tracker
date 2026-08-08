@@ -805,12 +805,21 @@ export default function Calendar() {
 
       {/* ── HEADER ── */}
       <section className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
-        <div className="space-y-2">
-          <span className="inline-flex items-center gap-2 rounded-full border border-zinc-200 dark:border-zinc-800 bg-white/80 dark:bg-zinc-900/60 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-zinc-500 dark:text-zinc-400">
-            Attendance Calendar
-          </span>
-          <h1 className="text-3xl font-bold text-zinc-900 dark:text-zinc-100 font-[Poppins]">Your attendance, beautifully tracked</h1>
-          <p className="text-zinc-600 dark:text-zinc-400 text-sm">See full-day, partial, absent, and holiday patterns at a glance.</p>
+        <div className="space-y-1">
+          <div className="flex items-center gap-2">
+            <span className="text-[10px] font-extrabold text-blue-600 dark:text-blue-400 uppercase tracking-widest bg-blue-500/10 border border-blue-500/20 px-3 py-0.5 rounded-full shadow-xs">
+              📅 ATTENDANCE CALENDAR
+            </span>
+          </div>
+          <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-zinc-900 dark:text-white font-[Poppins]">
+            Your attendance,{" "}
+            <span className="bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500 dark:from-blue-400 dark:via-indigo-400 dark:to-purple-400 bg-clip-text text-transparent">
+              beautifully tracked
+            </span>
+          </h1>
+          <p className="text-xs sm:text-sm font-medium text-zinc-500 dark:text-zinc-400">
+            See full-day, partial, absent, and holiday patterns at a glance.
+          </p>
         </div>
         <div className="flex flex-wrap gap-2.5 sm:gap-3">
           <button type="button" onClick={() => setBackfillModalOpen(true)}

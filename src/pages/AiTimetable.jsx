@@ -669,15 +669,27 @@ export default function AiTimetable() {
       {/* HEADER */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-zinc-200 dark:border-zinc-800 pb-5">
         <div className="space-y-1 text-left">
-          <span className="text-[10px] font-extrabold text-blue-600 dark:text-blue-400 uppercase tracking-widest bg-blue-500/10 border border-blue-500/20 px-3 py-1 rounded-full">
-            {metadata.department || "COLLEGE SCHEDULE"}
-          </span>
-          <h1 className="text-3xl font-black tracking-tight mt-2 font-[Poppins] text-zinc-900 dark:text-white">
-            🏫 {metadata.semester} Timetable
+          <div className="flex items-center gap-2">
+            <span className="text-[10px] font-extrabold text-blue-600 dark:text-blue-400 uppercase tracking-widest bg-blue-500/10 border border-blue-500/20 px-3 py-0.5 rounded-full shadow-xs">
+              🏫 {metadata.department || "COLLEGE SCHEDULE"}
+            </span>
+          </div>
+          <h1 className="text-2xl sm:text-3xl font-black tracking-tight font-[Poppins] text-zinc-900 dark:text-white">
+            {metadata.semester}{" "}
+            <span className="bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500 dark:from-blue-400 dark:via-indigo-400 dark:to-purple-400 bg-clip-text text-transparent">
+              Timetable
+            </span>
           </h1>
-          <p className="text-xs text-zinc-500 dark:text-zinc-400 font-medium">
-            {metadata.classAdvisor && <span>Advisor: <span className="font-bold text-zinc-800 dark:text-zinc-200">{metadata.classAdvisor}</span> | </span>}
-            Room: <span className="font-bold text-zinc-800 dark:text-zinc-200">{metadata.roomNo || "Not set"}</span>
+          <p className="text-xs sm:text-sm text-zinc-500 dark:text-zinc-400 font-medium flex items-center gap-2 flex-wrap">
+            {metadata.classAdvisor && (
+              <span>
+                Advisor: <span className="font-bold text-zinc-800 dark:text-zinc-200">{metadata.classAdvisor}</span>
+              </span>
+            )}
+            {metadata.classAdvisor && <span className="text-zinc-400 dark:text-zinc-600">•</span>}
+            <span>
+              Room: <span className="font-bold text-zinc-800 dark:text-zinc-200">{metadata.roomNo || "Not set"}</span>
+            </span>
           </p>
         </div>
 

@@ -89,10 +89,78 @@ export default function Auth() {
   }
 
   return (
-    <div className="relative min-h-screen flex items-center justify-center bg-zinc-50 dark:bg-zinc-950 px-4 py-12 overflow-hidden transition-colors duration-300">
-      {/* AMBIENT BACKGROUND GLOW BLOBS */}
-      <div className="absolute top-1/4 -left-32 w-96 h-96 bg-blue-500/20 dark:bg-blue-600/15 rounded-full blur-[120px] pointer-events-none" />
-      <div className="absolute bottom-1/4 -right-32 w-96 h-96 bg-indigo-500/20 dark:bg-indigo-600/15 rounded-full blur-[120px] pointer-events-none" />
+    <div className="relative min-h-screen flex items-center justify-center px-4 py-12 overflow-hidden transition-colors duration-500">
+      {/* ─── STUNNING RESPONSIVE ANIMATED BACKGROUND ─── */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none select-none">
+        {/* Dynamic Gradient Mesh Canvas */}
+        <div className="absolute inset-0 bg-gradient-to-br from-zinc-50 via-blue-50/40 to-indigo-50/60 dark:from-zinc-950 dark:via-zinc-900 dark:to-zinc-950 transition-colors duration-500" />
+
+        {/* Dynamic Animated Gradient Blobs */}
+        <motion.div
+          animate={{
+            x: [0, 30, -20, 0],
+            y: [0, -40, 20, 0],
+            scale: [1, 1.1, 0.95, 1],
+          }}
+          transition={{ duration: 18, repeat: Infinity, ease: "easeInOut" }}
+          className="absolute -top-24 -left-20 w-[24rem] sm:w-[36rem] h-[24rem] sm:h-[36rem] bg-gradient-to-tr from-blue-500/25 via-indigo-500/20 to-purple-500/20 dark:from-blue-600/20 dark:via-indigo-600/20 dark:to-purple-600/15 rounded-full blur-[100px] sm:blur-[140px]"
+        />
+
+        <motion.div
+          animate={{
+            x: [0, -35, 25, 0],
+            y: [0, 35, -30, 0],
+            scale: [1, 0.9, 1.1, 1],
+          }}
+          transition={{ duration: 22, repeat: Infinity, ease: "easeInOut" }}
+          className="absolute -bottom-28 -right-20 w-[24rem] sm:w-[38rem] h-[24rem] sm:h-[38rem] bg-gradient-to-tr from-indigo-500/20 via-purple-500/20 to-pink-500/15 dark:from-indigo-600/20 dark:via-purple-600/20 dark:to-blue-600/15 rounded-full blur-[100px] sm:blur-[140px]"
+        />
+
+        <motion.div
+          animate={{
+            x: [0, 25, -25, 0],
+            y: [0, -25, 25, 0],
+          }}
+          transition={{ duration: 15, repeat: Infinity, ease: "easeInOut" }}
+          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[20rem] sm:w-[30rem] h-[20rem] sm:h-[30rem] bg-blue-400/15 dark:bg-blue-500/10 rounded-full blur-[90px] sm:blur-[120px]"
+        />
+
+        {/* Geometric Grid / Dot Overlay */}
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px] sm:bg-[size:32px_32px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_50%,#000_70%,transparent_100%)] opacity-70 dark:opacity-40" />
+
+        {/* Ambient Floating Feature Badges */}
+        <motion.div
+          animate={{ y: [0, -12, 0], rotate: [0, 4, 0] }}
+          transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+          className="hidden sm:flex absolute top-16 left-12 md:left-24 items-center gap-2 px-3.5 py-2 rounded-2xl bg-white/70 dark:bg-zinc-900/70 border border-zinc-200/60 dark:border-zinc-800/60 shadow-xl backdrop-blur-md text-xs font-extrabold text-zinc-700 dark:text-zinc-300"
+        >
+          <span>📊</span> Live Attendance Sync
+        </motion.div>
+
+        <motion.div
+          animate={{ y: [0, 14, 0], rotate: [0, -4, 0] }}
+          transition={{ duration: 7, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+          className="hidden sm:flex absolute top-28 right-12 md:right-24 items-center gap-2 px-3.5 py-2 rounded-2xl bg-white/70 dark:bg-zinc-900/70 border border-zinc-200/60 dark:border-zinc-800/60 shadow-xl backdrop-blur-md text-xs font-extrabold text-zinc-700 dark:text-zinc-300"
+        >
+          <span>📅</span> Smart Timetable Grid
+        </motion.div>
+
+        <motion.div
+          animate={{ y: [0, -10, 0], rotate: [0, -3, 0] }}
+          transition={{ duration: 5.5, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
+          className="hidden md:flex absolute bottom-20 left-16 md:left-28 items-center gap-2 px-3.5 py-2 rounded-2xl bg-white/70 dark:bg-zinc-900/70 border border-zinc-200/60 dark:border-zinc-800/60 shadow-xl backdrop-blur-md text-xs font-extrabold text-zinc-700 dark:text-zinc-300"
+        >
+          <span>⚡</span> Analytics & Alerts
+        </motion.div>
+
+        <motion.div
+          animate={{ y: [0, 12, 0], rotate: [0, 3, 0] }}
+          transition={{ duration: 6.5, repeat: Infinity, ease: "easeInOut", delay: 1.5 }}
+          className="hidden md:flex absolute bottom-24 right-16 md:right-28 items-center gap-2 px-3.5 py-2 rounded-2xl bg-white/70 dark:bg-zinc-900/70 border border-zinc-200/60 dark:border-zinc-800/60 shadow-xl backdrop-blur-md text-xs font-extrabold text-zinc-700 dark:text-zinc-300"
+        >
+          <span>🎭</span> Instant Guest Demo Mode
+        </motion.div>
+      </div>
 
       {/* TOP FLOATING THEME TOGGLE */}
       <div className="absolute top-6 right-6 z-20">

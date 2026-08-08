@@ -89,85 +89,26 @@ export default function Auth() {
   }
 
   return (
-    <div className="relative min-h-screen flex items-center justify-center px-4 py-12 overflow-hidden transition-colors duration-500">
-      {/* ─── STUNNING RESPONSIVE ANIMATED BACKGROUND ─── */}
+    <div className="relative min-h-screen flex items-center justify-center px-4 py-8 sm:py-12 overflow-hidden transition-colors duration-300">
+      {/* ─── GPU-ACCELERATED LAG-FREE BACKGROUND ─── */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none select-none">
-        {/* Dynamic Gradient Mesh Canvas */}
-        <div className="absolute inset-0 bg-gradient-to-br from-zinc-50 via-blue-50/40 to-indigo-50/60 dark:from-zinc-950 dark:via-zinc-900 dark:to-zinc-950 transition-colors duration-500" />
+        {/* Dynamic Gradient Canvas */}
+        <div className="absolute inset-0 bg-gradient-to-br from-zinc-50 via-blue-50/30 to-indigo-50/50 dark:from-zinc-950 dark:via-zinc-900 dark:to-zinc-950 transition-colors duration-300" />
 
-        {/* Dynamic Animated Gradient Blobs */}
-        <motion.div
-          animate={{
-            x: [0, 30, -20, 0],
-            y: [0, -40, 20, 0],
-            scale: [1, 1.1, 0.95, 1],
-          }}
-          transition={{ duration: 18, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute -top-24 -left-20 w-[24rem] sm:w-[36rem] h-[24rem] sm:h-[36rem] bg-gradient-to-tr from-blue-500/25 via-indigo-500/20 to-purple-500/20 dark:from-blue-600/20 dark:via-indigo-600/20 dark:to-purple-600/15 rounded-full blur-[100px] sm:blur-[140px]"
-        />
-
-        <motion.div
-          animate={{
-            x: [0, -35, 25, 0],
-            y: [0, 35, -30, 0],
-            scale: [1, 0.9, 1.1, 1],
-          }}
-          transition={{ duration: 22, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute -bottom-28 -right-20 w-[24rem] sm:w-[38rem] h-[24rem] sm:h-[38rem] bg-gradient-to-tr from-indigo-500/20 via-purple-500/20 to-pink-500/15 dark:from-indigo-600/20 dark:via-purple-600/20 dark:to-blue-600/15 rounded-full blur-[100px] sm:blur-[140px]"
-        />
-
-        <motion.div
-          animate={{
-            x: [0, 25, -25, 0],
-            y: [0, -25, 25, 0],
-          }}
-          transition={{ duration: 15, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[20rem] sm:w-[30rem] h-[20rem] sm:h-[30rem] bg-blue-400/15 dark:bg-blue-500/10 rounded-full blur-[90px] sm:blur-[120px]"
-        />
+        {/* GPU-Accelerated Hardware Blobs (CSS animated off-main-thread for zero lag) */}
+        <div className="animate-bg-float-1 transform-gpu absolute -top-24 -left-20 w-[20rem] sm:w-[36rem] h-[20rem] sm:h-[36rem] bg-gradient-to-tr from-blue-500/20 via-indigo-500/15 to-purple-500/15 dark:from-blue-600/20 dark:via-indigo-600/15 dark:to-purple-600/15 rounded-full blur-3xl sm:blur-[120px]" />
+        <div className="animate-bg-float-2 transform-gpu absolute -bottom-28 -right-20 w-[20rem] sm:w-[38rem] h-[20rem] sm:h-[38rem] bg-gradient-to-tr from-indigo-500/15 via-purple-500/15 to-pink-500/10 dark:from-indigo-600/15 dark:via-purple-600/15 dark:to-blue-600/15 rounded-full blur-3xl sm:blur-[120px]" />
 
         {/* Geometric Grid / Dot Overlay */}
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px] sm:bg-[size:32px_32px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_50%,#000_70%,transparent_100%)] opacity-70 dark:opacity-40" />
-
-        {/* Ambient Floating Feature Badges */}
-        <motion.div
-          animate={{ y: [0, -12, 0], rotate: [0, 4, 0] }}
-          transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-          className="hidden sm:flex absolute top-16 left-12 md:left-24 items-center gap-2 px-3.5 py-2 rounded-2xl bg-white/70 dark:bg-zinc-900/70 border border-zinc-200/60 dark:border-zinc-800/60 shadow-xl backdrop-blur-md text-xs font-extrabold text-zinc-700 dark:text-zinc-300"
-        >
-          <span>📊</span> Live Attendance Sync
-        </motion.div>
-
-        <motion.div
-          animate={{ y: [0, 14, 0], rotate: [0, -4, 0] }}
-          transition={{ duration: 7, repeat: Infinity, ease: "easeInOut", delay: 1 }}
-          className="hidden sm:flex absolute top-28 right-12 md:right-24 items-center gap-2 px-3.5 py-2 rounded-2xl bg-white/70 dark:bg-zinc-900/70 border border-zinc-200/60 dark:border-zinc-800/60 shadow-xl backdrop-blur-md text-xs font-extrabold text-zinc-700 dark:text-zinc-300"
-        >
-          <span>📅</span> Smart Timetable Grid
-        </motion.div>
-
-        <motion.div
-          animate={{ y: [0, -10, 0], rotate: [0, -3, 0] }}
-          transition={{ duration: 5.5, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
-          className="hidden md:flex absolute bottom-20 left-16 md:left-28 items-center gap-2 px-3.5 py-2 rounded-2xl bg-white/70 dark:bg-zinc-900/70 border border-zinc-200/60 dark:border-zinc-800/60 shadow-xl backdrop-blur-md text-xs font-extrabold text-zinc-700 dark:text-zinc-300"
-        >
-          <span>⚡</span> Analytics & Alerts
-        </motion.div>
-
-        <motion.div
-          animate={{ y: [0, 12, 0], rotate: [0, 3, 0] }}
-          transition={{ duration: 6.5, repeat: Infinity, ease: "easeInOut", delay: 1.5 }}
-          className="hidden md:flex absolute bottom-24 right-16 md:right-28 items-center gap-2 px-3.5 py-2 rounded-2xl bg-white/70 dark:bg-zinc-900/70 border border-zinc-200/60 dark:border-zinc-800/60 shadow-xl backdrop-blur-md text-xs font-extrabold text-zinc-700 dark:text-zinc-300"
-        >
-          <span>🎭</span> Instant Guest Demo Mode
-        </motion.div>
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px] sm:bg-[size:32px_32px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_50%,#000_70%,transparent_100%)] opacity-60 dark:opacity-30" />
       </div>
 
       {/* TOP FLOATING THEME TOGGLE */}
-      <div className="absolute top-6 right-6 z-20">
+      <div className="absolute top-4 sm:top-6 right-4 sm:right-6 z-30">
         <motion.button
           whileTap={{ scale: 0.9 }}
           onClick={toggleTheme}
-          className="flex relative w-12 h-6 rounded-full bg-zinc-200 dark:bg-zinc-800 transition-colors duration-300 cursor-pointer items-center p-0.5 border border-zinc-300 dark:border-zinc-700 shadow-sm"
+          className="flex relative w-12 h-6 rounded-full bg-zinc-200/90 dark:bg-zinc-800/90 transition-colors duration-200 cursor-pointer items-center p-0.5 border border-zinc-300/80 dark:border-zinc-700/80 shadow-sm backdrop-blur-md"
           aria-label="Toggle theme"
         >
           <motion.span
@@ -180,296 +121,371 @@ export default function Auth() {
         </motion.button>
       </div>
 
-      {/* KOKONUT UI MAIN GLASS CARD */}
-      <motion.div
-        initial={{ opacity: 0, y: 24, scale: 0.96 }}
-        animate={{ opacity: 1, y: 0, scale: 1 }}
-        transition={{ duration: 0.35, ease: "easeOut" }}
-        className="relative z-10 w-full max-w-md bg-white/80 dark:bg-zinc-900/80 border border-zinc-200/80 dark:border-zinc-800/80 shadow-[0_20px_60px_rgba(0,0,0,0.08)] dark:shadow-[0_20px_60px_rgba(0,0,0,0.45)] backdrop-blur-2xl rounded-3xl p-6 sm:p-8 space-y-6"
-      >
-        {/* LOGO & HEADER */}
-        <div className="text-center space-y-2">
-          <div className="relative inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-tr from-blue-600 via-indigo-600 to-purple-600 text-white font-black text-2xl shadow-lg shadow-blue-500/30">
-            <span>A</span>
-            <span className="absolute -bottom-1 -right-1 w-4 h-4 bg-emerald-500 border-2 border-white dark:border-zinc-900 rounded-full" />
+      {/* ─── RESPONSIVE SPLIT PAGE LAYOUT (DESKTOP HERO & GLASS AUTH CARD) ─── */}
+      <div className="relative z-10 w-full max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
+        
+        {/* LEFT COLUMN: DESKTOP SHOWCASE HERO (Hidden or streamlined on small screens) */}
+        <motion.div
+          initial={{ opacity: 0, x: -24 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.4, ease: "easeOut" }}
+          className="lg:col-span-7 space-y-6 text-left hidden lg:block"
+        >
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-blue-500/10 dark:bg-blue-500/15 border border-blue-500/20 text-blue-600 dark:text-blue-400 text-xs font-black tracking-wide shadow-xs">
+            <span>✨</span>
+            <span>Smart College Attendance Manager</span>
           </div>
 
-          <div>
-            <h2 className="text-2xl sm:text-3xl font-black tracking-tight text-zinc-900 dark:text-white font-[Poppins]">
-              Attendance{" "}
-              <span className="bg-gradient-to-r from-blue-600 to-indigo-500 dark:from-blue-400 dark:to-indigo-400 bg-clip-text text-transparent">
-                Tracker
-              </span>
-            </h2>
-            <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1 font-medium">
-              Sync your schedules, logs, and analytics seamlessly
+          <div className="space-y-3">
+            <h1 className="text-4xl xl:text-5xl font-black tracking-tight text-zinc-900 dark:text-white font-[Poppins] leading-[1.15]">
+              Never drop below your{" "}
+              <span className="bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 dark:from-blue-400 dark:via-indigo-400 dark:to-purple-400 bg-clip-text text-transparent">
+                75% criterion
+              </span>{" "}
+              again.
+            </h1>
+            <p className="text-sm text-zinc-600 dark:text-zinc-300 font-medium max-w-xl leading-relaxed">
+              Track lecture logs, manage weekly class timetables, and monitor real-time attendance analytics with instant cloud & local sync.
             </p>
           </div>
-        </div>
 
-        {/* KOKONUT MORPHIC TAB SWITCHER */}
-        <div className="relative flex p-1 rounded-2xl bg-zinc-100 dark:bg-zinc-800/60 border border-zinc-200/60 dark:border-zinc-700/50">
-          <button
-            type="button"
-            onClick={() => handleSwitchTab(true)}
-            className={`relative flex-1 py-2.5 text-xs font-bold rounded-xl transition-colors cursor-pointer select-none z-10 ${
-              isLoginTab ? "text-zinc-900 dark:text-white" : "text-zinc-500 dark:text-zinc-400"
-            }`}
-          >
-            {isLoginTab && (
-              <motion.div
-                layoutId="auth-tab-pill"
-                transition={{ type: "spring", stiffness: 400, damping: 30 }}
-                className="absolute inset-0 bg-white dark:bg-zinc-800 rounded-xl shadow-sm border border-zinc-200/80 dark:border-zinc-700/60"
-              />
-            )}
-            <span className="relative z-10">Sign In</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => handleSwitchTab(false)}
-            className={`relative flex-1 py-2.5 text-xs font-bold rounded-xl transition-colors cursor-pointer select-none z-10 ${
-              !isLoginTab ? "text-zinc-900 dark:text-white" : "text-zinc-500 dark:text-zinc-400"
-            }`}
-          >
-            {!isLoginTab && (
-              <motion.div
-                layoutId="auth-tab-pill"
-                transition={{ type: "spring", stiffness: 400, damping: 30 }}
-                className="absolute inset-0 bg-white dark:bg-zinc-800 rounded-xl shadow-sm border border-zinc-200/80 dark:border-zinc-700/60"
-              />
-            )}
-            <span className="relative z-10">Sign Up</span>
-          </button>
-        </div>
-
-        {/* ERROR CALLOUT */}
-        <AnimatePresence mode="wait">
-          {errorMsg && (
-            <motion.div
-              initial={{ opacity: 0, y: -8, height: 0 }}
-              animate={{ opacity: 1, y: 0, height: "auto" }}
-              exit={{ opacity: 0, y: -8, height: 0 }}
-              transition={{ duration: 0.2 }}
-              className="p-3.5 rounded-2xl bg-red-500/10 dark:bg-red-950/40 border border-red-200 dark:border-red-900/60 text-xs text-red-600 dark:text-red-300 font-semibold flex items-center gap-2"
-            >
-              <span className="text-base shrink-0">⚠️</span>
-              <span>{errorMsg}</span>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        {/* FORM FIELDS */}
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <AnimatePresence mode="wait">
-            {!isLoginTab && (
-              <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: "auto" }}
-                exit={{ opacity: 0, height: 0 }}
-                transition={{ duration: 0.2 }}
-                className="space-y-1.5"
-              >
-                <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 uppercase tracking-wider">
-                  Full Name
-                </label>
-                <div className="relative">
-                  <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm text-zinc-400">
-                    👤
-                  </span>
-                  <input
-                    type="text"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2.5 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white/70 dark:bg-zinc-950/70 text-zinc-900 dark:text-white text-xs font-medium focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition duration-200"
-                    placeholder="John Doe"
-                    required
-                  />
+          {/* INTERACTIVE DEMO PREVIEW CARD */}
+          <div className="p-5 rounded-3xl bg-white/70 dark:bg-zinc-900/70 border border-zinc-200/80 dark:border-zinc-800/80 shadow-xl backdrop-blur-xl space-y-4 max-w-lg">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-600 text-white flex items-center justify-center font-bold text-sm shadow-md">
+                  🏫
                 </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-
-          <div className="space-y-1.5">
-            <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 uppercase tracking-wider">
-              Email Address
-            </label>
-            <div className="relative">
-              <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm text-zinc-400">
-                ✉️
+                <div>
+                  <h4 className="text-xs font-black text-zinc-900 dark:text-white">Semester III (SEIT Div-B)</h4>
+                  <p className="text-[11px] text-zinc-500 dark:text-zinc-400 font-semibold">Information Technology</p>
+                </div>
+              </div>
+              <span className="px-3 py-1 rounded-full text-xs font-black bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+                84.5% Safe Zone ✅
               </span>
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full pl-10 pr-4 py-2.5 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white/70 dark:bg-zinc-950/70 text-zinc-900 dark:text-white text-xs font-medium focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition duration-200"
-                placeholder="name@university.edu"
-                required
-              />
+            </div>
+
+            {/* Attendance Progress Bar */}
+            <div className="space-y-1.5">
+              <div className="flex justify-between text-[11px] font-bold text-zinc-600 dark:text-zinc-400">
+                <span>Overall Attendance Progress</span>
+                <span className="text-zinc-900 dark:text-white font-extrabold">84.5%</span>
+              </div>
+              <div className="w-full h-2.5 rounded-full bg-zinc-200 dark:bg-zinc-800 overflow-hidden p-0.5">
+                <div className="h-full rounded-full bg-gradient-to-r from-blue-500 to-emerald-500 w-[84.5%] shadow-xs" />
+              </div>
+            </div>
+
+            {/* Feature Highlights Pills */}
+            <div className="grid grid-cols-3 gap-2 pt-2 border-t border-zinc-200/60 dark:border-zinc-800/60 text-[11px] font-bold">
+              <div className="p-2 rounded-xl bg-zinc-100/80 dark:bg-zinc-800/50 text-zinc-700 dark:text-zinc-300 flex items-center gap-1.5">
+                <span>⚡</span> Auto Math
+              </div>
+              <div className="p-2 rounded-xl bg-zinc-100/80 dark:bg-zinc-800/50 text-zinc-700 dark:text-zinc-300 flex items-center gap-1.5">
+                <span>📅</span> Class Sync
+              </div>
+              <div className="p-2 rounded-xl bg-zinc-100/80 dark:bg-zinc-800/50 text-zinc-700 dark:text-zinc-300 flex items-center gap-1.5">
+                <span>🔒</span> Safe & Cloud
+              </div>
             </div>
           </div>
+        </motion.div>
 
-          <div className="space-y-1.5">
-            <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 uppercase tracking-wider">
-              Password
-            </label>
-            <div className="relative">
-              <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm text-zinc-400">
-                🔒
-              </span>
-              <input
-                type={showPassword ? "text" : "password"}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full pl-10 pr-10 py-2.5 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white/70 dark:bg-zinc-950/70 text-zinc-900 dark:text-white text-xs font-medium focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition duration-200"
-                placeholder="••••••••"
-                required
-              />
+        {/* RIGHT COLUMN: KOKONUT GLASS AUTH CARD */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.35, ease: "easeOut" }}
+          className="lg:col-span-5 w-full max-w-md mx-auto"
+        >
+          <div className="bg-white/80 dark:bg-zinc-900/80 border border-zinc-200/80 dark:border-zinc-800/80 shadow-[0_20px_60px_rgba(0,0,0,0.08)] dark:shadow-[0_20px_60px_rgba(0,0,0,0.45)] backdrop-blur-xl rounded-3xl p-6 sm:p-8 space-y-6">
+            {/* LOGO & HEADER */}
+            <div className="text-center space-y-2">
+              <div className="relative inline-flex items-center justify-center w-13 h-13 sm:w-14 sm:h-14 rounded-2xl bg-gradient-to-tr from-blue-600 via-indigo-600 to-purple-600 text-white font-black text-2xl shadow-lg shadow-blue-500/30">
+                <span>A</span>
+                <span className="absolute -bottom-1 -right-1 w-4 h-4 bg-emerald-500 border-2 border-white dark:border-zinc-900 rounded-full" />
+              </div>
+
+              <div>
+                <h2 className="text-2xl sm:text-3xl font-black tracking-tight text-zinc-900 dark:text-white font-[Poppins]">
+                  Attendance{" "}
+                  <span className="bg-gradient-to-r from-blue-600 to-indigo-500 dark:from-blue-400 dark:to-indigo-400 bg-clip-text text-transparent">
+                    Tracker
+                  </span>
+                </h2>
+                <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1 font-medium">
+                  Sync schedules, logs & analytics seamlessly
+                </p>
+              </div>
+            </div>
+
+            {/* MORPHIC TAB SWITCHER */}
+            <div className="relative flex p-1 rounded-2xl bg-zinc-100 dark:bg-zinc-800/60 border border-zinc-200/60 dark:border-zinc-700/50">
               <button
                 type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 transition"
+                onClick={() => handleSwitchTab(true)}
+                className={`relative flex-1 py-2.5 text-xs font-bold rounded-xl transition-colors cursor-pointer select-none z-10 ${
+                  isLoginTab ? "text-zinc-900 dark:text-white" : "text-zinc-500 dark:text-zinc-400"
+                }`}
               >
-                {showPassword ? "🙈" : "👁️"}
+                {isLoginTab && (
+                  <motion.div
+                    layoutId="auth-tab-pill"
+                    transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                    className="absolute inset-0 bg-white dark:bg-zinc-800 rounded-xl shadow-sm border border-zinc-200/80 dark:border-zinc-700/60"
+                  />
+                )}
+                <span className="relative z-10">Sign In</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => handleSwitchTab(false)}
+                className={`relative flex-1 py-2.5 text-xs font-bold rounded-xl transition-colors cursor-pointer select-none z-10 ${
+                  !isLoginTab ? "text-zinc-900 dark:text-white" : "text-zinc-500 dark:text-zinc-400"
+                }`}
+              >
+                {!isLoginTab && (
+                  <motion.div
+                    layoutId="auth-tab-pill"
+                    transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                    className="absolute inset-0 bg-white dark:bg-zinc-800 rounded-xl shadow-sm border border-zinc-200/80 dark:border-zinc-700/60"
+                  />
+                )}
+                <span className="relative z-10">Sign Up</span>
               </button>
             </div>
 
-            {/* PASSWORD REQUIREMENTS INDICATOR */}
-            {!isLoginTab && password.length > 0 && (
-              <motion.div
-                initial={{ opacity: 0, y: -4 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="p-3 rounded-2xl bg-zinc-100/70 dark:bg-zinc-950/50 border border-zinc-200/80 dark:border-zinc-800/80 text-[11px] space-y-1.5 text-zinc-600 dark:text-zinc-400"
-              >
-                <p className="font-bold text-[10px] uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
-                  Password Safety Requirements:
-                </p>
-                <div className="grid grid-cols-2 gap-x-2 gap-y-1">
-                  <div
-                    className={`flex items-center gap-1.5 transition-colors ${
-                      isMinLength
-                        ? "text-emerald-600 dark:text-emerald-400 font-bold"
-                        : "text-zinc-400"
-                    }`}
+            {/* ERROR CALLOUT */}
+            <AnimatePresence mode="wait">
+              {errorMsg && (
+                <motion.div
+                  initial={{ opacity: 0, y: -8, height: 0 }}
+                  animate={{ opacity: 1, y: 0, height: "auto" }}
+                  exit={{ opacity: 0, y: -8, height: 0 }}
+                  transition={{ duration: 0.2 }}
+                  className="p-3.5 rounded-2xl bg-red-500/10 dark:bg-red-950/40 border border-red-200 dark:border-red-900/60 text-xs text-red-600 dark:text-red-300 font-semibold flex items-center gap-2"
+                >
+                  <span className="text-base shrink-0">⚠️</span>
+                  <span>{errorMsg}</span>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {/* FORM FIELDS */}
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <AnimatePresence mode="wait">
+                {!isLoginTab && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: "auto" }}
+                    exit={{ opacity: 0, height: 0 }}
+                    transition={{ duration: 0.2 }}
+                    className="space-y-1.5"
                   >
-                    <span>{isMinLength ? "✓" : "•"}</span> 8+ characters
-                  </div>
-                  <div
-                    className={`flex items-center gap-1.5 transition-colors ${
-                      hasUpper
-                        ? "text-emerald-600 dark:text-emerald-400 font-bold"
-                        : "text-zinc-400"
-                    }`}
-                  >
-                    <span>{hasUpper ? "✓" : "•"}</span> Uppercase letter
-                  </div>
-                  <div
-                    className={`flex items-center gap-1.5 transition-colors ${
-                      hasLower
-                        ? "text-emerald-600 dark:text-emerald-400 font-bold"
-                        : "text-zinc-400"
-                    }`}
-                  >
-                    <span>{hasLower ? "✓" : "•"}</span> Lowercase letter
-                  </div>
-                  <div
-                    className={`flex items-center gap-1.5 transition-colors ${
-                      hasDigit
-                        ? "text-emerald-600 dark:text-emerald-400 font-bold"
-                        : "text-zinc-400"
-                    }`}
-                  >
-                    <span>{hasDigit ? "✓" : "•"}</span> One number
-                  </div>
-                  <div
-                    className={`flex items-center gap-1.5 transition-colors ${
-                      hasSpecial
-                        ? "text-emerald-600 dark:text-emerald-400 font-bold"
-                        : "text-zinc-400"
-                    }`}
-                  >
-                    <span>{hasSpecial ? "✓" : "•"}</span> Special character
-                  </div>
+                    <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 uppercase tracking-wider text-left">
+                      Full Name
+                    </label>
+                    <div className="relative">
+                      <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm text-zinc-400">
+                        👤
+                      </span>
+                      <input
+                        type="text"
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
+                        className="w-full pl-10 pr-4 py-2.5 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white/70 dark:bg-zinc-950/70 text-zinc-900 dark:text-white text-xs font-medium focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition duration-200"
+                        placeholder="John Doe"
+                        required
+                      />
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              <div className="space-y-1.5 text-left">
+                <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 uppercase tracking-wider">
+                  Email Address
+                </label>
+                <div className="relative">
+                  <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm text-zinc-400">
+                    ✉️
+                  </span>
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="w-full pl-10 pr-4 py-2.5 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white/70 dark:bg-zinc-950/70 text-zinc-900 dark:text-white text-xs font-medium focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition duration-200"
+                    placeholder="name@university.edu"
+                    required
+                  />
                 </div>
-              </motion.div>
-            )}
+              </div>
+
+              <div className="space-y-1.5 text-left">
+                <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 uppercase tracking-wider">
+                  Password
+                </label>
+                <div className="relative">
+                  <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm text-zinc-400">
+                    🔒
+                  </span>
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="w-full pl-10 pr-10 py-2.5 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white/70 dark:bg-zinc-950/70 text-zinc-900 dark:text-white text-xs font-medium focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition duration-200"
+                    placeholder="••••••••"
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 transition"
+                  >
+                    {showPassword ? "🙈" : "👁️"}
+                  </button>
+                </div>
+
+                {/* PASSWORD REQUIREMENTS INDICATOR */}
+                {!isLoginTab && password.length > 0 && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -4 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="p-3 rounded-2xl bg-zinc-100/70 dark:bg-zinc-950/50 border border-zinc-200/80 dark:border-zinc-800/80 text-[11px] space-y-1.5 text-zinc-600 dark:text-zinc-400"
+                  >
+                    <p className="font-bold text-[10px] uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+                      Password Safety Requirements:
+                    </p>
+                    <div className="grid grid-cols-2 gap-x-2 gap-y-1">
+                      <div
+                        className={`flex items-center gap-1.5 transition-colors ${
+                          isMinLength
+                            ? "text-emerald-600 dark:text-emerald-400 font-bold"
+                            : "text-zinc-400"
+                        }`}
+                      >
+                        <span>{isMinLength ? "✓" : "•"}</span> 8+ characters
+                      </div>
+                      <div
+                        className={`flex items-center gap-1.5 transition-colors ${
+                          hasUpper
+                            ? "text-emerald-600 dark:text-emerald-400 font-bold"
+                            : "text-zinc-400"
+                        }`}
+                      >
+                        <span>{hasUpper ? "✓" : "•"}</span> Uppercase letter
+                      </div>
+                      <div
+                        className={`flex items-center gap-1.5 transition-colors ${
+                          hasLower
+                            ? "text-emerald-600 dark:text-emerald-400 font-bold"
+                            : "text-zinc-400"
+                        }`}
+                      >
+                        <span>{hasLower ? "✓" : "•"}</span> Lowercase letter
+                      </div>
+                      <div
+                        className={`flex items-center gap-1.5 transition-colors ${
+                          hasDigit
+                            ? "text-emerald-600 dark:text-emerald-400 font-bold"
+                            : "text-zinc-400"
+                        }`}
+                      >
+                        <span>{hasDigit ? "✓" : "•"}</span> One number
+                      </div>
+                      <div
+                        className={`flex items-center gap-1.5 transition-colors ${
+                          hasSpecial
+                            ? "text-emerald-600 dark:text-emerald-400 font-bold"
+                            : "text-zinc-400"
+                        }`}
+                      >
+                        <span>{hasSpecial ? "✓" : "•"}</span> Special character
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+              </div>
+
+              <motion.button
+                whileHover={{ scale: 1.01 }}
+                whileTap={{ scale: 0.98 }}
+                type="submit"
+                disabled={loading}
+                className="w-full py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white rounded-2xl font-bold text-xs shadow-lg shadow-blue-500/25 transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {loading ? (
+                  <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                ) : (
+                  <span>{isLoginTab ? "Sign In to Dashboard" : "Create My Account"}</span>
+                )}
+              </motion.button>
+            </form>
+
+            {/* DIVIDER */}
+            <div className="relative my-4 flex items-center justify-center">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-zinc-200 dark:border-zinc-800" />
+              </div>
+              <span className="relative px-3 bg-white dark:bg-zinc-900 text-[10px] font-bold text-zinc-400 uppercase tracking-widest">
+                Or Continue With
+              </span>
+            </div>
+
+            {/* GOOGLE SIGN-IN BUTTON */}
+            <motion.button
+              whileHover={{ scale: 1.01 }}
+              whileTap={{ scale: 0.98 }}
+              type="button"
+              onClick={handleGoogleSignIn}
+              disabled={loading}
+              className="w-full py-2.5 flex items-center justify-center gap-3 border border-zinc-200 dark:border-zinc-800 bg-zinc-50/80 hover:bg-zinc-100 dark:bg-zinc-950/60 dark:hover:bg-zinc-800/80 text-zinc-800 dark:text-zinc-200 rounded-2xl text-xs font-bold transition-all duration-200 cursor-pointer shadow-sm disabled:opacity-50"
+            >
+              <svg className="w-4 h-4" viewBox="0 0 24 24">
+                <path
+                  fill="#4285F4"
+                  d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+                />
+                <path
+                  fill="#34A853"
+                  d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                />
+                <path
+                  fill="#FBBC05"
+                  d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"
+                />
+                <path
+                  fill="#EA4335"
+                  d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
+                />
+              </svg>
+              <span>Continue with Google</span>
+            </motion.button>
+
+            {/* GUEST DEMO MODE SECTION */}
+            <div className="pt-2 border-t border-zinc-200/80 dark:border-zinc-800/80 space-y-1.5 text-center">
+              <motion.button
+                whileHover={{ scale: 1.01 }}
+                whileTap={{ scale: 0.98 }}
+                type="button"
+                onClick={loginAsGuest}
+                disabled={loading}
+                className="w-full py-2.5 bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 hover:from-amber-400 hover:to-orange-500 text-white rounded-2xl font-black text-xs shadow-md shadow-amber-500/20 transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+              >
+                <span className="text-sm">🎭</span>
+                <span>Try Guest / Demo Mode</span>
+              </motion.button>
+
+              <p className="text-[10px] text-amber-600 dark:text-amber-400 font-bold flex items-center justify-center gap-1">
+                <span>⚠️</span> Temporary session • Data is cleared when website is closed
+              </p>
+            </div>
           </div>
+        </motion.div>
 
-          <motion.button
-            whileHover={{ scale: 1.01 }}
-            whileTap={{ scale: 0.98 }}
-            type="submit"
-            disabled={loading}
-            className="w-full py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white rounded-2xl font-bold text-xs shadow-lg shadow-blue-500/25 transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {loading ? (
-              <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-            ) : (
-              <span>{isLoginTab ? "Sign In to Dashboard" : "Create My Account"}</span>
-            )}
-          </motion.button>
-        </form>
-
-        {/* DIVIDER */}
-        <div className="relative my-4 flex items-center justify-center">
-          <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-zinc-200 dark:border-zinc-800" />
-          </div>
-          <span className="relative px-3 bg-white dark:bg-zinc-900 text-[10px] font-bold text-zinc-400 uppercase tracking-widest">
-            Or Continue With
-          </span>
-        </div>
-
-        {/* GOOGLE SIGN-IN BUTTON */}
-        <motion.button
-          whileHover={{ scale: 1.01 }}
-          whileTap={{ scale: 0.98 }}
-          type="button"
-          onClick={handleGoogleSignIn}
-          disabled={loading}
-          className="w-full py-2.5 flex items-center justify-center gap-3 border border-zinc-200 dark:border-zinc-800 bg-zinc-50/80 hover:bg-zinc-100 dark:bg-zinc-950/60 dark:hover:bg-zinc-800/80 text-zinc-800 dark:text-zinc-200 rounded-2xl text-xs font-bold transition-all duration-200 cursor-pointer shadow-sm disabled:opacity-50"
-        >
-          <svg className="w-4 h-4" viewBox="0 0 24 24">
-            <path
-              fill="#4285F4"
-              d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-            />
-            <path
-              fill="#34A853"
-              d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-            />
-            <path
-              fill="#FBBC05"
-              d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"
-            />
-            <path
-              fill="#EA4335"
-              d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
-            />
-          </svg>
-          <span>Continue with Google</span>
-        </motion.button>
-
-        {/* GUEST DEMO MODE SECTION */}
-        <div className="pt-2 border-t border-zinc-200/80 dark:border-zinc-800/80 space-y-1.5 text-center">
-          <motion.button
-            whileHover={{ scale: 1.01 }}
-            whileTap={{ scale: 0.98 }}
-            type="button"
-            onClick={loginAsGuest}
-            disabled={loading}
-            className="w-full py-2.5 bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 hover:from-amber-400 hover:to-orange-500 text-white rounded-2xl font-black text-xs shadow-md shadow-amber-500/20 transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
-          >
-            <span className="text-sm">🎭</span>
-            <span>Try Guest / Demo Mode</span>
-          </motion.button>
-
-          <p className="text-[10px] text-amber-600 dark:text-amber-400 font-bold flex items-center justify-center gap-1">
-            <span>⚠️</span> Temporary session • Data is cleared when website is closed
-          </p>
-        </div>
-      </motion.div>
+      </div>
     </div>
   );
 }

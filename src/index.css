@@ -74,6 +74,26 @@ html, body {
   }
 }
 
+@keyframes bgFloat1 {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+  50% { transform: translate3d(20px, -25px, 0) scale(1.06); }
+}
+
+@keyframes bgFloat2 {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+  50% { transform: translate3d(-20px, 20px, 0) scale(0.95); }
+}
+
+.animate-bg-float-1 {
+  animation: bgFloat1 18s ease-in-out infinite;
+  will-change: transform;
+}
+
+.animate-bg-float-2 {
+  animation: bgFloat2 22s ease-in-out infinite;
+  will-change: transform;
+}
+
 button {
   cursor: pointer;
 }

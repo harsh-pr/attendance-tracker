@@ -155,38 +155,68 @@ src/
 # 📸 Application Screenshots
 
 ### 🔐 Authentication & Guest Mode
+![Authentication](./assets/signup.jpg)
 
 ---
 
 ### 🏠 Dashboard (Light & Dark Theme)
 
+#### 🌞 Light Theme
+![Light Dashboard](./assets/dashboard-light.jpg)
+
+#### 🌙 Dark Theme
+![Dark Dashboard](./assets/dashboard-dark.jpg)
+
 ---
 
 ### 📊 Attendance Analytics & Graph
+![Attendance Graph](./assets/attendance-graph.jpg)
+![Overall Attendance Analytics](./assets/overall-attendance-graph.jpg)
 
 ---
 
 ### 📚 Subject-wise Attendance & Details
+![Subject-wise Attendance](./assets/attendance-subjectwise.jpg)
 
 ---
 
 ### 📅 Subject Attendance History Calendar
+![Subject Attendance History Calendar](./assets/attendance-subectwise-calendar.jpg)
 
 ---
 
-### ⚡ Quick Today's Attendance
+### ⚡ Quick Today's Attendance & Backfill
+
+#### Mark Today's Attendance
+![Mark Today's Attendance](./assets/mark-today-attendance.jpg)
+
+#### Backfill Past Days
+![Backfill Past Days](./assets/backfill-past-days.jpg)
 
 ---
 
 ### 🗓 Attendance Calendar & Highlights
+![Attendance Calendar](./assets/calendar.jpg)
 
 ---
 
 ### 📄 Monthly PDF Report
+![Monthly PDF Report](./assets/monthly-report.jpg)
 
 ---
 
 ### ⚙ Timetable Management & Sharing
+
+#### Class Timetable
+![Class Timetable](./assets/class-timetable.jpg)
+
+#### Share & Import Timetable
+![Share Timetable](./assets/share-timetable.jpg)
+
+---
+
+### 👤 User Profile & Account Settings
+![User Profile](./assets/profile-dropdown.png)
 
 ---
 

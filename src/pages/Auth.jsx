@@ -5,7 +5,7 @@ import { useAuth } from "../context/AuthContext";
 import { useTheme } from "../context/ThemeContext";
 
 export default function Auth() {
-  const { login, register, loginWithGoogle } = useAuth();
+  const { login, register, loginWithGoogle, loginAsGuest } = useAuth();
   const { theme, toggleTheme } = useTheme();
 
   const [isLoginTab, setIsLoginTab] = useState(true);
@@ -382,6 +382,32 @@ export default function Auth() {
           </svg>
           <span>Continue with Google</span>
         </motion.button>
+
+        {/* GUEST DEMO MODE SECTION */}
+        <div className="pt-2 border-t border-zinc-200/80 dark:border-zinc-800/80 space-y-3">
+          <motion.button
+            whileHover={{ scale: 1.01 }}
+            whileTap={{ scale: 0.98 }}
+            type="button"
+            onClick={loginAsGuest}
+            disabled={loading}
+            className="w-full py-3 bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 hover:from-amber-400 hover:to-orange-500 text-white rounded-2xl font-black text-xs shadow-md shadow-amber-500/20 transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+          >
+            <span className="text-sm">🎭</span>
+            <span>Try Guest / Demo Mode</span>
+          </motion.button>
+
+          {/* EXPLICIT GUEST MODE DISCLAIMER BOX */}
+          <div className="p-3 rounded-2xl bg-amber-500/10 dark:bg-amber-950/40 border border-amber-300/60 dark:border-amber-900/60 text-amber-800 dark:text-amber-300 text-[11px] font-medium leading-snug space-y-1">
+            <div className="flex items-center gap-1.5 font-extrabold text-amber-900 dark:text-amber-200">
+              <span className="text-xs">⚠️</span>
+              <span>About Guest Mode:</span>
+            </div>
+            <p>
+              Guest Mode is intended solely for showcasing the project or testing features. All data added will be stored temporarily in <code className="font-mono bg-amber-200/60 dark:bg-amber-900/60 px-1 py-0.5 rounded text-[10px]">localStorage</code> and <strong>WILL BE DELETED ONCE THE WEBSITE IS CLOSED</strong>.
+            </p>
+          </div>
+        </div>
       </motion.div>
     </div>
   );

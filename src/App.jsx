@@ -69,6 +69,7 @@ function AnimatedRoutes() {
 
 function AppContent() {
   const { semesters } = useSemester();
+  const { user, logout } = useAuth();
 
   if (semesters.length === 0) {
     return <OnboardingSetup />;
@@ -82,7 +83,25 @@ function AppContent() {
       <Navbar />
       <MobileNav />
 
-      <main className="pt-20 pb-24 min-h-screen bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 transition-colors duration-300">
+      {user?.isGuest && (
+        <div className="fixed top-14 sm:top-16 left-0 right-0 z-40 bg-gradient-to-r from-amber-600 via-orange-600 to-amber-600 text-white text-[11px] font-extrabold px-3 py-1.5 backdrop-blur-md shadow-md flex items-center justify-between border-b border-amber-400/30">
+          <div className="flex items-center gap-1.5 truncate">
+            <span>🎭</span>
+            <span className="truncate">
+              Guest Demo Mode — Changes stored in temporary localStorage & cleared when tab is closed
+            </span>
+          </div>
+          <button
+            type="button"
+            onClick={logout}
+            className="ml-2 px-2.5 py-0.5 rounded-lg bg-black/30 hover:bg-black/50 text-white text-[10px] uppercase font-black tracking-wider cursor-pointer shrink-0 transition"
+          >
+            Exit Demo
+          </button>
+        </div>
+      )}
+
+      <main className={`${user?.isGuest ? "pt-24 sm:pt-28" : "pt-20"} pb-24 min-h-screen bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 transition-colors duration-300`}>
         <AnimatedRoutes />
       </main>
     </BrowserRouter>

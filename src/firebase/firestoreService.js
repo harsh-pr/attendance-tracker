@@ -31,8 +31,39 @@ function attendanceRef(semesterId) {
   return doc(db, "users", getUserId(), "semesters", semesterId, "attendance", "data");
 }
 
+function saveGuestAppData(updater) {
+  try {
+    const raw = localStorage.getItem("GUEST_APP_DATA");
+    const current = raw
+      ? JSON.parse(raw)
+      : {
+          currentSemesterId: "",
+          semesters: [],
+          subjectsBySemester: {},
+          timetablesBySemester: {},
+          remindersBySemester: {},
+        };
+    const updated = updater(current);
+    localStorage.setItem("GUEST_APP_DATA", JSON.stringify(updated));
+  } catch (e) {
+    console.error("[GuestStorage] Save failed", e);
+  }
+}
+
 // ─── LOAD ALL DATA ────────────────────────────────────────────────────────────
 export async function loadAllData() {
+  if (!auth.currentUser) {
+    const raw = localStorage.getItem("GUEST_APP_DATA");
+    if (raw) {
+      try {
+        return JSON.parse(raw);
+      } catch (e) {
+        console.error("Failed to parse GUEST_APP_DATA", e);
+      }
+    }
+    return null;
+  }
+
   const [metaSnap, subjectsSnap, timetablesSnap, remindersSnap] =
     await Promise.all([
       getDoc(metaRef()),
@@ -75,16 +106,9 @@ export async function loadAllData() {
     return { ...sem, attendanceData: found ? found.attendanceData : [] };
   });
 
-  // Handle both possible structures the migration may have written:
-  // Old migration: { data: { sem2: [...] } }  → we read subjectsDoc.data
-  // New app saves: { data: { sem2: [...] } }   → same
   const subjectsBySemester   = subjectsDoc.data   || subjectsDoc.subjectsBySemester || {};
   const timetablesBySemester = timetablesDoc.data  || timetablesDoc.timetables       || {};
   const remindersBySemester  = remindersDoc.data   || remindersDoc.reminders          || {};
-
-  console.log("[Firestore] subjectsBySemester sems:", Object.keys(subjectsBySemester));
-  console.log("[Firestore] timetablesBySemester sems:", Object.keys(timetablesBySemester));
-  console.log("[Firestore] remindersBySemester sems:", Object.keys(remindersBySemester));
 
   return {
     currentSemesterId: meta.currentSemesterId,
@@ -97,32 +121,65 @@ export async function loadAllData() {
 
 // ─── SAVE META ────────────────────────────────────────────────────────────────
 export async function saveMeta(currentSemesterId, semesters) {
+  if (!auth.currentUser) {
+    saveGuestAppData((prev) => ({
+      ...prev,
+      currentSemesterId,
+      semesters: semesters,
+    }));
+    return;
+  }
   const semesterStubs = semesters.map(({ id, name }) => ({ id, name }));
   await setDoc(metaRef(), { currentSemesterId, semesters: semesterStubs });
 }
 
 // ─── SAVE ATTENDANCE ─────────────────────────────────────────────────────────
 export async function saveAttendance(semesterId, attendanceData) {
+  if (!auth.currentUser) {
+    saveGuestAppData((prev) => {
+      const sems = (prev.semesters || []).map((s) =>
+        s.id === semesterId ? { ...s, attendanceData } : s
+      );
+      return { ...prev, semesters: sems };
+    });
+    return;
+  }
   await setDoc(attendanceRef(semesterId), { records: attendanceData || [] });
 }
 
 // ─── SAVE SUBJECTS ────────────────────────────────────────────────────────────
 export async function saveSubjects(subjectsBySemester) {
+  if (!auth.currentUser) {
+    saveGuestAppData((prev) => ({ ...prev, subjectsBySemester }));
+    return;
+  }
   await setDoc(subjectsRef(), { data: subjectsBySemester });
 }
 
 // ─── SAVE TIMETABLES ─────────────────────────────────────────────────────────
 export async function saveTimetables(timetablesBySemester) {
+  if (!auth.currentUser) {
+    saveGuestAppData((prev) => ({ ...prev, timetablesBySemester }));
+    return;
+  }
   await setDoc(timetablesRef(), { data: timetablesBySemester });
 }
 
 // ─── SAVE REMINDERS ──────────────────────────────────────────────────────────
 export async function saveReminders(remindersBySemester) {
+  if (!auth.currentUser) {
+    saveGuestAppData((prev) => ({ ...prev, remindersBySemester }));
+    return;
+  }
   await setDoc(remindersRef(), { data: remindersBySemester });
 }
 
 // ─── COLLEGE TIMETABLE SYNC ──────────────────────────────────────────────────
 export async function getCollegeTimetable(semesterId) {
+  if (!auth.currentUser) {
+    const raw = localStorage.getItem(`GUEST_COLLEGE_TIMETABLE_${semesterId}`);
+    return raw ? JSON.parse(raw) : null;
+  }
   try {
     const ref = doc(db, "users", getUserId(), "college_timetable", semesterId);
     const snap = await getDoc(ref);
@@ -134,6 +191,10 @@ export async function getCollegeTimetable(semesterId) {
 }
 
 export async function saveCollegeTimetable(semesterId, timetableData) {
+  if (!auth.currentUser) {
+    localStorage.setItem(`GUEST_COLLEGE_TIMETABLE_${semesterId}`, JSON.stringify(timetableData));
+    return;
+  }
   try {
     const ref = doc(db, "users", getUserId(), "college_timetable", semesterId);
     await setDoc(ref, timetableData);

@@ -475,7 +475,18 @@ export default function Navbar() {
                           </HoldButton>
                         </div>
 
-                        {!user.providerData.some((p) => p.providerId === "google.com") && (
+                        {user?.isGuest && (
+                          <div className="p-2.5 rounded-xl bg-amber-500/10 dark:bg-amber-950/40 border border-amber-300/50 dark:border-amber-900/50 text-[11px] text-amber-800 dark:text-amber-300 font-medium space-y-1">
+                            <div className="flex items-center gap-1 font-bold">
+                              <span>🎭</span> Demo Mode Active
+                            </div>
+                            <p className="text-[10px] leading-tight opacity-90">
+                              Data is saved in temporary localStorage & cleared when tab is closed.
+                            </p>
+                          </div>
+                        )}
+
+                        {!user?.isGuest && user?.providerData?.some && !user.providerData.some((p) => p.providerId === "google.com") && (
                           <button
                             type="button"
                             onClick={() => {
@@ -501,22 +512,26 @@ export default function Navbar() {
                           }}
                           className="w-full flex items-center justify-between px-3.5 py-2.5 rounded-2xl bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800/80 dark:hover:bg-zinc-750 text-zinc-800 dark:text-zinc-200 text-xs font-semibold cursor-pointer transition-colors"
                         >
-                          <span className="flex items-center gap-2">🚪 Sign Out</span>
+                          <span className="flex items-center gap-2">
+                            {user?.isGuest ? "🚪 Exit Guest Mode" : "🚪 Sign Out"}
+                          </span>
                           <span className="text-[10px] text-zinc-400 font-medium">Click to exit</span>
                         </button>
 
-                        <HoldButton
-                          onConfirm={() => {
-                            setIsProfileMenuOpen(false);
-                            setIsDeleteAccountWarningOpen(true);
-                          }}
-                          holdDuration={1500}
-                          variant="danger"
-                          icon="⚠️"
-                          className="w-full justify-between py-2 rounded-2xl"
-                        >
-                          Delete Account
-                        </HoldButton>
+                        {!user?.isGuest && (
+                          <HoldButton
+                            onConfirm={() => {
+                              setIsProfileMenuOpen(false);
+                              setIsDeleteAccountWarningOpen(true);
+                            }}
+                            holdDuration={1500}
+                            variant="danger"
+                            icon="⚠️"
+                            className="w-full justify-between py-2 rounded-2xl"
+                          >
+                            Delete Account
+                          </HoldButton>
+                        )}
                       </div>
 
                       {/* Kokonut UI Bottom Profile Footer Card */}

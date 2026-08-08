@@ -135,6 +135,9 @@ export default function AiTimetable() {
   const [loadingDb, setLoadingDb] = useState(true);
 
   // ── DRAFT states for modals (only committed on explicit Save) ──────────
+  // Metadata modal drafts
+  const [draftMetadata, setDraftMetadata] = useState(DEFAULT_METADATA);
+
   // Structure modal drafts
   const [draftTimeSlots, setDraftTimeSlots] = useState([]);
   const [draftBreaks, setDraftBreaks] = useState([]);

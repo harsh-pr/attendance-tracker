@@ -17,9 +17,62 @@ import { deleteAllUserData } from "../firebase/firestoreService";
 
 const AuthContext = createContext();
 
+const GUEST_USER = {
+  uid: "guest_demo_user",
+  email: "guest@demo.mode",
+  displayName: "Guest User",
+  isGuest: true,
+  providerData: [],
+};
+
+function clearGuestLocalStorage() {
+  localStorage.removeItem("is_guest_mode");
+  localStorage.removeItem("GUEST_APP_DATA");
+  localStorage.removeItem("TT_METADATA");
+  localStorage.removeItem("TT_FACULTY");
+  localStorage.removeItem("TT_TIMETABLE");
+  localStorage.removeItem("TT_SLOTS");
+  localStorage.removeItem("TT_BREAKS");
+  localStorage.removeItem("TT_DAYS");
+  try {
+    Object.keys(localStorage).forEach((key) => {
+      if (key.startsWith("GUEST_COLLEGE_TIMETABLE_")) {
+        localStorage.removeItem(key);
+      }
+    });
+  } catch (e) {
+    console.error("Error clearing guest timetable storage:", e);
+  }
+}
+
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+
+  // Check initial Guest session state on mount
+  useEffect(() => {
+    const isGuestSession = sessionStorage.getItem("is_guest_session");
+    if (isGuestSession === "true") {
+      setUser(GUEST_USER);
+      setLoading(false);
+    } else {
+      // If no active guest session exists in sessionStorage (e.g. browser closed and re-opened),
+      // purge any residual guest data from localStorage
+      clearGuestLocalStorage();
+    }
+  }, []);
+
+  // Window unload listener to clear guest data when tab/window is closed
+  useEffect(() => {
+    if (!user?.isGuest) return;
+
+    function handleUnload() {
+      clearGuestLocalStorage();
+    }
+
+    window.addEventListener("beforeunload", handleUnload);
+    return () => window.removeEventListener("beforeunload", handleUnload);
+  }, [user]);
 
   // 1. Session Activity Heartbeat (2-minute closed-tab auto-logout)
   useEffect(() => {
@@ -30,7 +83,7 @@ export function AuthProvider({ children }) {
     if (lastActive) {
       const elapsed = now - parseInt(lastActive, 10);
       // If elapsed time is greater than 2 minutes (120,000 ms)
-      if (elapsed > 120000) {
+      if (elapsed > 120000 && !sessionStorage.getItem("is_guest_session")) {
         console.log("[Auth] Session inactive for > 2 mins. Logging out automatically.");
         localStorage.removeItem("last_active_heartbeat");
         isAutoLoggingOut = true;
@@ -45,6 +98,12 @@ export function AuthProvider({ children }) {
     }
 
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      // If guest mode is active in this session, do not override with firebase user state
+      if (sessionStorage.getItem("is_guest_session") === "true") {
+        setUser(GUEST_USER);
+        setLoading(false);
+        return;
+      }
       // Ignore initial logged-in state if we are currently signing out due to inactivity
       if (currentUser && isAutoLoggingOut) {
         return;
@@ -70,7 +129,16 @@ export function AuthProvider({ children }) {
   }, [user]);
 
   // 2. Authentication Actions
+  function loginAsGuest() {
+    sessionStorage.setItem("is_guest_session", "true");
+    localStorage.setItem("is_guest_mode", "true");
+    setUser(GUEST_USER);
+    setLoading(false);
+  }
+
   async function login(email, password) {
+    sessionStorage.removeItem("is_guest_session");
+    clearGuestLocalStorage();
     setLoading(true);
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
@@ -85,13 +153,14 @@ export function AuthProvider({ children }) {
   }
 
   async function register(email, password, displayName) {
+    sessionStorage.removeItem("is_guest_session");
+    clearGuestLocalStorage();
     setLoading(true);
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       if (displayName) {
         await updateProfile(userCredential.user, { displayName });
       }
-      // Force refresh auth user state to include display name
       setUser({ ...auth.currentUser });
       localStorage.setItem("last_active_heartbeat", Date.now().toString());
       return userCredential.user;
@@ -107,7 +176,12 @@ export function AuthProvider({ children }) {
     setLoading(true);
     try {
       localStorage.removeItem("last_active_heartbeat");
-      await signOut(auth);
+      if (sessionStorage.getItem("is_guest_session") === "true" || user?.isGuest) {
+        sessionStorage.removeItem("is_guest_session");
+        clearGuestLocalStorage();
+      } else {
+        await signOut(auth);
+      }
       setUser(null);
     } catch (error) {
       console.error("[Auth] Logout error", error);
@@ -118,6 +192,8 @@ export function AuthProvider({ children }) {
   }
 
   async function loginWithGoogle() {
+    sessionStorage.removeItem("is_guest_session");
+    clearGuestLocalStorage();
     setLoading(true);
     try {
       const provider = new GoogleAuthProvider();
@@ -134,13 +210,12 @@ export function AuthProvider({ children }) {
   }
 
   async function connectGoogle() {
-    if (!auth.currentUser) throw new Error("No user is logged in.");
+    if (!auth.currentUser || user?.isGuest) throw new Error("Google connection requires a non-guest account.");
     setLoading(true);
     try {
       const provider = new GoogleAuthProvider();
       const userCredential = await linkWithPopup(auth.currentUser, provider);
       localStorage.setItem("last_active_heartbeat", Date.now().toString());
-      // Force user update in React state
       setUser({ ...userCredential.user });
       return userCredential.user;
     } catch (error) {
@@ -152,18 +227,17 @@ export function AuthProvider({ children }) {
   }
 
   async function deleteAccount() {
+    if (user?.isGuest) {
+      logout();
+      return;
+    }
     const currentUser = auth.currentUser;
     if (!currentUser) throw new Error("No authenticated user to delete.");
 
     setLoading(true);
     try {
-      // 1. Delete all user records from Firestore
       await deleteAllUserData(currentUser.uid);
-
-      // 2. Delete user account from Firebase Auth
       await deleteUser(currentUser);
-
-      // 3. Clean local storage heartbeat and state
       localStorage.removeItem("last_active_heartbeat");
       setUser(null);
     } catch (error) {
@@ -183,6 +257,7 @@ export function AuthProvider({ children }) {
     login,
     register,
     loginWithGoogle,
+    loginAsGuest,
     connectGoogle,
     logout,
     deleteAccount,

@@ -12,6 +12,7 @@ function ShareIcon({ className = "w-3.5 h-3.5" }) {
 import Modal from "./Modal";
 import HoldButton from "./HoldButton";
 import ShareTimetableModal from "./ShareTimetableModal";
+import ThemeToggle from "./ThemeToggle";
 import { useSemester } from "../context/SemesterContext";
 import { useTheme } from "../context/ThemeContext";
 import { useAuth } from "../context/AuthContext";
@@ -384,6 +385,11 @@ export default function Navbar() {
 
           {/* Right Actions & Profile Dropdown */}
           <div className="flex items-center gap-2">
+            {/* Desktop Theme Toggle Slider */}
+            <div className="hidden sm:flex items-center">
+              <ThemeToggle />
+            </div>
+
             {/* Share Timetable Desktop Button */}
             <motion.button
               whileHover={{ scale: 1.04 }}
@@ -428,6 +434,11 @@ export default function Navbar() {
                           <span className="text-xs text-zinc-700 dark:text-zinc-300 font-bold truncate max-w-[120px]">
                             {user?.displayName || user?.email?.split("@")[0] || "User"}
                           </span>
+                        </div>
+
+                        <div className="flex items-center justify-between px-3 py-2 rounded-xl hover:bg-zinc-100 dark:hover:bg-zinc-800/60 transition-colors">
+                          <span className="flex items-center gap-2 font-bold">🌗 Theme Mode</span>
+                          <ThemeToggle />
                         </div>
 
                         <div className="flex items-center justify-between px-3 py-2 rounded-xl hover:bg-zinc-100 dark:hover:bg-zinc-800/60 transition-colors">

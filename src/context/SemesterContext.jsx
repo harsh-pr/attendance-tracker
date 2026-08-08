@@ -23,9 +23,9 @@ import {
 import LoadingScreen from "../components/LoadingScreen";
 
 const SemesterContext = createContext();
-const WEEK_DAYS = ["monday", "tuesday", "wednesday", "thursday", "friday"];
+const WEEK_DAYS = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"];
 
-const EMPTY_TIMETABLE = { monday: [], tuesday: [], wednesday: [], thursday: [], friday: [] };
+const EMPTY_TIMETABLE = { monday: [], tuesday: [], wednesday: [], thursday: [], friday: [], saturday: [], sunday: [] };
 
 function cloneEmptyTimetable() {
   return JSON.parse(JSON.stringify(EMPTY_TIMETABLE));

@@ -24,6 +24,8 @@ const DAY_LABELS = {
   wednesday: "Wednesday",
   thursday: "Thursday",
   friday: "Friday",
+  saturday: "Saturday",
+  sunday: "Sunday",
 };
 
 const EMPTY_TIMETABLE = {
@@ -32,6 +34,8 @@ const EMPTY_TIMETABLE = {
   wednesday: [],
   thursday: [],
   friday: [],
+  saturday: [],
+  sunday: [],
 };
 
 export default function Navbar() {

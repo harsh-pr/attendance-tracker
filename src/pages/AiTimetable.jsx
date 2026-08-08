@@ -72,10 +72,25 @@ const DEFAULT_TIMETABLE = {
     { subject: "", teacher: "", room: "", type: "free", colSpan: 1 },
     { subject: "Python2(A) / ED(B) / ADSL(C)", teacher: "ML/NS/AC", room: "Lab No. - 112/101/105", type: "lab", colSpan: 2 },
     { subject: "", teacher: "", room: "", type: "free", colSpan: 1 },
+  ],
+  saturday: [
+    { subject: "", teacher: "", room: "", type: "free", colSpan: 1 },
+    { subject: "", teacher: "", room: "", type: "free", colSpan: 1 },
+    { subject: "", teacher: "", room: "", type: "free", colSpan: 1 },
+    { subject: "", teacher: "", room: "", type: "free", colSpan: 1 },
+    { subject: "", teacher: "", room: "", type: "free", colSpan: 1 },
+    { subject: "", teacher: "", room: "", type: "free", colSpan: 1 },
     { subject: "", teacher: "", room: "", type: "free", colSpan: 1 },
   ],
-  saturday: [],
-  sunday: [],
+  sunday: [
+    { subject: "", teacher: "", room: "", type: "free", colSpan: 1 },
+    { subject: "", teacher: "", room: "", type: "free", colSpan: 1 },
+    { subject: "", teacher: "", room: "", type: "free", colSpan: 1 },
+    { subject: "", teacher: "", room: "", type: "free", colSpan: 1 },
+    { subject: "", teacher: "", room: "", type: "free", colSpan: 1 },
+    { subject: "", teacher: "", room: "", type: "free", colSpan: 1 },
+    { subject: "", teacher: "", room: "", type: "free", colSpan: 1 },
+  ],
 };
 
 // Default Time Slots

@@ -133,11 +133,15 @@ export default function SubjectCalendarModal({ open, onClose, data }) {
         statusKey = "holiday";
       }
 
+      const todayKey = formatDateKey(new Date());
+      const isToday  = formatDateKey(date) === todayKey;
+
       return {
         dayNumber,
         status: statusKey,
         date,
-        isWeekend
+        isWeekend,
+        isToday,
       };
     });
   }, [daysInMonth, year, monthIndex, attendanceData, subject.id, currentSemester]);
@@ -198,14 +202,34 @@ export default function SubjectCalendarModal({ open, onClose, data }) {
               const config = statusConfig[day.status];
               return (
                 <div key={day.dayNumber}
-                  className={`group relative overflow-hidden flex flex-col justify-between min-h-[3.25rem] sm:min-h-[3.75rem] h-auto rounded-lg border border-zinc-200/80 dark:border-zinc-800/80 bg-white dark:bg-zinc-900 p-1.5 text-[11px] sm:text-sm font-semibold transition ${config.tile} hover:-translate-y-0.5 hover:border-zinc-300 hover:shadow-lg dark:hover:border-zinc-700`}
+                  title={day.isToday ? "Today" : undefined}
+                  className={`group relative overflow-hidden flex flex-col justify-between min-h-[3.25rem] sm:min-h-[3.75rem] h-auto rounded-lg border p-1.5 text-[11px] sm:text-sm font-semibold transition ${
+                    day.isToday
+                      ? "!opacity-100 ring-2 ring-blue-500 dark:ring-blue-400 border-blue-500/80 dark:border-blue-400/80 shadow-md shadow-blue-500/20 bg-blue-50/90 dark:bg-blue-950/35"
+                      : `border-zinc-200/80 dark:border-zinc-800/80 bg-white dark:bg-zinc-900 ${config.tile}`
+                  } hover:-translate-y-0.5 hover:border-zinc-300 hover:shadow-lg dark:hover:border-zinc-700`}
                   style={{ animation: "fadeUp 0.5s ease-out", animationDelay: `${(index % 7) * 50}ms`, animationFillMode: "both" }}>
                   <div className="w-full flex items-center justify-between text-[10px] sm:text-xs text-zinc-500 dark:text-zinc-400 font-semibold">
-                    <span>{day.dayNumber}</span>
+                    <div className="flex items-center gap-1">
+                      <span className={day.isToday ? "flex h-5 min-w-5 items-center justify-center rounded-md bg-blue-600 px-1 text-[10px] font-black text-white shadow-xs shadow-blue-500/50" : ""}>
+                        {day.dayNumber}
+                      </span>
+                      {day.isToday && (
+                        <span className="hidden sm:inline-block rounded bg-blue-500/15 dark:bg-blue-400/20 px-1 py-0.2 text-[8px] font-black uppercase tracking-wider text-blue-600 dark:text-blue-300 border border-blue-500/30">
+                          Today
+                        </span>
+                      )}
+                    </div>
+                    {day.isToday ? (
+                      <span className="relative flex h-2 w-2">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
+                        <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
+                      </span>
+                    ) : null}
                   </div>
-                  <p className="mt-2 w-full text-center text-[8px] sm:text-[9px] font-bold uppercase tracking-wider truncate pb-0.5 select-none">{config.label}</p>
+                  <p className={`mt-2 w-full text-center text-[8px] sm:text-[9px] font-bold uppercase tracking-wider truncate pb-0.5 select-none ${day.isToday ? "text-blue-700 dark:text-blue-300 font-black" : ""}`}>{config.label}</p>
                   {day.status === "holiday" && (
-                    <svg className="absolute inset-0 w-full h-full pointer-events-none stroke-zinc-300 dark:stroke-zinc-800 opacity-60 dark:opacity-40" viewBox="0 0 100 100" preserveAspectRatio="none">
+                    <svg className={`absolute inset-0 w-full h-full pointer-events-none stroke-zinc-300 dark:stroke-zinc-800 ${day.isToday ? "opacity-30 dark:opacity-20" : "opacity-60 dark:opacity-40"}`} viewBox="0 0 100 100" preserveAspectRatio="none">
                       <line x1="0" y1="0" x2="100" y2="100" strokeWidth="1.5" />
                       <line x1="100" y1="0" x2="0" y2="100" strokeWidth="1.5" />
                     </svg>

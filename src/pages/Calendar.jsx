@@ -177,6 +177,17 @@ export default function Calendar() {
     setActiveMonthDate(new Date(now.getFullYear(), now.getMonth(), 1));
   }, [currentSemester.id]);
 
+  const today = useMemo(() => new Date(), []);
+  const todayKey = formatDateKey(today);
+  const isViewingCurrentMonth =
+    activeMonthDate.getFullYear() === today.getFullYear() &&
+    activeMonthDate.getMonth() === today.getMonth();
+
+  const isTodayDate = useCallback((date) => {
+    if (!date) return false;
+    return formatDateKey(date) === todayKey;
+  }, [todayKey]);
+
   const monthLabel      = formatMonthLabel(activeMonthDate);
   const year            = activeMonthDate.getFullYear();
   const monthIndex      = activeMonthDate.getMonth();
@@ -200,7 +211,8 @@ export default function Calendar() {
     const dayEntry  = entriesByDay.get(dayNumber);
     const lectures  = dayEntry?.lectures ?? [];
     const status    = getDayStatus({ lectures, isWeekend, hasEntry: Boolean(dayEntry), dayType: dayEntry?.dayType });
-    return { dayNumber, status, date, dayEntry, isWeekend };
+    const isToday   = formatDateKey(date) === todayKey;
+    return { dayNumber, status, date, dayEntry, isWeekend, isToday };
   });
 
   const loggedDays = useMemo(() => {
@@ -864,7 +876,18 @@ export default function Calendar() {
           <div className="flex flex-wrap items-start justify-between gap-4 pt-1">
             <div className="space-y-1">
               <p className="text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Calendar View</p>
-              <h2 className="text-2xl font-bold text-zinc-900 dark:text-white">{monthLabel}</h2>
+              <div className="flex items-center gap-3">
+                <h2 className="text-2xl font-bold text-zinc-900 dark:text-white">{monthLabel}</h2>
+                {isViewingCurrentMonth && (
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20 shadow-xs">
+                    <span className="relative flex h-2 w-2">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
+                      <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
+                    </span>
+                    <span>Today: {today.toLocaleDateString("en-GB", { day: "numeric", month: "short" })}</span>
+                  </span>
+                )}
+              </div>
             </div>
             <div className="flex items-center gap-5">
               <button type="button" onClick={() => setActiveMonthDate(prev => new Date(prev.getFullYear(), prev.getMonth() - 1, 1))}
@@ -883,16 +906,40 @@ export default function Calendar() {
               {leadingBlanks.map(blank => <div key={blank.key} className="h-12 sm:h-14 rounded-lg border border-transparent" />)}
               {calendarDays.map((day, index) => (
                 <button key={day.dayNumber} type="button"
-                  onClick={() => setSelectedDay({ day: day.dayNumber, status: day.status, date: day.date, dayEntry: day.dayEntry })}
-                  className={`group relative overflow-hidden flex flex-col justify-between min-h-[3.25rem] sm:min-h-[3.75rem] h-auto rounded-xl border border-zinc-200/80 dark:border-zinc-800/80 bg-white dark:bg-zinc-900 p-1.5 text-[11px] sm:text-sm font-semibold transition ${statusConfig[day.status].tile} hover:-translate-y-0.5 hover:border-zinc-400 dark:hover:border-zinc-700 hover:shadow-lg cursor-pointer`}
+                  onClick={() => setSelectedDay({ day: day.dayNumber, status: day.status, date: day.date, dayEntry: day.dayEntry, isToday: day.isToday })}
+                  title={day.isToday ? "Today — Click to view or mark attendance" : undefined}
+                  className={`group relative overflow-hidden flex flex-col justify-between min-h-[3.25rem] sm:min-h-[3.75rem] h-auto rounded-xl border p-1.5 text-[11px] sm:text-sm font-semibold transition cursor-pointer ${
+                    day.isToday
+                      ? "!opacity-100 ring-2 ring-blue-500 dark:ring-blue-400 border-blue-500/80 dark:border-blue-400/80 shadow-md shadow-blue-500/20 bg-blue-50/90 dark:bg-blue-950/35"
+                      : `border-zinc-200/80 dark:border-zinc-800/80 bg-white dark:bg-zinc-900 ${statusConfig[day.status].tile}`
+                  } hover:-translate-y-0.5 hover:border-zinc-400 dark:hover:border-zinc-700 hover:shadow-lg`}
                   style={{ animation: "fadeUp 0.5s ease-out", animationDelay: `${(index % 7) * 40}ms`, animationFillMode: "both" }}>
-                  <div className="w-full flex items-center justify-between text-[10px] sm:text-xs text-zinc-500 dark:text-zinc-400 font-bold">
-                    <span>{day.dayNumber}</span>
-                    <span className="h-1.5 w-1.5 rounded-full bg-current opacity-60" />
+                  <div className="w-full flex items-center justify-between text-[10px] sm:text-xs font-bold">
+                    <div className="flex items-center gap-1">
+                      <span className={day.isToday
+                        ? "flex h-5 min-w-5 items-center justify-center rounded-md bg-blue-600 px-1.5 text-[10px] font-black text-white shadow-xs shadow-blue-500/50"
+                        : "text-zinc-500 dark:text-zinc-400"
+                      }>
+                        {day.dayNumber}
+                      </span>
+                      {day.isToday && (
+                        <span className="hidden sm:inline-block rounded bg-blue-500/15 dark:bg-blue-400/20 px-1 py-0.2 text-[8px] font-black uppercase tracking-wider text-blue-600 dark:text-blue-300 border border-blue-500/30">
+                          Today
+                        </span>
+                      )}
+                    </div>
+                    {day.isToday ? (
+                      <span className="relative flex h-2 w-2">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
+                        <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
+                      </span>
+                    ) : (
+                      <span className="h-1.5 w-1.5 rounded-full bg-current opacity-60" />
+                    )}
                   </div>
-                  <p className="mt-2 w-full text-center text-[8px] sm:text-[9px] font-extrabold uppercase tracking-wider truncate pb-0.5">{statusConfig[day.status].label}</p>
+                  <p className={`mt-2 w-full text-center text-[8px] sm:text-[9px] font-extrabold uppercase tracking-wider truncate pb-0.5 ${day.isToday ? "text-blue-700 dark:text-blue-300 font-black" : ""}`}>{statusConfig[day.status].label}</p>
                   {day.status === "holiday" && (
-                    <svg className="absolute inset-0 w-full h-full pointer-events-none stroke-zinc-300 dark:stroke-zinc-800 opacity-60 dark:opacity-40" viewBox="0 0 100 100" preserveAspectRatio="none">
+                    <svg className={`absolute inset-0 w-full h-full pointer-events-none stroke-zinc-300 dark:stroke-zinc-800 ${day.isToday ? "opacity-30 dark:opacity-20" : "opacity-60 dark:opacity-40"}`} viewBox="0 0 100 100" preserveAspectRatio="none">
                       <line x1="0" y1="0" x2="100" y2="100" strokeWidth="1.5" />
                       <line x1="100" y1="0" x2="0" y2="100" strokeWidth="1.5" />
                     </svg>
@@ -1048,9 +1095,17 @@ export default function Calendar() {
           <>
             <div className="flex items-start justify-between gap-4">
               <div>
-                <h2 className="text-xl font-semibold text-zinc-900 dark:text-zinc-100">
-                  {selectedDay.date.toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" })}
-                </h2>
+                <div className="flex items-center gap-2">
+                  <h2 className="text-xl font-semibold text-zinc-900 dark:text-zinc-100">
+                    {selectedDay.date.toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" })}
+                  </h2>
+                  {isTodayDate(selectedDay.date) && (
+                    <span className="rounded-full bg-blue-500/15 border border-blue-500/30 px-2.5 py-0.5 text-[10px] font-extrabold uppercase tracking-wider text-blue-600 dark:text-blue-400 flex items-center gap-1">
+                      <span className="h-1.5 w-1.5 rounded-full bg-blue-500 animate-pulse" />
+                      Today
+                    </span>
+                  )}
+                </div>
                 <p className="text-sm text-zinc-500 dark:text-zinc-400">Attendance details for the day</p>
               </div>
               {selectedDay.status && (
@@ -1085,7 +1140,7 @@ export default function Calendar() {
             </div>
             <div className="mt-6 flex flex-wrap justify-end gap-2">
               <button type="button" onClick={() => setEditDayOpen(true)}
-                className="rounded-full border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-4 py-2 text-xs font-semibold text-zinc-700 dark:text-zinc-200">
+                className="rounded-full border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-4 py-2 text-xs font-semibold text-zinc-700 dark:text-zinc-200 cursor-pointer">
                 Mark / Edit Day
               </button>
             </div>

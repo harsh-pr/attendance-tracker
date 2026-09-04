@@ -522,18 +522,34 @@ export default function AiTimetable() {
   };
 
   const todayData = getTodayLectures();
+  const dayNames = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
+  const todayDayKey = dayNames[new Date().getDay()];
 
-  const getCellClassName = (type, isLastCol = false, isLastRow = false) => {
+  const getCellClassName = (type, isLastCol = false, isLastRow = false, isToday = false) => {
     let base = "p-3.5 text-center transition-all duration-200 min-w-[130px] align-middle ";
     if (!isLastCol) base += "border-r border-zinc-200 dark:border-zinc-800/80 ";
     if (!isLastRow) base += "border-b border-zinc-200 dark:border-zinc-800/80 ";
 
     if (isEditMode) base += "cursor-pointer hover:bg-zinc-100 dark:hover:bg-zinc-800/60 ";
     
-    if (type === "free") return base + "bg-white dark:bg-zinc-950 text-zinc-400 dark:text-zinc-600";
-    if (type === "lab") return base + "bg-indigo-50/40 dark:bg-indigo-950/20 border-l-4 border-l-indigo-500 text-indigo-900 dark:text-indigo-200 font-bold";
-    if (type === "session") return base + "bg-amber-50/40 dark:bg-amber-950/20 border-l-4 border-l-amber-500 text-amber-900 dark:text-amber-200 font-bold";
-    return base + "bg-white dark:bg-zinc-900/90 text-zinc-900 dark:text-zinc-100 font-bold";
+    if (type === "free") {
+      return base + (isToday 
+        ? "bg-blue-50/20 dark:bg-blue-950/15 text-zinc-400 dark:text-zinc-600" 
+        : "bg-white dark:bg-zinc-950 text-zinc-400 dark:text-zinc-600");
+    }
+    if (type === "lab") {
+      return base + (isToday
+        ? "bg-indigo-50/70 dark:bg-indigo-950/40 border-l-4 border-l-indigo-500 text-indigo-900 dark:text-indigo-200 font-bold"
+        : "bg-indigo-50/40 dark:bg-indigo-950/20 border-l-4 border-l-indigo-500 text-indigo-900 dark:text-indigo-200 font-bold");
+    }
+    if (type === "session") {
+      return base + (isToday
+        ? "bg-amber-50/70 dark:bg-amber-950/40 border-l-4 border-l-amber-500 text-amber-900 dark:text-amber-200 font-bold"
+        : "bg-amber-50/40 dark:bg-amber-950/20 border-l-4 border-l-amber-500 text-amber-900 dark:text-amber-200 font-bold");
+    }
+    return base + (isToday
+      ? "bg-blue-50/30 dark:bg-blue-950/25 text-zinc-900 dark:text-zinc-100 font-bold"
+      : "bg-white dark:bg-zinc-900/90 text-zinc-900 dark:text-zinc-100 font-bold");
   };
 
   const getSubjectStyle = (type) => {
@@ -552,7 +568,7 @@ export default function AiTimetable() {
     return names.join(" & ");
   };
 
-  const renderCell = (dayKey, index, isLastCol = false, isLastRow = false) => {
+  const renderCell = (dayKey, index, isLastCol = false, isLastRow = false, isToday = false) => {
     const schedule = timetable[dayKey] || [];
     const lec = schedule[index] || { subject: "", teacher: "", room: "", type: "free", colSpan: 1 };
     const colSpan = lec.colSpan || 1;
@@ -561,7 +577,7 @@ export default function AiTimetable() {
       <td
         key={index}
         colSpan={colSpan}
-        className={getCellClassName(lec.type, isLastCol, isLastRow)}
+        className={getCellClassName(lec.type, isLastCol, isLastRow, isToday)}
         onClick={() => handleCellClick(dayKey, index)}
       >
         {lec.subject ? (
@@ -593,13 +609,44 @@ export default function AiTimetable() {
   const renderRow = (dayKey, dayIdx) => {
     const isWorking = activeDays.includes(dayKey);
     const isLastRow = dayIdx === ALL_DAYS.length - 1;
+    const isToday = dayKey === todayDayKey;
     const totalSlotCols = timeSlots.length + breaks.length;
 
     if (!isWorking) {
       return (
-        <tr key={dayKey} className={`${!isLastRow ? "border-b border-zinc-200 dark:border-zinc-800/80" : ""} bg-zinc-50/50 dark:bg-zinc-950/40`}>
-          <td className="p-4 font-black uppercase text-[10px] tracking-widest border-r border-zinc-200 dark:border-zinc-800 bg-zinc-100/70 dark:bg-zinc-950/80 w-[110px] text-zinc-500 dark:text-zinc-400">
-            {dayKey.substring(0, 3)}
+        <tr
+          key={dayKey}
+          className={`${!isLastRow ? "border-b border-zinc-200 dark:border-zinc-800/80" : ""} ${
+            isToday
+              ? "bg-blue-50/40 dark:bg-blue-950/30"
+              : "bg-zinc-50/50 dark:bg-zinc-950/40"
+          }`}
+        >
+          <td
+            className={`p-3 sm:p-4 font-black uppercase text-[10px] tracking-widest border-r border-zinc-200 dark:border-zinc-800 w-[110px] ${
+              !isLastRow ? "border-b border-zinc-200 dark:border-zinc-800/80" : ""
+            } ${
+              isToday
+                ? "bg-blue-50/90 dark:bg-blue-950/60 border-l-4 border-l-blue-500 dark:border-l-blue-400"
+                : "bg-zinc-100/70 dark:bg-zinc-950/80 text-zinc-500 dark:text-zinc-400"
+            }`}
+          >
+            {isToday ? (
+              <div className="flex flex-col gap-1 items-start">
+                <span className="text-xs font-black uppercase tracking-wider text-blue-600 dark:text-blue-400 font-[Poppins]">
+                  {dayKey.substring(0, 3)}
+                </span>
+                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[8px] font-black uppercase tracking-wider bg-blue-500/20 text-blue-600 dark:text-blue-300 border border-blue-500/30 shadow-2xs">
+                  <span className="relative flex h-1.5 w-1.5">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-blue-500"></span>
+                  </span>
+                  Today
+                </span>
+              </div>
+            ) : (
+              <span>{dayKey.substring(0, 3)}</span>
+            )}
           </td>
           <td colSpan={totalSlotCols} className="p-5 text-center font-black text-blue-600 dark:text-blue-400 uppercase tracking-[0.25em] text-xs font-[Poppins]">
             HOLIDAY
@@ -621,7 +668,7 @@ export default function AiTimetable() {
         const span = lec.colSpan || 1;
         const isLastCol = (i + span - 1) >= (timeSlots.length - 1) && activeBreaks.length === 0;
 
-        rowTds.push(renderCell(dayKey, i, isLastCol, isLastRow));
+        rowTds.push(renderCell(dayKey, i, isLastCol, isLastRow, isToday));
 
         if (span > 1) {
           skipCount = span - 1;
@@ -648,9 +695,39 @@ export default function AiTimetable() {
     });
 
     return (
-      <tr key={dayKey} className="hover:bg-zinc-100/40 dark:hover:bg-zinc-800/20 transition duration-150">
-        <td className={`p-4 font-black uppercase text-[10px] tracking-widest border-r border-zinc-200 dark:border-zinc-800 bg-zinc-100/70 dark:bg-zinc-950/80 w-[110px] text-zinc-500 dark:text-zinc-400 ${!isLastRow ? "border-b border-zinc-200 dark:border-zinc-800/80" : ""}`}>
-          {dayKey.substring(0, 3)}
+      <tr
+        key={dayKey}
+        className={`transition duration-150 ${
+          isToday
+            ? "hover:bg-blue-500/[0.04] dark:hover:bg-blue-500/[0.08]"
+            : "hover:bg-zinc-100/40 dark:hover:bg-zinc-800/20"
+        }`}
+      >
+        <td
+          className={`p-3 sm:p-4 font-black uppercase text-[10px] tracking-widest border-r border-zinc-200 dark:border-zinc-800 w-[110px] ${
+            !isLastRow ? "border-b border-zinc-200 dark:border-zinc-800/80" : ""
+          } ${
+            isToday
+              ? "bg-blue-50 dark:bg-blue-950/60 border-l-4 border-l-blue-500 dark:border-l-blue-400"
+              : "bg-zinc-100/70 dark:bg-zinc-950/80 text-zinc-500 dark:text-zinc-400"
+          }`}
+        >
+          {isToday ? (
+            <div className="flex flex-col gap-1 items-start">
+              <span className="text-xs font-black uppercase tracking-wider text-blue-600 dark:text-blue-400 font-[Poppins]">
+                {dayKey.substring(0, 3)}
+              </span>
+              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[8px] font-black uppercase tracking-wider bg-blue-500/20 text-blue-600 dark:text-blue-300 border border-blue-500/30 shadow-2xs">
+                <span className="relative flex h-1.5 w-1.5">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-blue-500"></span>
+                </span>
+                Today
+              </span>
+            </div>
+          ) : (
+            <span>{dayKey.substring(0, 3)}</span>
+          )}
         </td>
         {rowTds}
       </tr>

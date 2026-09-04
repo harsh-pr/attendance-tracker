@@ -399,12 +399,12 @@ export default function Navbar() {
           </div>
 
           {/* Center: Kokonut Morphic Segmented Navbar Bar (Desktop Only) */}
-          <nav className="hidden lg:flex items-center gap-1 bg-zinc-100/90 dark:bg-zinc-950/80 p-1 rounded-full border border-zinc-200/80 dark:border-zinc-800/80 shadow-inner">
+          <motion.nav layoutRoot className="hidden lg:flex items-center gap-1 bg-zinc-100/90 dark:bg-zinc-950/80 p-1 rounded-full border border-zinc-200/80 dark:border-zinc-800/80 shadow-inner">
             <NavItem to="/">Home</NavItem>
             <NavItem to="/today">Detailed</NavItem>
             <NavItem to="/calendar">Calendar</NavItem>
             <NavItem to="/timetable">Class Timetable</NavItem>
-          </nav>
+          </motion.nav>
 
           {/* Right Actions & Profile Dropdown */}
           <div className="flex items-center gap-2">
@@ -978,7 +978,12 @@ function NavItem({ to, children }) {
           {isActive && (
             <motion.div
               layoutId="morphic-active-pill"
-              transition={{ type: "spring", stiffness: 380, damping: 30 }}
+              transition={{
+                type: "spring",
+                stiffness: 400,
+                damping: 32,
+                y: { duration: 0 }
+              }}
               className="absolute inset-0 bg-white dark:bg-zinc-800 rounded-xl shadow-sm border border-zinc-200/80 dark:border-zinc-700/60"
             />
           )}

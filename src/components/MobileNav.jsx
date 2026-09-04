@@ -11,7 +11,7 @@ const links = [
 
 export default function MobileNav() {
   return (
-    <nav className="fixed bottom-4 left-3 right-3 sm:hidden z-40 max-w-md mx-auto h-16 rounded-full bg-white/90 dark:bg-zinc-900/90 border border-zinc-200/80 dark:border-zinc-800/80 shadow-[0_10px_35px_rgba(0,0,0,0.15)] dark:shadow-[0_10px_35px_rgba(0,0,0,0.6)] backdrop-blur-2xl px-2 flex items-center justify-between">
+    <motion.nav layoutRoot className="fixed bottom-4 left-3 right-3 sm:hidden z-40 max-w-md mx-auto h-16 rounded-full bg-white/90 dark:bg-zinc-900/90 border border-zinc-200/80 dark:border-zinc-800/80 shadow-[0_10px_35px_rgba(0,0,0,0.15)] dark:shadow-[0_10px_35px_rgba(0,0,0,0.6)] backdrop-blur-2xl px-2 flex items-center justify-between">
       <div className="flex items-center justify-around flex-1 h-full">
         {links.map((link) => (
           <NavLink
@@ -31,7 +31,12 @@ export default function MobileNav() {
                 {isActive && (
                   <motion.div
                     layoutId="mobile-dock-active-pill"
-                    transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                    transition={{
+                      type: "spring",
+                      stiffness: 400,
+                      damping: 30,
+                      y: { duration: 0 }
+                    }}
                     className="absolute inset-0 bg-zinc-100 dark:bg-zinc-800 rounded-full border border-zinc-200/80 dark:border-zinc-700/60 shadow-xs"
                   />
                 )}
@@ -52,6 +57,6 @@ export default function MobileNav() {
       <div className="flex items-center justify-center pl-1 pr-1 shrink-0">
         <ThemeToggle />
       </div>
-    </nav>
+    </motion.nav>
   );
 }

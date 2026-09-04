@@ -31,6 +31,16 @@ const optionStyles = {
   }
 };
 
+const statusPillStyles = {
+  present: "bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 border-emerald-500/30",
+  absent: "bg-rose-500/20 text-rose-700 dark:text-rose-300 border-rose-500/30",
+  free: "bg-sky-500/20 text-sky-700 dark:text-sky-300 border-sky-500/30",
+  cancelled: "bg-zinc-200/80 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border-zinc-300 dark:border-zinc-700",
+  holiday: "bg-sky-500/20 text-sky-700 dark:text-sky-300 border-sky-500/30",
+  exam: "bg-purple-500/20 text-purple-700 dark:text-purple-300 border-purple-500/30",
+  pending: "bg-zinc-100 dark:bg-zinc-800/60 text-zinc-500 dark:text-zinc-400 border-zinc-200 dark:border-zinc-800",
+};
+
 export default function QuickTodayAttendance({ open, onClose }) {
   const { currentSemester, markTodayAttendance, updateDayLectures, resetDayLecturesToDefault } = useSemester();
   const [isEditing, setIsEditing] = useState(false);
@@ -159,21 +169,21 @@ export default function QuickTodayAttendance({ open, onClose }) {
       ) : (
         <>
           {/* Header with Title and Edit Timetable Button */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 mb-4 pb-3 border-b border-zinc-100 dark:border-zinc-800/80">
-            <div className="space-y-0.5">
-              <div className="flex items-center gap-2 flex-wrap">
-                <h2 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-gray-100 tracking-tight">
-                  Mark Today’s Attendance
-                </h2>
-                {isCustom && (
-                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30 whitespace-nowrap shrink-0">
-                    <span>✨</span> Custom Schedule
-                  </span>
-                )}
-              </div>
+          <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-2.5 mb-4 pb-3 border-b border-zinc-100 dark:border-zinc-800/80">
+            <div className="space-y-1">
+              <h2 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-gray-100 tracking-tight">
+                Mark Today’s Attendance
+              </h2>
               <p className="text-xs text-gray-500 dark:text-gray-400">
                 Mark your presence or select lecture status below.
               </p>
+              {isCustom && (
+                <div className="pt-0.5">
+                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30 whitespace-nowrap shrink-0">
+                    <span>✨</span> Custom Schedule
+                  </span>
+                </div>
+              )}
             </div>
 
             {/* Edit 1-Day Timetable Button */}
@@ -211,7 +221,7 @@ export default function QuickTodayAttendance({ open, onClose }) {
                       </p>
                     </div>
                     {status && (
-                      <span className="px-2 py-0.5 rounded-lg text-[10px] font-extrabold uppercase tracking-wider bg-zinc-200/60 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300">
+                      <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider border shadow-2xs ${statusPillStyles[String(status).toLowerCase()] || statusPillStyles.pending}`}>
                         {status}
                       </span>
                     )}

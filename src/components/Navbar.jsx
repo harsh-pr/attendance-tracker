@@ -644,7 +644,7 @@ export default function Navbar() {
       </Modal>
 
       <Modal open={isTimetableOpen} onClose={() => setIsTimetableOpen(false)} size="xl" showCloseButton={false}>
-        <div className="space-y-4 text-gray-900 dark:text-gray-100 max-h-[80vh] overflow-y-auto pr-1">
+        <div className="space-y-4 text-gray-900 dark:text-gray-100 pr-1">
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-xl font-semibold">Edit Timetable — {currentSemesterName}</h2>

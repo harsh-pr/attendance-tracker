@@ -156,7 +156,23 @@ export default function SubjectCalendarModal({ open, onClose, data }) {
   };
 
   return (
-    <Modal open={open} onClose={onClose} size="xl">
+    <Modal
+      open={open}
+      onClose={onClose}
+      size="lg"
+      footer={
+        <div className="flex flex-wrap items-center gap-1.5 py-0.5">
+          {Object.entries(statusConfig).map(([key, config]) => (
+            <span
+              key={key}
+              className={`rounded-full px-2 py-0.5 text-[9px] sm:text-[10px] font-bold uppercase tracking-wider ${config.badge}`}
+            >
+              {config.label}
+            </span>
+          ))}
+        </div>
+      }
+    >
       <div className="flex flex-col gap-2.5">
         {/* Header Stats */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-zinc-200 dark:border-zinc-800 pb-2.5">
@@ -196,21 +212,21 @@ export default function SubjectCalendarModal({ open, onClose, data }) {
         </div>
 
         {/* Calendar Grid */}
-        <div className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-100/70 dark:bg-zinc-950/80 p-1.5">
+        <div className="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-zinc-100/70 dark:bg-zinc-950/80 p-2">
           <div className="grid grid-cols-7 gap-1 sm:gap-1.5">
-            {leadingBlanks.map(blank => <div key={blank.key} className="h-8 sm:h-9 rounded-lg border border-transparent" />)}
+            {leadingBlanks.map(blank => <div key={blank.key} className="h-10 sm:h-12 rounded-xl border border-transparent" />)}
             {calendarDays.map((day, index) => {
               const config = statusConfig[day.status];
               return (
                 <div key={day.dayNumber}
-                  className={`group relative overflow-hidden flex flex-col justify-between min-h-[2.2rem] sm:min-h-[2.5rem] h-auto rounded-lg border border-zinc-200/80 dark:border-zinc-800/80 bg-white dark:bg-zinc-900 p-1 text-[10px] sm:text-xs font-semibold transition ${config.tile} ${
+                  className={`group relative overflow-hidden flex flex-col justify-between min-h-[3.25rem] sm:min-h-[3.75rem] h-auto rounded-xl border border-zinc-200/80 dark:border-zinc-800/80 bg-white dark:bg-zinc-900 p-1.5 text-[10px] sm:text-xs font-semibold transition ${config.tile} ${
                     day.isToday ? "ring-2 ring-blue-500 dark:ring-blue-400 !opacity-100" : ""
                   } hover:-translate-y-0.5 hover:border-zinc-300 hover:shadow-md dark:hover:border-zinc-700`}
                   style={{ animation: "fadeUp 0.4s ease-out", animationDelay: `${(index % 7) * 40}ms`, animationFillMode: "both" }}>
                   <div className="w-full flex items-center justify-between text-[9px] sm:text-[10px] text-zinc-500 dark:text-zinc-400 font-semibold leading-none">
                     <span>{day.dayNumber}</span>
                   </div>
-                  <p className="mt-1 w-full text-center text-[7px] sm:text-[8px] font-bold uppercase tracking-wider truncate pb-0.5 select-none">{config.label}</p>
+                  <p className="mt-1 w-full text-center text-[8px] sm:text-[9px] font-bold uppercase tracking-wider truncate pb-0.5 select-none">{config.label}</p>
                   {day.status === "holiday" && (
                     <svg className="absolute inset-0 w-full h-full pointer-events-none stroke-zinc-300 dark:stroke-zinc-800 opacity-60 dark:opacity-40" viewBox="0 0 100 100" preserveAspectRatio="none">
                       <line x1="0" y1="0" x2="100" y2="100" strokeWidth="1.5" />
@@ -221,15 +237,6 @@ export default function SubjectCalendarModal({ open, onClose, data }) {
               );
             })}
           </div>
-        </div>
-
-        {/* Legend */}
-        <div className="flex flex-wrap gap-1.5 justify-center pt-2 border-t border-zinc-200 dark:border-zinc-800">
-          {Object.entries(statusConfig).map(([key, config]) => (
-            <span key={key} className={`rounded-full px-2 py-0.5 text-[9px] sm:text-[10px] font-bold uppercase tracking-wider ${config.badge}`}>
-              {config.label}
-            </span>
-          ))}
         </div>
       </div>
     </Modal>

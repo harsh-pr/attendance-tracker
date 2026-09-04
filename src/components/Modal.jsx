@@ -69,7 +69,7 @@ export default function Modal({
               bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100
               border border-zinc-200 dark:border-zinc-800
               p-4 sm:p-5 shadow-2xl
-              max-h-[94vh] sm:max-h-[92vh] flex flex-col overflow-hidden
+              max-h-[92vh] sm:max-h-[88vh] flex flex-col overflow-hidden
               will-change-transform
             `}
           >
@@ -91,7 +91,7 @@ export default function Modal({
             {/* Bottom Actions Footer */}
             {(showCloseButton || footer) && (
               <div className="mt-3.5 pt-2.5 border-t border-zinc-200 dark:border-zinc-800 flex items-center justify-between gap-2 shrink-0">
-                <div className="flex items-center gap-2 flex-wrap">
+                <div className="flex-1 min-w-0 flex items-center gap-2 flex-wrap">
                   {footer}
                 </div>
                 {showCloseButton && (
@@ -103,7 +103,7 @@ export default function Modal({
                       px-4 py-2 rounded-xl
                       bg-zinc-900 text-white dark:bg-zinc-800 dark:hover:bg-zinc-700 dark:text-zinc-200
                       text-xs font-bold shadow-sm
-                      cursor-pointer transition-all duration-150 shrink-0
+                      cursor-pointer transition-all duration-150 shrink-0 ml-auto
                     "
                   >
                     Close

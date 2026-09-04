@@ -56,12 +56,14 @@ const exportPalette = {
 };
 
 const lectureStatusStyles = {
-  present:   "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-200",
-  partial:   "bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-200",
-  absent:    "bg-rose-100 text-rose-700 dark:bg-rose-500/20 dark:text-rose-200",
-  cancelled: "bg-gray-100 text-gray-600 dark:bg-gray-500/20 dark:text-gray-300",
-  free:      "bg-sky-100 text-sky-700 dark:bg-sky-500/20 dark:text-sky-200",
-  pending:   "bg-gray-100 text-gray-600 dark:bg-gray-500/20 dark:text-gray-300",
+  present:   "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-500/30",
+  partial:   "bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-300 border border-amber-300 dark:border-amber-500/30",
+  absent:    "bg-rose-100 text-rose-700 dark:bg-rose-500/20 dark:text-rose-300 border border-rose-300 dark:border-rose-500/30",
+  cancelled: "bg-zinc-200/80 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300 border border-zinc-300 dark:border-zinc-700",
+  free:      "bg-sky-100 text-sky-700 dark:bg-sky-500/20 dark:text-sky-300 border border-sky-300 dark:border-sky-500/30",
+  holiday:   "bg-sky-100 text-sky-700 dark:bg-sky-500/20 dark:text-sky-300 border border-sky-300 dark:border-sky-500/30",
+  exam:      "bg-purple-100 text-purple-700 dark:bg-purple-500/20 dark:text-purple-300 border border-purple-300 dark:border-purple-500/30",
+  pending:   "bg-zinc-100 text-zinc-600 dark:bg-zinc-800/60 dark:text-zinc-400 border border-zinc-200 dark:border-zinc-800",
 };
 
 const optionStyles = {
@@ -1283,11 +1285,18 @@ export default function Calendar() {
               const currentStatus = partialSelection[key] ?? "absent";
               return (
                 <div key={`partial-${key}`} className="rounded-2xl p-4 border border-gray-100 dark:border-gray-800/80 bg-gray-50/50 dark:bg-gray-900/40 space-y-3">
-                  <div>
-                    <span className="font-bold text-sm text-gray-900 dark:text-gray-100">{subject?.name ?? lecture.subjectId}</span>
-                    <p className="text-[10px] text-gray-400 dark:text-gray-500 font-bold uppercase tracking-wider mt-0.5">
-                      {lecture.type || subject?.type || "lecture"}
-                    </p>
+                  <div className="flex items-start justify-between gap-2">
+                    <div>
+                      <span className="font-bold text-sm text-gray-900 dark:text-gray-100">{subject?.name ?? lecture.subjectId}</span>
+                      <p className="text-[10px] text-gray-400 dark:text-gray-500 font-bold uppercase tracking-wider mt-0.5">
+                        {lecture.type || subject?.type || "lecture"}
+                      </p>
+                    </div>
+                    {currentStatus && (
+                      <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider border shadow-2xs ${lectureStatusStyles[String(currentStatus).toLowerCase()] || lectureStatusStyles.pending}`}>
+                        {currentStatus}
+                      </span>
+                    )}
                   </div>
                   <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
                     {["present", "absent", "free", "cancelled"].map(val => {

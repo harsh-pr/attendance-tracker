@@ -38,6 +38,13 @@ export default function Today() {
     (item) => item.subject.type === "lab"
   );
 
+  const theoryConducted = theorySubjects.reduce((sum, item) => sum + item.conducted, 0);
+  const theoryAttended = theorySubjects.reduce((sum, item) => sum + item.attended, 0);
+  const labConducted = labSubjects.reduce((sum, item) => sum + item.conducted, 0);
+  const labAttended = labSubjects.reduce((sum, item) => sum + item.attended, 0);
+  const totalConducted = theoryConducted + labConducted;
+  const totalAttended = theoryAttended + labAttended;
+
   return (
     <motion.div
       variants={containerVariants}
@@ -46,7 +53,7 @@ export default function Today() {
       className="max-w-6xl mx-auto px-4 pt-6 space-y-6"
     >
       {/* ===== EXECUTIVE SECTION HEADER ===== */}
-      <motion.div variants={cardVariants} className="space-y-1">
+      <motion.div variants={cardVariants} className="space-y-2">
         <div className="flex items-center gap-2.5">
           <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-zinc-900 dark:text-white font-[Poppins]">
             Subject-wise <span className="bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500 dark:from-blue-400 dark:via-indigo-400 dark:to-purple-400 bg-clip-text text-transparent">Attendance</span>
@@ -58,6 +65,26 @@ export default function Today() {
         <p className="text-xs sm:text-sm font-medium text-zinc-500 dark:text-zinc-400">
           Theory & Lab attendance till date • Click any subject card to view interactive calendar logs
         </p>
+
+        {/* Classes Conducted Summary Line */}
+        <div className="flex flex-wrap items-center gap-2 pt-1 text-xs">
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-zinc-100 dark:bg-zinc-800/90 border border-zinc-200 dark:border-zinc-700/80 text-zinc-800 dark:text-zinc-200 font-semibold shadow-xs">
+            <span className="text-zinc-400">📊</span>
+            <span>Total Classes Conducted:</span>
+            <span className="font-extrabold text-zinc-900 dark:text-white">{totalConducted}</span>
+            <span className="text-[10px] text-zinc-400 font-normal">({totalAttended} attended)</span>
+          </span>
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-blue-500/10 text-blue-700 dark:text-blue-300 border border-blue-500/20 font-semibold">
+            <span>Theory:</span>
+            <span className="font-extrabold">{theoryConducted}</span>
+            <span className="text-[10px] opacity-75 font-normal">({theoryAttended} attended)</span>
+          </span>
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-purple-500/10 text-purple-700 dark:text-purple-300 border border-purple-500/20 font-semibold">
+            <span>Lab:</span>
+            <span className="font-extrabold">{labConducted}</span>
+            <span className="text-[10px] opacity-75 font-normal">({labAttended} attended)</span>
+          </span>
+        </div>
       </motion.div>
 
       {/* ===== SUBJECT GRID ===== */}

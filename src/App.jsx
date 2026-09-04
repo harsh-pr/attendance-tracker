@@ -1,3 +1,4 @@
+import { useEffect, useLayoutEffect } from "react";
 import { BrowserRouter, Routes, Route, useLocation, Navigate } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 
@@ -15,6 +16,26 @@ import OnboardingSetup from "./pages/OnboardingSetup";
 
 import { SemesterProvider, useSemester } from "./context/SemesterContext";
 import { useAuth } from "./context/AuthContext";
+
+function ScrollToTop() {
+  const { pathname } = useLocation();
+
+  useEffect(() => {
+    // Disable browser automatic scroll restoration so it doesn't fight route navigation
+    if ("scrollRestoration" in window.history) {
+      window.history.scrollRestoration = "manual";
+    }
+  }, []);
+
+  useLayoutEffect(() => {
+    // Instantly scroll window and root containers to top on every route change
+    window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+  }, [pathname]);
+
+  return null;
+}
 
 export default function App() {
   const { user, loading } = useAuth();
@@ -54,6 +75,11 @@ function AnimatedRoutes() {
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: -10 }}
         transition={{ duration: 0.2, ease: "easeOut" }}
+        onAnimationStart={() => {
+          window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+          document.documentElement.scrollTop = 0;
+          document.body.scrollTop = 0;
+        }}
       >
         <Routes location={location}>
           <Route path="/" element={<Home />} />
@@ -77,6 +103,7 @@ function AppContent() {
 
   return (
     <BrowserRouter>
+      <ScrollToTop />
       {/* Runs on every page — schedules reminder notifications globally */}
       <ReminderScheduler />
 

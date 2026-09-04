@@ -174,6 +174,13 @@ export default function AiTimetable() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [isOptionsMenuOpen]);
 
+  // Scroll to top when switching internal timetable tabs
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+  }, [activeTab]);
+
   // Cell edit modal drafts
   const [cellSubject, setCellSubject] = useState("");
   const [cellTeacher, setCellTeacher] = useState("");

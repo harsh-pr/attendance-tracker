@@ -150,13 +150,18 @@ export default function DayLecturesEditor({
                   className="rounded-2xl border border-zinc-200 dark:border-zinc-800/80 bg-zinc-50/70 dark:bg-zinc-900/60 p-3.5 space-y-3 shadow-xs"
                 >
                   <div className="flex items-center justify-between gap-2">
-                    <div className="flex items-center gap-2">
-                      <span className="flex items-center justify-center w-6 h-6 rounded-lg bg-zinc-200 dark:bg-zinc-800 text-[11px] font-black text-zinc-700 dark:text-zinc-300">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="flex items-center justify-center w-6 h-6 rounded-lg bg-zinc-200 dark:bg-zinc-800 text-[11px] font-black text-zinc-700 dark:text-zinc-300 shrink-0">
                         {index + 1}
                       </span>
-                      <span className="text-xs font-bold text-zinc-800 dark:text-zinc-200 truncate max-w-[200px] sm:max-w-xs">
+                      <span className="text-xs font-bold text-zinc-800 dark:text-zinc-200 truncate max-w-[180px] sm:max-w-xs">
                         {sub ? sub.name : lecture.subjectId}
                       </span>
+                      {sub?.type && (
+                        <span className="text-[9px] font-extrabold uppercase tracking-wider px-2 py-0.5 rounded-md bg-zinc-200/80 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 shrink-0">
+                          {sub.type}
+                        </span>
+                      )}
                     </div>
 
                     {/* Reorder and Delete Controls */}
@@ -196,49 +201,22 @@ export default function DayLecturesEditor({
                     </div>
                   </div>
 
-                  {/* Subject Dropdown & Type Selector */}
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
-                    <div className="sm:col-span-2">
-                      <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-400 dark:text-zinc-500 mb-1">
-                        Subject
-                      </label>
-                      <select
-                        value={lecture.subjectId}
-                        onChange={(e) => handleUpdateLecture(index, "subjectId", e.target.value)}
-                        className="w-full rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 px-3 py-2 text-xs font-semibold text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
-                      >
-                        {subjects.map((s) => (
-                          <option key={s.id} value={s.id}>
-                            {s.name} ({s.type?.toUpperCase() || "THEORY"})
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-
-                    <div>
-                      <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-400 dark:text-zinc-500 mb-1">
-                        Type
-                      </label>
-                      <div className="grid grid-cols-2 gap-1 bg-zinc-200/70 dark:bg-zinc-800 p-1 rounded-xl">
-                        {["theory", "lab"].map((typeOption) => {
-                          const active = (lecture.type || "theory").toLowerCase() === typeOption;
-                          return (
-                            <button
-                              key={typeOption}
-                              type="button"
-                              onClick={() => handleUpdateLecture(index, "type", typeOption)}
-                              className={`py-1.5 rounded-lg text-[11px] font-bold capitalize transition-all cursor-pointer ${
-                                active
-                                  ? "bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white shadow-xs"
-                                  : "text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200"
-                              }`}
-                            >
-                              {typeOption}
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </div>
+                  {/* Subject Dropdown */}
+                  <div>
+                    <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-400 dark:text-zinc-500 mb-1">
+                      Subject
+                    </label>
+                    <select
+                      value={lecture.subjectId}
+                      onChange={(e) => handleUpdateLecture(index, "subjectId", e.target.value)}
+                      className="w-full rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 px-3 py-2 text-xs font-semibold text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
+                    >
+                      {subjects.map((s) => (
+                        <option key={s.id} value={s.id}>
+                          {s.name} ({s.type?.toUpperCase() || "THEORY"})
+                        </option>
+                      ))}
+                    </select>
                   </div>
 
                   {/* Direct Attendance Status Option (optional quick mark) */}

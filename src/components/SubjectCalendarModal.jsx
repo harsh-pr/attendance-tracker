@@ -157,62 +157,60 @@ export default function SubjectCalendarModal({ open, onClose, data }) {
 
   return (
     <Modal open={open} onClose={onClose} size="xl">
-      <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-2.5">
         {/* Header Stats */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-zinc-200 dark:border-zinc-800 pb-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-zinc-200 dark:border-zinc-800 pb-2.5">
           <div>
             <div className="flex items-center gap-2">
-              <h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-100">{subject.name}</h2>
-              <span className={`text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full ${statusStyles[status]}`}>{status}</span>
+              <h2 className="text-lg sm:text-xl font-bold text-zinc-900 dark:text-zinc-100">{subject.name}</h2>
+              <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ${statusStyles[status]}`}>{status}</span>
             </div>
-            <p className="text-xs font-semibold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider mt-0.5">{subject.type} Attendance History</p>
+            <p className="text-[11px] font-semibold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider mt-0.5">{subject.type} Attendance History</p>
           </div>
-          <div className="flex items-center gap-4 text-right">
+          <div className="flex items-center gap-3 text-right shrink-0">
             <div>
-              <p className="text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wide">Attendance</p>
-              <p className="text-sm font-bold text-zinc-800 dark:text-zinc-100 mt-0.5">{attended} / {conducted} Lectures</p>
+              <p className="text-[9px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wide">Attendance</p>
+              <p className="text-xs sm:text-sm font-bold text-zinc-800 dark:text-zinc-100">{attended} / {conducted} Lectures</p>
             </div>
-            <div className="border-l border-zinc-200 dark:border-zinc-800 pl-4">
-              <p className="text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wide">Percentage</p>
-              <p className={`text-lg font-black mt-0.5 ${percentage >= 75 ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400"}`}>{percentage}%</p>
+            <div className="border-l border-zinc-200 dark:border-zinc-800 pl-3">
+              <p className="text-[9px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wide">Percentage</p>
+              <p className={`text-base sm:text-lg font-black ${percentage >= 75 ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400"}`}>{percentage}%</p>
             </div>
           </div>
         </div>
 
         {/* Calendar Nav */}
         <div className="flex items-center justify-between">
-          <div className="space-y-0.5">
-            <h3 className="text-xl font-bold text-zinc-900 dark:text-white">{monthLabel}</h3>
-          </div>
-          <div className="flex items-center gap-5">
+          <h3 className="text-base sm:text-lg font-bold text-zinc-900 dark:text-white">{monthLabel}</h3>
+          <div className="flex items-center gap-4">
             <button type="button" onClick={() => setActiveMonthDate(prev => new Date(prev.getFullYear(), prev.getMonth() - 1, 1))}
-              aria-label="Previous month" className="text-3xl leading-none text-zinc-600 transition hover:scale-110 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white cursor-pointer">←</button>
+              aria-label="Previous month" className="text-2xl leading-none text-zinc-600 transition hover:scale-110 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white cursor-pointer">←</button>
             <button type="button" onClick={() => setActiveMonthDate(prev => new Date(prev.getFullYear(), prev.getMonth() + 1, 1))}
-              aria-label="Next month" className="text-3xl leading-none text-zinc-600 transition hover:scale-110 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white cursor-pointer">→</button>
+              aria-label="Next month" className="text-2xl leading-none text-zinc-600 transition hover:scale-110 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white cursor-pointer">→</button>
           </div>
         </div>
 
         {/* Grid Headers */}
-        <div className="grid grid-cols-7 gap-2 text-[10px] sm:text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400 text-center">
+        <div className="grid grid-cols-7 gap-1 sm:gap-1.5 text-[10px] font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400 text-center">
           {weekDays.map(day => <div key={day}>{day}</div>)}
         </div>
 
         {/* Calendar Grid */}
-        <div className="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-zinc-100/70 dark:bg-zinc-950/80 p-2">
-          <div className="grid grid-cols-7 gap-1 sm:gap-2">
-            {leadingBlanks.map(blank => <div key={blank.key} className="h-12 sm:h-14 rounded-lg border border-transparent" />)}
+        <div className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-100/70 dark:bg-zinc-950/80 p-1.5">
+          <div className="grid grid-cols-7 gap-1 sm:gap-1.5">
+            {leadingBlanks.map(blank => <div key={blank.key} className="h-8 sm:h-9 rounded-lg border border-transparent" />)}
             {calendarDays.map((day, index) => {
               const config = statusConfig[day.status];
               return (
                 <div key={day.dayNumber}
-                  className={`group relative overflow-hidden flex flex-col justify-between min-h-[3.25rem] sm:min-h-[3.75rem] h-auto rounded-lg border border-zinc-200/80 dark:border-zinc-800/80 bg-white dark:bg-zinc-900 p-1.5 text-[11px] sm:text-sm font-semibold transition ${config.tile} ${
+                  className={`group relative overflow-hidden flex flex-col justify-between min-h-[2.2rem] sm:min-h-[2.5rem] h-auto rounded-lg border border-zinc-200/80 dark:border-zinc-800/80 bg-white dark:bg-zinc-900 p-1 text-[10px] sm:text-xs font-semibold transition ${config.tile} ${
                     day.isToday ? "ring-2 ring-blue-500 dark:ring-blue-400 !opacity-100" : ""
-                  } hover:-translate-y-0.5 hover:border-zinc-300 hover:shadow-lg dark:hover:border-zinc-700`}
-                  style={{ animation: "fadeUp 0.5s ease-out", animationDelay: `${(index % 7) * 50}ms`, animationFillMode: "both" }}>
-                  <div className="w-full flex items-center justify-between text-[10px] sm:text-xs text-zinc-500 dark:text-zinc-400 font-semibold">
+                  } hover:-translate-y-0.5 hover:border-zinc-300 hover:shadow-md dark:hover:border-zinc-700`}
+                  style={{ animation: "fadeUp 0.4s ease-out", animationDelay: `${(index % 7) * 40}ms`, animationFillMode: "both" }}>
+                  <div className="w-full flex items-center justify-between text-[9px] sm:text-[10px] text-zinc-500 dark:text-zinc-400 font-semibold leading-none">
                     <span>{day.dayNumber}</span>
                   </div>
-                  <p className="mt-2 w-full text-center text-[8px] sm:text-[9px] font-bold uppercase tracking-wider truncate pb-0.5 select-none">{config.label}</p>
+                  <p className="mt-1 w-full text-center text-[7px] sm:text-[8px] font-bold uppercase tracking-wider truncate pb-0.5 select-none">{config.label}</p>
                   {day.status === "holiday" && (
                     <svg className="absolute inset-0 w-full h-full pointer-events-none stroke-zinc-300 dark:stroke-zinc-800 opacity-60 dark:opacity-40" viewBox="0 0 100 100" preserveAspectRatio="none">
                       <line x1="0" y1="0" x2="100" y2="100" strokeWidth="1.5" />
@@ -226,9 +224,9 @@ export default function SubjectCalendarModal({ open, onClose, data }) {
         </div>
 
         {/* Legend */}
-        <div className="flex flex-wrap gap-2 justify-center pt-3 border-t border-zinc-200 dark:border-zinc-800">
+        <div className="flex flex-wrap gap-1.5 justify-center pt-2 border-t border-zinc-200 dark:border-zinc-800">
           {Object.entries(statusConfig).map(([key, config]) => (
-            <span key={key} className={`rounded-full px-3 py-1 text-[11px] font-bold uppercase tracking-wider ${config.badge}`}>
+            <span key={key} className={`rounded-full px-2 py-0.5 text-[9px] sm:text-[10px] font-bold uppercase tracking-wider ${config.badge}`}>
               {config.label}
             </span>
           ))}

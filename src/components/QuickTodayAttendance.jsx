@@ -159,15 +159,15 @@ export default function QuickTodayAttendance({ open, onClose }) {
       ) : (
         <>
           {/* Header with Title and Edit Timetable Button */}
-          <div className="flex items-start justify-between gap-2 mb-4">
-            <div className="flex flex-col gap-0.5">
-              <div className="flex items-center gap-2">
-                <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 mb-4 pb-3 border-b border-zinc-100 dark:border-zinc-800/80">
+            <div className="space-y-0.5">
+              <div className="flex items-center gap-2 flex-wrap">
+                <h2 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-gray-100 tracking-tight">
                   Mark Today’s Attendance
                 </h2>
                 {isCustom && (
-                  <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30">
-                    Custom Schedule
+                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30 whitespace-nowrap shrink-0">
+                    <span>✨</span> Custom Schedule
                   </span>
                 )}
               </div>
@@ -180,12 +180,11 @@ export default function QuickTodayAttendance({ open, onClose }) {
             <button
               type="button"
               onClick={() => setIsEditing(true)}
-              className="px-3 py-1.5 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-700 text-xs font-bold text-zinc-700 dark:text-zinc-200 shadow-xs cursor-pointer flex items-center gap-1.5 transition active:scale-95 shrink-0"
+              className="self-start sm:self-center px-3 py-1.5 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-700 text-xs font-bold text-zinc-700 dark:text-zinc-200 shadow-xs cursor-pointer flex items-center gap-1.5 transition active:scale-95 shrink-0 whitespace-nowrap"
               title="Edit lectures for today only if timetable changed"
             >
               <span>✏️</span>
-              <span className="hidden sm:inline">Edit Today&apos;s Lectures</span>
-              <span className="sm:hidden">Edit</span>
+              <span>Edit Today&apos;s Lectures</span>
             </button>
           </div>
 

@@ -15,6 +15,7 @@ export default function Modal({
   size = "md",
   showCloseButton = true,
   title,
+  footer,
 }) {
   // Lock background body scroll when open
   useEffect(() => {
@@ -67,17 +68,17 @@ export default function Modal({
               rounded-t-3xl sm:rounded-3xl
               bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100
               border border-zinc-200 dark:border-zinc-800
-              p-5 sm:p-6 shadow-2xl
-              max-h-[88vh] sm:max-h-[85vh] flex flex-col overflow-hidden
+              p-4 sm:p-5 shadow-2xl
+              max-h-[94vh] sm:max-h-[92vh] flex flex-col overflow-hidden
               will-change-transform
             `}
           >
             {/* Functional Kokonut UI Drag-to-Dismiss Handle Bar */}
-            <div className="w-16 h-2 bg-zinc-300 dark:bg-zinc-600 rounded-full mx-auto mb-4 shrink-0 cursor-grab active:cursor-grabbing hover:bg-zinc-400 dark:hover:bg-zinc-500 transition-colors shadow-inner" />
+            <div className="w-12 h-1.5 bg-zinc-300 dark:bg-zinc-600 rounded-full mx-auto mb-3 shrink-0 cursor-grab active:cursor-grabbing hover:bg-zinc-400 dark:hover:bg-zinc-500 transition-colors shadow-inner" />
 
             {/* Optional Header Title */}
             {title && (
-              <div className="mb-4 pb-3 border-b border-zinc-200 dark:border-zinc-800 flex items-center justify-between">
+              <div className="mb-3 pb-2.5 border-b border-zinc-200 dark:border-zinc-800 flex items-center justify-between">
                 <h3 className="text-lg font-bold text-zinc-900 dark:text-white">{title}</h3>
               </div>
             )}
@@ -88,21 +89,26 @@ export default function Modal({
             </div>
 
             {/* Bottom Actions Footer */}
-            {showCloseButton && (
-              <div className="mt-5 pt-3 border-t border-zinc-200 dark:border-zinc-800 flex justify-end shrink-0">
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={onClose}
-                  className="
-                    px-5 py-2.5 rounded-xl
-                    bg-zinc-900 text-white dark:bg-zinc-800 dark:hover:bg-zinc-700 dark:text-zinc-200
-                    text-xs font-bold shadow-sm
-                    cursor-pointer transition-all duration-150
-                  "
-                >
-                  Close
-                </motion.button>
+            {(showCloseButton || footer) && (
+              <div className="mt-3.5 pt-2.5 border-t border-zinc-200 dark:border-zinc-800 flex items-center justify-between gap-2 shrink-0">
+                <div className="flex items-center gap-2 flex-wrap">
+                  {footer}
+                </div>
+                {showCloseButton && (
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={onClose}
+                    className="
+                      px-4 py-2 rounded-xl
+                      bg-zinc-900 text-white dark:bg-zinc-800 dark:hover:bg-zinc-700 dark:text-zinc-200
+                      text-xs font-bold shadow-sm
+                      cursor-pointer transition-all duration-150 shrink-0
+                    "
+                  >
+                    Close
+                  </motion.button>
+                )}
               </div>
             )}
           </motion.div>

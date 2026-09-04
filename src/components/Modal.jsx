@@ -16,6 +16,7 @@ export default function Modal({
   showCloseButton = true,
   title,
   footer,
+  noScroll = false,
 }) {
   // Lock background body scroll when open
   useEffect(() => {
@@ -48,7 +49,7 @@ export default function Modal({
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          transition={{ duration: 0.25, ease: "easeOut" }}
+          transition={{ duration: 0.3, ease: "easeOut" }}
           onClick={onClose}
           className="fixed inset-0 z-[9999] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/60 backdrop-blur-sm"
         >
@@ -101,8 +102,8 @@ export default function Modal({
               </div>
             )}
 
-            {/* Scrollable Content Area */}
-            <div className="overflow-y-auto flex-1 no-scrollbar">
+            {/* Content Area - conditional scrolling */}
+            <div className={`flex-1 ${noScroll ? "overflow-hidden" : "overflow-y-auto no-scrollbar"}`}>
               {children}
             </div>
 

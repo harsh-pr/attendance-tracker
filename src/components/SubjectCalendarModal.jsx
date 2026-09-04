@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Modal from "./Modal";
 import { useSemester } from "../context/SemesterContext";
 import { getLecturesForDate } from "../utils/timetableUtils";
@@ -68,7 +68,17 @@ function parseDateString(dateString) {
 
 export default function SubjectCalendarModal({ open, onClose, data }) {
   const { currentSemester } = useSemester();
-  const { subject, attended, conducted, percentage, status } = data;
+
+  // Cache data so when closing, contents remain mounted during the exit animation
+  const [cachedData, setCachedData] = useState(data);
+  useEffect(() => {
+    if (data) setCachedData(data);
+  }, [data]);
+
+  const activeData = data || cachedData;
+  if (!activeData) return null;
+
+  const { subject, attended, conducted, percentage, status } = activeData;
 
   const attendanceData = useMemo(
     () => currentSemester.attendanceData ?? [],
@@ -160,6 +170,7 @@ export default function SubjectCalendarModal({ open, onClose, data }) {
       open={open}
       onClose={onClose}
       size="lg"
+      noScroll={true}
       footer={
         <div className="flex flex-wrap items-center gap-1.5 py-0.5">
           {Object.entries(statusConfig).map(([key, config]) => (

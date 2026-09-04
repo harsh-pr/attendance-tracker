@@ -102,13 +102,11 @@ export default function Today() {
       </div>
 
       {/* ===== CALENDAR MODAL ===== */}
-      {selectedSubjectData && (
-        <SubjectCalendarModal
-          open={Boolean(selectedSubjectData)}
-          onClose={() => setSelectedSubjectData(null)}
-          data={selectedSubjectData}
-        />
-      )}
+      <SubjectCalendarModal
+        open={Boolean(selectedSubjectData)}
+        onClose={() => setSelectedSubjectData(null)}
+        data={selectedSubjectData}
+      />
     </motion.div>
   );
 }

@@ -161,6 +161,12 @@ export default function Calendar() {
   );
 
   const [selectedDay,       setSelectedDay]       = useState(null);
+  const [cachedSelectedDay, setCachedSelectedDay] = useState(null);
+  useEffect(() => {
+    if (selectedDay) setCachedSelectedDay(selectedDay);
+  }, [selectedDay]);
+  const activeSelectedDay = selectedDay || cachedSelectedDay;
+
   const [allRemindersOpen,  setAllRemindersOpen]  = useState(false);
   const [addReminderOpen,   setAddReminderOpen]   = useState(false);
   const [backfillModalOpen, setBackfillModalOpen] = useState(false);
@@ -1068,7 +1074,7 @@ export default function Calendar() {
         onClose={() => setSelectedDay(null)}
         size="lg"
         footer={
-          selectedDay && (
+          activeSelectedDay && (
             <div className="flex flex-wrap items-center gap-2">
               <button
                 type="button"
@@ -1089,28 +1095,28 @@ export default function Calendar() {
           )
         }
       >
-        {selectedDay && (
+        {activeSelectedDay && (
           <>
             <div className="flex items-start justify-between gap-4 pb-2.5 border-b border-zinc-100 dark:border-zinc-800/80">
               <div>
                 <h2 className="text-lg sm:text-xl font-bold text-zinc-900 dark:text-zinc-100">
-                  {selectedDay.date.toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" })}
+                  {activeSelectedDay.date.toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" })}
                 </h2>
                 <p className="text-xs text-zinc-500 dark:text-zinc-400">Attendance details for the day</p>
               </div>
-              {selectedDay.status && (
-                <span className={`rounded-full px-2.5 py-0.5 text-[11px] font-semibold ${statusConfig[selectedDay.status]?.badge}`}>
-                  {statusConfig[selectedDay.status]?.label}
+              {activeSelectedDay.status && (
+                <span className={`rounded-full px-2.5 py-0.5 text-[11px] font-semibold ${statusConfig[activeSelectedDay.status]?.badge}`}>
+                  {statusConfig[activeSelectedDay.status]?.label}
                 </span>
               )}
             </div>
             <div className="mt-3 space-y-2">
-              {selectedDay.dayEntry?.lectures?.length ? (
-                selectedDay.dayEntry.lectures.map((lecture, index) => {
+              {activeSelectedDay.dayEntry?.lectures?.length ? (
+                activeSelectedDay.dayEntry.lectures.map((lecture, index) => {
                   const subject     = subjectsById.get(lecture.subjectId);
                   const statusLabel = lecture.status || "pending";
                   return (
-                    <div key={`${selectedDay.day}-${lecture.subjectId}-${index}`}
+                    <div key={`${activeSelectedDay.day}-${lecture.subjectId}-${index}`}
                       className="flex items-center justify-between gap-3 rounded-xl border border-zinc-200/90 dark:border-zinc-800/80 bg-zinc-50/80 dark:bg-zinc-900/70 px-3.5 py-2.5">
                       <div className="min-w-0 flex-1">
                         <p className="text-xs sm:text-sm font-semibold text-zinc-900 dark:text-white truncate">{subject?.name ?? lecture.subjectId}</p>
@@ -1124,7 +1130,7 @@ export default function Calendar() {
                 })
               ) : (
                 <div className="rounded-xl border border-dashed border-zinc-300 dark:border-zinc-800 p-4 text-sm text-zinc-500 dark:text-zinc-400 text-center">
-                  {selectedDay.status === "holiday" ? "Holiday · No lectures" : "No lectures recorded for this day."}
+                  {activeSelectedDay.status === "holiday" ? "Holiday · No lectures" : "No lectures recorded for this day."}
                 </div>
               )}
             </div>
@@ -1133,15 +1139,15 @@ export default function Calendar() {
       </Modal>
 
       {/* ── EDIT DAY MODAL ── */}
-      <Modal open={editDayOpen} onClose={() => setEditDayOpen(false)} size="md">
-        <div className="flex flex-col gap-0.5">
-          <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
+      <Modal open={editDayOpen} onClose={() => setEditDayOpen(false)} size="md" noScroll={true}>
+        <div className="flex flex-col gap-0.5 pb-1 border-b border-zinc-100 dark:border-zinc-800/80">
+          <h3 className="text-base sm:text-lg font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
             <span>Mark Attendance</span>
           </h3>
-          <p className="text-xs text-gray-500 dark:text-gray-400">Choose a quick status or update details below.</p>
+          <p className="text-[11px] sm:text-xs text-gray-500 dark:text-gray-400">Choose a quick status or update details below.</p>
         </div>
 
-        <div className="mt-3 space-y-3">
+        <div className="mt-2.5 space-y-2.5">
           {/* Full Day Options */}
           <div>
             <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-gray-500">Quick Full Day Status</span>
@@ -1193,7 +1199,7 @@ export default function Calendar() {
                 },
               ].map(btn => (
                 <button key={btn.status} type="button" onClick={() => handleDayStatusUpdate(btn.status)}
-                  className={`flex items-center gap-2.5 rounded-xl border p-2 text-left transition hover:-translate-y-0.5 hover:shadow-md cursor-pointer ${btn.cls}`}>
+                  className={`flex items-center gap-2 rounded-xl border p-2 text-left transition hover:-translate-y-0.5 hover:shadow-md cursor-pointer ${btn.cls}`}>
                   <div className="rounded-lg p-1.5 bg-white/80 dark:bg-gray-800 shadow-sm flex items-center justify-center shrink-0">{btn.icon}</div>
                   <div className="min-w-0">
                     <div className="font-bold text-xs leading-tight truncate">{btn.label}</div>
@@ -1204,17 +1210,17 @@ export default function Calendar() {
             </div>
           </div>
 
-          {/* Custom Day Changes (Side-by-Side) */}
+          {/* Custom Day Changes (Always 2 Columns Side-by-Side) */}
           <div>
             <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-gray-500">Detailed & Timetable Options</span>
-            <div className="mt-1.5 grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <div className="mt-1.5 grid grid-cols-2 gap-2">
               <button
                 type="button"
                 onClick={() => {
                   setPartialSelection(selectedDayLectures.reduce((acc, l) => { const key = l.slotIndex != null ? `${l.subjectId}::${l.slotIndex}` : l.subjectId; acc[key] = l.status ?? "absent"; return acc; }, {}));
                   setPartialMarkOpen(true);
                 }}
-                className="flex items-center gap-2.5 rounded-xl border border-amber-200/80 dark:border-amber-500/20 bg-amber-50/50 dark:bg-amber-500/5 p-2 text-left text-amber-800 dark:text-amber-300 transition hover:-translate-y-0.5 hover:bg-amber-100/60 dark:hover:bg-amber-500/10 hover:shadow-md cursor-pointer"
+                className="flex items-center gap-2 rounded-xl border border-amber-200/80 dark:border-amber-500/20 bg-amber-50/50 dark:bg-amber-500/5 p-2 text-left text-amber-800 dark:text-amber-300 transition hover:-translate-y-0.5 hover:bg-amber-100/60 dark:hover:bg-amber-500/10 hover:shadow-md cursor-pointer"
               >
                 <div className="rounded-lg p-1.5 bg-white/80 dark:bg-gray-800 shadow-sm flex items-center justify-center shrink-0">
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
@@ -1223,7 +1229,7 @@ export default function Calendar() {
                 </div>
                 <div className="min-w-0">
                   <div className="font-bold text-xs leading-tight truncate">Partial Marking</div>
-                  <div className="text-[10px] opacity-80 mt-0.5 leading-tight truncate">Mark lectures individually</div>
+                  <div className="text-[10px] opacity-80 mt-0.5 leading-tight truncate">Mark individually</div>
                 </div>
               </button>
 
@@ -1233,7 +1239,7 @@ export default function Calendar() {
                   setEditDayOpen(false);
                   setEditTimetableOpen(true);
                 }}
-                className="flex items-center gap-2.5 rounded-xl border border-blue-200/80 dark:border-blue-500/20 bg-blue-50/50 dark:bg-blue-500/5 p-2 text-left text-blue-800 dark:text-blue-300 transition hover:-translate-y-0.5 hover:bg-blue-100/60 dark:hover:bg-blue-500/10 hover:shadow-md cursor-pointer"
+                className="flex items-center gap-2 rounded-xl border border-blue-200/80 dark:border-blue-500/20 bg-blue-50/50 dark:bg-blue-500/5 p-2 text-left text-blue-800 dark:text-blue-300 transition hover:-translate-y-0.5 hover:bg-blue-100/60 dark:hover:bg-blue-500/10 hover:shadow-md cursor-pointer"
               >
                 <div className="rounded-lg p-1.5 bg-white/80 dark:bg-gray-800 shadow-sm flex items-center justify-center shrink-0">
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
@@ -1242,18 +1248,18 @@ export default function Calendar() {
                 </div>
                 <div className="min-w-0">
                   <div className="font-bold text-xs leading-tight truncate">Edit Day's Lectures</div>
-                  <div className="text-[10px] opacity-80 mt-0.5 leading-tight truncate">Change schedule for this date</div>
+                  <div className="text-[10px] opacity-80 mt-0.5 leading-tight truncate">Change schedule</div>
                 </div>
               </button>
             </div>
           </div>
 
           {/* Destructive Action */}
-          <div className="pt-1">
+          <div className="pt-0.5">
             <button
               type="button"
               onClick={() => { if (!selectedDay?.date) return; removeDayAttendance(formatDateKey(selectedDay.date)); setEditDayOpen(false); setSelectedDay(null); }}
-              className="w-full flex items-center justify-center gap-2 rounded-xl border border-rose-200/70 dark:border-rose-500/20 bg-rose-50/30 dark:bg-rose-500/5 py-2 px-3 text-center text-rose-600 dark:text-rose-400 transition hover:bg-rose-100/50 dark:hover:bg-rose-500/10 cursor-pointer active:scale-95"
+              className="w-full flex items-center justify-center gap-2 rounded-xl border border-rose-200/70 dark:border-rose-500/20 bg-rose-50/30 dark:bg-rose-500/5 py-1.5 px-3 text-center text-rose-600 dark:text-rose-400 transition hover:bg-rose-100/50 dark:hover:bg-rose-500/10 cursor-pointer active:scale-95"
             >
               <svg className="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />

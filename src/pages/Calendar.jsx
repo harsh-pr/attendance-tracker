@@ -70,22 +70,22 @@ const optionStyles = {
   present: {
     label: "Present",
     selected: "border-emerald-300 dark:border-emerald-500/30 bg-emerald-50 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 ring-2 ring-emerald-500/20",
-    unselected: "border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 hover:border-emerald-300/60 dark:hover:border-emerald-500/20 hover:bg-emerald-50/20 dark:hover:bg-emerald-500/5"
+    unselected: "border-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-400 hover:border-emerald-300/60 dark:hover:border-emerald-500/20 hover:bg-emerald-50/20 dark:hover:bg-emerald-500/5"
   },
   absent: {
     label: "Absent",
     selected: "border-rose-300 dark:border-rose-500/30 bg-rose-50 dark:bg-rose-500/15 text-rose-700 dark:text-rose-300 ring-2 ring-rose-500/20",
-    unselected: "border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 hover:border-rose-300/60 dark:hover:border-rose-500/20 hover:bg-rose-50/20 dark:hover:bg-rose-500/5"
+    unselected: "border-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-400 hover:border-rose-300/60 dark:hover:border-rose-500/20 hover:bg-rose-50/20 dark:hover:bg-rose-500/5"
   },
   free: {
     label: "Free",
     selected: "border-sky-300 dark:border-sky-500/30 bg-sky-50 dark:bg-sky-500/15 text-sky-700 dark:text-sky-300 ring-2 ring-sky-500/20",
-    unselected: "border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 hover:border-sky-300/60 dark:hover:border-sky-500/20 hover:bg-sky-50/20 dark:hover:bg-sky-500/5"
+    unselected: "border-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-400 hover:border-sky-300/60 dark:hover:border-sky-500/20 hover:bg-sky-50/20 dark:hover:bg-sky-500/5"
   },
   cancelled: {
     label: "Cancelled",
-    selected: "border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 ring-2 ring-gray-500/20",
-    unselected: "border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 hover:border-gray-300 dark:hover:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800/30"
+    selected: "border-zinc-300 dark:border-zinc-700 bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-200 ring-2 ring-zinc-500/20",
+    unselected: "border-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-400 hover:border-zinc-300 dark:hover:border-zinc-700 hover:bg-zinc-100/50 dark:hover:bg-zinc-800/40"
   }
 };
 
@@ -997,24 +997,24 @@ export default function Calendar() {
       <Modal open={allRemindersOpen} onClose={() => setAllRemindersOpen(false)} size="lg">
         <div className="flex items-start justify-between gap-4">
           <div>
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">All Reminders</h2>
-            <p className="text-sm text-gray-500 dark:text-gray-400">Every reminder you have scheduled</p>
+            <h2 className="text-xl font-semibold text-zinc-900 dark:text-zinc-100">All Reminders</h2>
+            <p className="text-sm text-zinc-500 dark:text-zinc-400">Every reminder you have scheduled</p>
           </div>
         </div>
         <div className="mt-5 space-y-3">
           {reminders.length === 0 ? (
-            <div className="rounded-xl border border-dashed border-gray-200 dark:border-gray-700 p-4 text-sm text-gray-500 dark:text-gray-400">No reminders yet.</div>
+            <div className="rounded-xl border border-dashed border-zinc-200 dark:border-zinc-700 p-4 text-sm text-zinc-500 dark:text-zinc-400">No reminders yet.</div>
           ) : (
             reminders.map(note => (
-              <div key={`all-${note.id ?? note.title}`} className="rounded-2xl border border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-900/70 p-4">
+              <div key={`all-${note.id ?? note.title}`} className="rounded-2xl border border-zinc-200/80 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950/40 p-4">
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div>
-                    <p className="text-sm font-semibold text-gray-900 dark:text-white">{note.title}</p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">{reminderDateLabel(note.date)}{note.time ? ` · ${note.time}` : ""}</p>
+                    <p className="text-sm font-semibold text-zinc-900 dark:text-white">{note.title}</p>
+                    <p className="text-xs text-zinc-500 dark:text-zinc-400">{reminderDateLabel(note.date)}{note.time ? ` · ${note.time}` : ""}</p>
                   </div>
                   <div className="flex flex-wrap gap-2">
                     <button type="button" onClick={() => handleEditReminder(note)}
-                      className="rounded-full border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-gray-600 dark:text-gray-300">Edit</button>
+                      className="rounded-full border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-zinc-600 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-700 transition">Edit</button>
                     <button type="button" onClick={() => handleDeleteReminder(note.id)}
                       className="rounded-full border border-rose-200 dark:border-rose-500/30 bg-rose-50 dark:bg-rose-500/10 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-rose-700 dark:text-rose-200">Delete</button>
                   </div>
@@ -1029,41 +1029,41 @@ export default function Calendar() {
       <Modal open={addReminderOpen} onClose={handleCloseReminderModal} size="lg" showCloseButton={false}>
         <div className="flex items-start justify-between gap-4">
           <div>
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">{editingReminder ? "Edit Reminder" : "Add Reminder"}</h2>
-            <p className="text-sm text-gray-500 dark:text-gray-400">Schedule a reminder for this device.</p>
+            <h2 className="text-xl font-semibold text-zinc-900 dark:text-zinc-100">{editingReminder ? "Edit Reminder" : "Add Reminder"}</h2>
+            <p className="text-sm text-zinc-500 dark:text-zinc-400">Schedule a reminder for this device.</p>
           </div>
         </div>
         <form className="mt-5 space-y-4" onSubmit={handleAddReminder}>
           <div>
-            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Title</label>
+            <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Title</label>
             <input type="text" value={reminderForm.title}
               onChange={e => setReminderForm(prev => ({ ...prev, title: e.target.value }))}
-              className="mt-2 w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-3 py-2 text-sm text-gray-900 dark:text-gray-100"
+              className="mt-2 w-full rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 px-3 py-2 text-sm text-zinc-900 dark:text-zinc-100"
               placeholder="Weekly lab reminder" required />
           </div>
           <div className="grid gap-4 sm:grid-cols-2">
             <div>
-              <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Date</label>
+              <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Date</label>
               <input type="date" value={reminderForm.date}
                 onChange={e => setReminderForm(prev => ({ ...prev, date: e.target.value }))}
-                className="mt-2 w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-3 py-2 text-sm text-gray-900 dark:text-gray-100" required />
+                className="mt-2 w-full rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 px-3 py-2 text-sm text-zinc-900 dark:text-zinc-100" required />
             </div>
             <div>
-              <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Time</label>
+              <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Time</label>
               <input type="time" value={reminderForm.time}
                 onChange={e => setReminderForm(prev => ({ ...prev, time: e.target.value }))}
-                className="mt-2 w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-3 py-2 text-sm text-gray-900 dark:text-gray-100" />
+                className="mt-2 w-full rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 px-3 py-2 text-sm text-zinc-900 dark:text-zinc-100" />
             </div>
           </div>
           <div className="flex justify-end gap-3">
             <button type="button" onClick={handleCloseReminderModal}
-              className="rounded-full border border-gray-200 dark:border-gray-700 px-4 py-2 text-sm font-semibold text-gray-700 dark:text-gray-200">Cancel</button>
+              className="rounded-full border border-zinc-200 dark:border-zinc-700 px-4 py-2 text-sm font-semibold text-zinc-700 dark:text-zinc-200 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition">Cancel</button>
             {editingReminder && (
               <button type="button" onClick={() => handleDeleteReminder(editingReminder.id)}
                 className="rounded-full border border-rose-200 dark:border-rose-500/30 bg-rose-50 dark:bg-rose-500/10 px-4 py-2 text-sm font-semibold text-rose-700 dark:text-rose-200">Delete Reminder</button>
             )}
             <button type="submit"
-              className="rounded-full bg-gray-900 px-4 py-2 text-sm font-semibold text-white dark:bg-white dark:text-gray-900">Save Reminder</button>
+              className="rounded-full bg-zinc-900 px-4 py-2 text-sm font-semibold text-white dark:bg-white dark:text-zinc-900 cursor-pointer hover:scale-[1.02] transition">Save Reminder</button>
           </div>
         </form>
       </Modal>
@@ -1141,16 +1141,16 @@ export default function Calendar() {
       {/* ── EDIT DAY MODAL ── */}
       <Modal open={editDayOpen} onClose={() => setEditDayOpen(false)} size="md" noScroll={true}>
         <div className="flex flex-col gap-0.5 pb-1 border-b border-zinc-100 dark:border-zinc-800/80">
-          <h3 className="text-base sm:text-lg font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
+          <h3 className="text-base sm:text-lg font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
             <span>Mark Attendance</span>
           </h3>
-          <p className="text-[11px] sm:text-xs text-gray-500 dark:text-gray-400">Choose a quick status or update details below.</p>
+          <p className="text-[11px] sm:text-xs text-zinc-500 dark:text-zinc-400">Choose a quick status or update details below.</p>
         </div>
 
         <div className="mt-2.5 space-y-2.5">
           {/* Full Day Options */}
           <div>
-            <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-gray-500">Quick Full Day Status</span>
+            <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-400 dark:text-zinc-500">Quick Full Day Status</span>
             <div className="mt-1.5 grid grid-cols-2 gap-2">
               {[
                 {
@@ -1222,7 +1222,7 @@ export default function Calendar() {
                 }}
                 className="flex items-center gap-2 rounded-xl border border-amber-200/80 dark:border-amber-500/20 bg-amber-50/50 dark:bg-amber-500/5 p-2 text-left text-amber-800 dark:text-amber-300 transition hover:-translate-y-0.5 hover:bg-amber-100/60 dark:hover:bg-amber-500/10 hover:shadow-md cursor-pointer"
               >
-                <div className="rounded-lg p-1.5 bg-white/80 dark:bg-gray-800 shadow-sm flex items-center justify-center shrink-0">
+                <div className="rounded-lg p-1.5 bg-white/80 dark:bg-zinc-800 shadow-sm flex items-center justify-center shrink-0">
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
                   </svg>
@@ -1241,7 +1241,7 @@ export default function Calendar() {
                 }}
                 className="flex items-center gap-2 rounded-xl border border-blue-200/80 dark:border-blue-500/20 bg-blue-50/50 dark:bg-blue-500/5 p-2 text-left text-blue-800 dark:text-blue-300 transition hover:-translate-y-0.5 hover:bg-blue-100/60 dark:hover:bg-blue-500/10 hover:shadow-md cursor-pointer"
               >
-                <div className="rounded-lg p-1.5 bg-white/80 dark:bg-gray-800 shadow-sm flex items-center justify-center shrink-0">
+                <div className="rounded-lg p-1.5 bg-white/80 dark:bg-zinc-800 shadow-sm flex items-center justify-center shrink-0">
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                   </svg>
@@ -1273,23 +1273,23 @@ export default function Calendar() {
       {/* ── PARTIAL MARK MODAL ── */}
       <Modal open={partialMarkOpen} onClose={() => setPartialMarkOpen(false)} size="md">
         <div className="flex flex-col gap-1 mb-4">
-          <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100">Mark Subject-Wise Status</h3>
-          <p className="text-xs text-gray-500 dark:text-gray-400">Pick Present, Absent, Free, or Cancelled for each lecture.</p>
+          <h3 className="text-xl font-bold text-zinc-900 dark:text-zinc-100">Mark Subject-Wise Status</h3>
+          <p className="text-xs text-zinc-500 dark:text-zinc-400">Pick Present, Absent, Free, or Cancelled for each lecture.</p>
         </div>
         <div className="mt-4 space-y-4">
           {selectedDayLectures.length === 0 ? (
-            <div className="rounded-xl border border-dashed border-gray-300 dark:border-gray-700 p-3 text-sm text-gray-500 dark:text-gray-400 text-center">No lectures found for this day.</div>
+            <div className="rounded-xl border border-dashed border-zinc-300 dark:border-zinc-700 p-3 text-sm text-zinc-500 dark:text-zinc-400 text-center">No lectures found for this day.</div>
           ) : (
             selectedDayLectures.map((lecture) => {
               const subject       = subjectsById.get(lecture.subjectId);
               const key           = lecture.slotIndex != null ? `${lecture.subjectId}::${lecture.slotIndex}` : lecture.subjectId;
               const currentStatus = partialSelection[key] ?? "absent";
               return (
-                <div key={`partial-${key}`} className="rounded-2xl p-4 border border-gray-100 dark:border-gray-800/80 bg-gray-50/50 dark:bg-gray-900/40 space-y-3">
+                <div key={`partial-${key}`} className="rounded-2xl p-4 border border-zinc-200/80 dark:border-zinc-800/80 bg-zinc-50/70 dark:bg-zinc-950/40 space-y-3">
                   <div className="flex items-start justify-between gap-2">
                     <div>
-                      <span className="font-bold text-sm text-gray-900 dark:text-gray-100">{subject?.name ?? lecture.subjectId}</span>
-                      <p className="text-[10px] text-gray-400 dark:text-gray-500 font-bold uppercase tracking-wider mt-0.5">
+                      <span className="font-bold text-sm text-zinc-900 dark:text-zinc-100">{subject?.name ?? lecture.subjectId}</span>
+                      <p className="text-[10px] text-zinc-400 dark:text-zinc-500 font-bold uppercase tracking-wider mt-0.5">
                         {lecture.type || subject?.type || "lecture"}
                       </p>
                     </div>
@@ -1319,9 +1319,9 @@ export default function Calendar() {
         </div>
         <div className="mt-5 flex justify-end gap-3">
           <button type="button" onClick={() => setPartialMarkOpen(false)}
-            className="rounded-full border border-gray-200 dark:border-gray-700 px-4 py-2 text-sm font-semibold text-gray-700 dark:text-gray-200 cursor-pointer">Cancel</button>
+            className="rounded-full border border-zinc-200 dark:border-zinc-700 px-4 py-2 text-sm font-semibold text-zinc-700 dark:text-zinc-200 cursor-pointer hover:bg-zinc-50 dark:hover:bg-zinc-800 transition">Cancel</button>
           <button type="button" onClick={handlePartialAttendanceSave}
-            className="rounded-full bg-gray-900 px-4 py-2 text-sm font-semibold text-white dark:bg-white dark:text-gray-900 cursor-pointer hover:scale-[1.02] transition">Save Partial Marking</button>
+            className="rounded-full bg-zinc-900 px-4 py-2 text-sm font-semibold text-white dark:bg-white dark:text-zinc-900 cursor-pointer hover:scale-[1.02] transition">Save Partial Marking</button>
         </div>
       </Modal>
 

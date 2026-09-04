@@ -12,22 +12,22 @@ const optionStyles = {
   present: {
     label: "Present",
     selected: "border-emerald-300 dark:border-emerald-500/30 bg-emerald-50 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 ring-2 ring-emerald-500/20",
-    unselected: "border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 hover:border-emerald-300/60 dark:hover:border-emerald-500/20 hover:bg-emerald-50/20 dark:hover:bg-emerald-500/5"
+    unselected: "border-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-400 hover:border-emerald-300/60 dark:hover:border-emerald-500/20 hover:bg-emerald-50/20 dark:hover:bg-emerald-500/5"
   },
   absent: {
     label: "Absent",
     selected: "border-rose-300 dark:border-rose-500/30 bg-rose-50 dark:bg-rose-500/15 text-rose-700 dark:text-rose-300 ring-2 ring-rose-500/20",
-    unselected: "border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 hover:border-rose-300/60 dark:hover:border-rose-500/20 hover:bg-rose-50/20 dark:hover:bg-rose-500/5"
+    unselected: "border-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-400 hover:border-rose-300/60 dark:hover:border-rose-500/20 hover:bg-rose-50/20 dark:hover:bg-rose-500/5"
   },
   free: {
     label: "Free",
     selected: "border-sky-300 dark:border-sky-500/30 bg-sky-50 dark:bg-sky-500/15 text-sky-700 dark:text-sky-300 ring-2 ring-sky-500/20",
-    unselected: "border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 hover:border-sky-300/60 dark:hover:border-sky-500/20 hover:bg-sky-50/20 dark:hover:bg-sky-500/5"
+    unselected: "border-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-400 hover:border-sky-300/60 dark:hover:border-sky-500/20 hover:bg-sky-50/20 dark:hover:bg-sky-500/5"
   },
   cancelled: {
     label: "Cancelled",
-    selected: "border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 ring-2 ring-gray-500/20",
-    unselected: "border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 hover:border-gray-300 dark:hover:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800/30"
+    selected: "border-zinc-300 dark:border-zinc-700 bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-200 ring-2 ring-zinc-500/20",
+    unselected: "border-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-400 hover:border-zinc-300 dark:hover:border-zinc-700 hover:bg-zinc-100/50 dark:hover:bg-zinc-800/40"
   }
 };
 
@@ -99,10 +99,10 @@ export default function QuickTodayAttendance({ open, onClose }) {
             📅
           </div>
           <div className="space-y-1">
-            <h3 className="text-base font-bold text-gray-900 dark:text-white">
+            <h3 className="text-base font-bold text-zinc-900 dark:text-white">
               No lectures scheduled for today
             </h3>
-            <p className="text-xs text-gray-500 dark:text-gray-400 max-w-xs mx-auto">
+            <p className="text-xs text-zinc-500 dark:text-zinc-400 max-w-xs mx-auto">
               Your standard timetable has no classes today. If your timetable changed or extra classes were held, you can add them for today only.
             </p>
           </div>
@@ -133,10 +133,10 @@ export default function QuickTodayAttendance({ open, onClose }) {
         <div className="space-y-4">
           <div className="flex items-center justify-between gap-2 pb-3 border-b border-zinc-200 dark:border-zinc-800">
             <div>
-              <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100">
+              <h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-100">
                 Edit Today’s Lectures
               </h2>
-              <p className="text-xs text-gray-500 dark:text-gray-400">
+              <p className="text-xs text-zinc-500 dark:text-zinc-400">
                 Customize classes for today only.
               </p>
             </div>
@@ -171,10 +171,10 @@ export default function QuickTodayAttendance({ open, onClose }) {
           {/* Header with Title and Edit Timetable Button */}
           <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-2.5 mb-4 pb-3 border-b border-zinc-100 dark:border-zinc-800/80">
             <div className="space-y-1">
-              <h2 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-gray-100 tracking-tight">
+              <h2 className="text-lg sm:text-xl font-bold text-zinc-900 dark:text-zinc-100 tracking-tight">
                 Mark Today’s Attendance
               </h2>
-              <p className="text-xs text-gray-500 dark:text-gray-400">
+              <p className="text-xs text-zinc-500 dark:text-zinc-400">
                 Mark your presence or select lecture status below.
               </p>
               {isCustom && (
@@ -209,14 +209,14 @@ export default function QuickTodayAttendance({ open, onClose }) {
               return (
                 <div
                   key={uniqueKey}
-                  className="rounded-2xl p-4 border border-gray-100 dark:border-gray-800/80 bg-gray-50/50 dark:bg-gray-900/40 space-y-3"
+                  className="rounded-2xl p-4 border border-zinc-200/80 dark:border-zinc-800/80 bg-zinc-50/70 dark:bg-zinc-950/40 space-y-3"
                 >
                   <div className="flex items-start justify-between gap-2">
                     <div>
-                      <p className="font-bold text-sm text-gray-900 dark:text-gray-100">
+                      <p className="font-bold text-sm text-zinc-900 dark:text-zinc-100">
                         {subject.name}
                       </p>
-                      <p className="text-[10px] text-gray-400 dark:text-gray-500 font-bold uppercase tracking-wider mt-0.5">
+                      <p className="text-[10px] text-zinc-400 dark:text-zinc-500 font-bold uppercase tracking-wider mt-0.5">
                         {lecture.type || subject.type || "lecture"}
                       </p>
                     </div>

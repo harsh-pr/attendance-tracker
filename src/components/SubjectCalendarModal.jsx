@@ -66,6 +66,14 @@ function parseDateString(dateString) {
   return new Date(year, month - 1, day);
 }
 
+const defaultSubjectData = {
+  subject: { id: "", name: "", type: "theory" },
+  attended: 0,
+  conducted: 0,
+  percentage: 0,
+  status: "No Data",
+};
+
 export default function SubjectCalendarModal({ open, onClose, data }) {
   const { currentSemester } = useSemester();
 
@@ -75,14 +83,12 @@ export default function SubjectCalendarModal({ open, onClose, data }) {
     if (data) setCachedData(data);
   }, [data]);
 
-  const activeData = data || cachedData;
-  if (!activeData) return null;
-
+  const activeData = data || cachedData || defaultSubjectData;
   const { subject, attended, conducted, percentage, status } = activeData;
 
   const attendanceData = useMemo(
-    () => currentSemester.attendanceData ?? [],
-    [currentSemester.attendanceData]
+    () => currentSemester?.attendanceData ?? [],
+    [currentSemester?.attendanceData]
   );
 
   const initialMonthDate = useMemo(() => {
@@ -97,6 +103,14 @@ export default function SubjectCalendarModal({ open, onClose, data }) {
   const [activeMonthDate, setActiveMonthDate] = useState(
     new Date(initialMonthDate.getFullYear(), initialMonthDate.getMonth(), 1)
   );
+
+  useEffect(() => {
+    if (open) {
+      setActiveMonthDate(
+        new Date(initialMonthDate.getFullYear(), initialMonthDate.getMonth(), 1)
+      );
+    }
+  }, [open, initialMonthDate]);
 
   const monthLabel        = formatMonthLabel(activeMonthDate);
   const year              = activeMonthDate.getFullYear();
@@ -114,12 +128,12 @@ export default function SubjectCalendarModal({ open, onClose, data }) {
       const isWeekend = date.getDay() === 0 || date.getDay() === 6;
 
       const dayEntry          = attendanceData.find(d => d.date === dateKey);
-      const loggedLectures    = (dayEntry?.lectures || []).filter(l => l.subjectId === subject.id);
+      const loggedLectures    = (dayEntry?.lectures || []).filter(l => l.subjectId === subject?.id);
       const timetableLectures = getLecturesForDate(dateKey, currentSemester);
       const effectiveLectures = (dayEntry?.lectures && dayEntry.lectures.length > 0)
         ? dayEntry.lectures
         : timetableLectures;
-      const isScheduled       = effectiveLectures.some(l => l.subjectId === subject.id);
+      const isScheduled       = effectiveLectures.some(l => l.subjectId === subject?.id);
 
       let statusKey = "unscheduled";
 
@@ -157,7 +171,7 @@ export default function SubjectCalendarModal({ open, onClose, data }) {
         isToday,
       };
     });
-  }, [daysInMonth, year, monthIndex, attendanceData, subject.id, currentSemester]);
+  }, [daysInMonth, year, monthIndex, attendanceData, subject?.id, currentSemester]);
 
   const statusStyles = {
     Safe: "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-200 border border-emerald-200 dark:border-emerald-500/30",

@@ -28,13 +28,17 @@ export default function Home() {
   const overallPercentage = overall?.percentage ?? 0;
 
   const today = getTodayDate();
-  const todaySchedule = getLecturesForDate(
+  const defaultTodaySchedule = getLecturesForDate(
     today,
     currentSemester
   );
   const todayEntry = currentSemester.attendanceData.find(
     (day) => day.date === today
   );
+  const todaySchedule =
+    todayEntry?.lectures && todayEntry.lectures.length > 0
+      ? todayEntry.lectures
+      : defaultTodaySchedule;
   const todayAttended = todayEntry
     ? todayEntry.lectures.filter(
         (lecture) =>

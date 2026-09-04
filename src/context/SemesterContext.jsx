@@ -482,22 +482,41 @@ export function SemesterProvider({ children }) {
 
   function markTodayAttendance(subjectId, status, slotIndex) {
     const today = getTodayDate();
-    ensureDayExists(currentSemester, today);
     let updatedAttendance = [];
 
     const nextSemesters = semesters.map((sem) => {
       if (sem.id !== currentSemesterId) return sem;
-      const newData = sem.attendanceData.map((day) => {
-        if (day.date !== today) return day;
-        const newLectures = day.lectures.map((l) => {
-          // Match by both subjectId and slotIndex when slotIndex is available
+      const existing = sem.attendanceData.find((d) => d.date === today);
+      let newData;
+
+      if (existing) {
+        const newLectures = existing.lectures.map((l, idx) => {
+          const currentSlot = l.slotIndex ?? idx;
           if (slotIndex != null) {
-            return (l.subjectId === subjectId && l.slotIndex === slotIndex) ? { ...l, status } : l;
+            return (l.subjectId === subjectId && currentSlot === slotIndex) ? { ...l, status } : l;
           }
           return l.subjectId === subjectId ? { ...l, status } : l;
         });
-        return { ...day, lectures: newLectures };
-      });
+        newData = sem.attendanceData.map((day) =>
+          day.date === today ? { ...day, lectures: newLectures } : day
+        );
+      } else {
+        const timetableLectures = getLecturesForDate(today, sem);
+        const newLectures = timetableLectures.map((l, idx) => {
+          const currentSlot = l.slotIndex ?? idx;
+          const match = slotIndex != null
+            ? (l.subjectId === subjectId && currentSlot === slotIndex)
+            : l.subjectId === subjectId;
+          return {
+            subjectId: l.subjectId,
+            type: l.type,
+            slotIndex: currentSlot,
+            status: match ? status : null,
+          };
+        });
+        newData = [...sem.attendanceData, { date: today, dayType: null, lectures: newLectures }];
+      }
+
       updatedAttendance = newData;
       return { ...sem, attendanceData: newData };
     });
@@ -548,6 +567,106 @@ export function SemesterProvider({ children }) {
         );
       } else {
         newData = [...sem.attendanceData, { date: targetDate, dayType: null, lectures: newLectures }];
+      }
+
+      updatedAttendance = newData;
+      return { ...sem, attendanceData: newData };
+    });
+
+    setSemesters(nextSemesters);
+    persistAttendance(currentSemesterId, updatedAttendance);
+    persistMeta(currentSemesterId, nextSemesters);
+  }
+
+  /**
+   * Updates ONLY for that 1 day's lectures (timetable change for that specific day).
+   * Does NOT alter the regular weekly master timetable.
+   * Immediately reflects in attendance calculations for those subjects.
+   */
+  function updateDayLectures(date, newLectures, dayType = null) {
+    const targetDate = normalizeDateString(date);
+    let updatedAttendance = [];
+
+    const cleanLectures = (newLectures || []).map((l, index) => ({
+      subjectId: l.subjectId,
+      type: l.type || "theory",
+      slotIndex: index,
+      status: l.status !== undefined ? l.status : null,
+    }));
+
+    const nextSemesters = semesters.map((sem) => {
+      if (sem.id !== currentSemesterId) return sem;
+
+      const existingIndex = sem.attendanceData.findIndex((d) => d.date === targetDate);
+      let newData;
+
+      if (existingIndex >= 0) {
+        newData = sem.attendanceData.map((d) =>
+          d.date === targetDate
+            ? {
+                ...d,
+                lectures: cleanLectures,
+                isCustomSchedule: true,
+                dayType: dayType !== undefined && dayType !== null ? dayType : d.dayType || null,
+              }
+            : d
+        );
+      } else {
+        newData = [
+          ...sem.attendanceData,
+          {
+            date: targetDate,
+            dayType: dayType || null,
+            lectures: cleanLectures,
+            isCustomSchedule: true,
+          },
+        ];
+      }
+
+      updatedAttendance = newData;
+      return { ...sem, attendanceData: newData };
+    });
+
+    setSemesters(nextSemesters);
+    persistAttendance(currentSemesterId, updatedAttendance);
+    persistMeta(currentSemesterId, nextSemesters);
+  }
+
+  /**
+   * Resets a single day's lectures back to the default master timetable for that weekday.
+   */
+  function resetDayLecturesToDefault(date) {
+    const targetDate = normalizeDateString(date);
+    let updatedAttendance = [];
+
+    const nextSemesters = semesters.map((sem) => {
+      if (sem.id !== currentSemesterId) return sem;
+
+      const timetableLectures = getLecturesForDate(targetDate, sem);
+      const defaultLectures = timetableLectures.map((l, idx) => ({
+        subjectId: l.subjectId,
+        type: l.type,
+        slotIndex: idx,
+        status: null,
+      }));
+
+      // If there are no default lectures on this weekday, remove the day entry completely
+      const existing = sem.attendanceData.find((d) => d.date === targetDate);
+      let newData;
+      if (defaultLectures.length === 0) {
+        newData = sem.attendanceData.filter((d) => d.date !== targetDate);
+      } else if (existing) {
+        newData = sem.attendanceData.map((d) =>
+          d.date === targetDate
+            ? {
+                ...d,
+                lectures: defaultLectures,
+                isCustomSchedule: false,
+              }
+            : d
+        );
+      } else {
+        newData = [...sem.attendanceData];
       }
 
       updatedAttendance = newData;
@@ -712,6 +831,8 @@ export function SemesterProvider({ children }) {
     markTodayAttendance,
     markDayStatus,
     markDayLectureStatuses,
+    updateDayLectures,
+    resetDayLecturesToDefault,
     removeDayAttendance,
     batchSavePastAttendance,
     addReminder,

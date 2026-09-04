@@ -83,7 +83,7 @@ export default function Modal({
             )}
 
             {/* Scrollable Content Area */}
-            <div className="overflow-y-auto pr-1 flex-1">
+            <div className="overflow-y-auto flex-1 no-scrollbar">
               {children}
             </div>
 

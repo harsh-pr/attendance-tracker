@@ -1,6 +1,7 @@
 import Modal from "../components/Modal";
 import NotificationPermissionModal from "../components/NotificationPermissionModal";
 import QuickBackfillModal from "../components/QuickBackfillModal";
+import DayLecturesEditor from "../components/DayLecturesEditor";
 import { useNotificationPermission } from "../hooks/useNotificationPermission";
 import { useSemester } from "../context/SemesterContext";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -139,6 +140,8 @@ export default function Calendar() {
     updateReminder,
     markDayStatus,
     markDayLectureStatuses,
+    updateDayLectures,
+    resetDayLecturesToDefault,
     removeDayAttendance,
   } = useSemester();
 
@@ -161,6 +164,7 @@ export default function Calendar() {
   const [backfillModalOpen, setBackfillModalOpen] = useState(false);
   const [editingReminder,   setEditingReminder]   = useState(null);
   const [editDayOpen,       setEditDayOpen]       = useState(false);
+  const [editTimetableOpen, setEditTimetableOpen] = useState(false);
   const [partialMarkOpen,   setPartialMarkOpen]   = useState(false);
   const [partialSelection,  setPartialSelection]  = useState({});
   const exportRef = useRef(null);
@@ -989,7 +993,7 @@ export default function Calendar() {
             <p className="text-sm text-gray-500 dark:text-gray-400">Every reminder you have scheduled</p>
           </div>
         </div>
-        <div className="mt-5 max-h-[60vh] space-y-3 overflow-y-auto pr-1">
+        <div className="mt-5 space-y-3">
           {reminders.length === 0 ? (
             <div className="rounded-xl border border-dashed border-gray-200 dark:border-gray-700 p-4 text-sm text-gray-500 dark:text-gray-400">No reminders yet.</div>
           ) : (
@@ -1098,6 +1102,11 @@ export default function Calendar() {
               )}
             </div>
             <div className="mt-6 flex flex-wrap justify-end gap-2">
+              <button type="button" onClick={() => setEditTimetableOpen(true)}
+                className="rounded-full border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-4 py-2 text-xs font-semibold text-zinc-700 dark:text-zinc-200 hover:bg-zinc-50 dark:hover:bg-zinc-800 cursor-pointer flex items-center gap-1.5 transition">
+                <span>✏️</span>
+                <span>Edit Day&apos;s Lectures</span>
+              </button>
               <button type="button" onClick={() => setEditDayOpen(true)}
                 className="rounded-full border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-4 py-2 text-xs font-semibold text-zinc-700 dark:text-zinc-200 cursor-pointer">
                 Mark / Edit Day
@@ -1201,6 +1210,34 @@ export default function Calendar() {
             </button>
           </div>
 
+          {/* Timetable Change for this Day */}
+          <div>
+            <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-gray-500">Timetable Change for this Day</span>
+            <button
+              type="button"
+              onClick={() => {
+                setEditDayOpen(false);
+                setEditTimetableOpen(true);
+              }}
+              className="mt-2 w-full flex items-center justify-between rounded-2xl border border-blue-200/80 dark:border-blue-500/20 bg-blue-50/50 dark:bg-blue-500/5 p-3.5 text-left text-blue-800 dark:text-blue-300 transition hover:-translate-y-0.5 hover:bg-blue-100/60 dark:hover:bg-blue-500/10 hover:shadow-md cursor-pointer"
+            >
+              <div className="flex items-center gap-3">
+                <div className="rounded-lg p-2 bg-white/80 dark:bg-gray-800 shadow-sm flex items-center justify-center shrink-0">
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                  </svg>
+                </div>
+                <div>
+                  <div className="font-bold text-sm">Edit This Day&apos;s Lectures</div>
+                  <div className="text-[10px] opacity-80 mt-0.5 font-normal">Add, delete, swap subjects or change types for this date only</div>
+                </div>
+              </div>
+              <svg className="w-5 h-5 opacity-60" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
+          </div>
+
           {/* Destructive Action */}
           <div className="pt-2 border-t border-gray-100 dark:border-gray-800/60">
             <button type="button" onClick={() => { if (!selectedDay?.date) return; removeDayAttendance(formatDateKey(selectedDay.date)); setEditDayOpen(false); setSelectedDay(null); }}
@@ -1222,7 +1259,7 @@ export default function Calendar() {
           <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100">Mark Subject-Wise Status</h3>
           <p className="text-xs text-gray-500 dark:text-gray-400">Pick Present, Absent, Free, or Cancelled for each lecture.</p>
         </div>
-        <div className="mt-4 max-h-[50vh] space-y-4 overflow-y-auto pr-1">
+        <div className="mt-4 space-y-4">
           {selectedDayLectures.length === 0 ? (
             <div className="rounded-xl border border-dashed border-gray-300 dark:border-gray-700 p-3 text-sm text-gray-500 dark:text-gray-400 text-center">No lectures found for this day.</div>
           ) : (
@@ -1262,6 +1299,50 @@ export default function Calendar() {
           <button type="button" onClick={handlePartialAttendanceSave}
             className="rounded-full bg-gray-900 px-4 py-2 text-sm font-semibold text-white dark:bg-white dark:text-gray-900 cursor-pointer hover:scale-[1.02] transition">Save Partial Marking</button>
         </div>
+      </Modal>
+
+      {/* ── EDIT DAY TIMETABLE MODAL ── */}
+      <Modal open={editTimetableOpen} onClose={() => setEditTimetableOpen(false)} size="md">
+        {selectedDay && (
+          <div className="space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-zinc-200 dark:border-zinc-800">
+              <div>
+                <h3 className="text-xl font-bold text-zinc-900 dark:text-zinc-100">
+                  Edit Day&apos;s Lectures
+                </h3>
+                <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                  Customize schedule for {selectedDay.date.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })} only
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setEditTimetableOpen(false)}
+                className="p-1.5 rounded-xl border border-zinc-200 dark:border-zinc-700 text-xs font-bold text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 cursor-pointer"
+              >
+                ✕
+              </button>
+            </div>
+
+            <DayLecturesEditor
+              date={formatDateKey(selectedDay.date)}
+              initialLectures={selectedDayLectures}
+              subjects={currentSemester.subjects}
+              isCustom={Boolean(selectedDay.dayEntry?.isCustomSchedule)}
+              dateLabel={selectedDay.date.toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short" })}
+              onSave={(newLectures) => {
+                const dateKey = formatDateKey(selectedDay.date);
+                updateDayLectures(dateKey, newLectures);
+                setEditTimetableOpen(false);
+              }}
+              onCancel={() => setEditTimetableOpen(false)}
+              onResetToDefault={() => {
+                const dateKey = formatDateKey(selectedDay.date);
+                resetDayLecturesToDefault(dateKey);
+                setEditTimetableOpen(false);
+              }}
+            />
+          </div>
+        )}
       </Modal>
 
       <QuickBackfillModal

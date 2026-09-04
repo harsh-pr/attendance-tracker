@@ -106,7 +106,10 @@ export default function SubjectCalendarModal({ open, onClose, data }) {
       const dayEntry          = attendanceData.find(d => d.date === dateKey);
       const loggedLectures    = (dayEntry?.lectures || []).filter(l => l.subjectId === subject.id);
       const timetableLectures = getLecturesForDate(dateKey, currentSemester);
-      const isScheduled       = timetableLectures.some(l => l.subjectId === subject.id);
+      const effectiveLectures = (dayEntry?.lectures && dayEntry.lectures.length > 0)
+        ? dayEntry.lectures
+        : timetableLectures;
+      const isScheduled       = effectiveLectures.some(l => l.subjectId === subject.id);
 
       let statusKey = "unscheduled";
 

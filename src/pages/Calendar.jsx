@@ -1134,25 +1134,25 @@ export default function Calendar() {
 
       {/* ── EDIT DAY MODAL ── */}
       <Modal open={editDayOpen} onClose={() => setEditDayOpen(false)} size="md">
-        <div className="flex flex-col gap-1">
-          <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
+        <div className="flex flex-col gap-0.5">
+          <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
             <span>Mark Attendance</span>
           </h3>
           <p className="text-xs text-gray-500 dark:text-gray-400">Choose a quick status or update details below.</p>
         </div>
 
-        <div className="mt-5 space-y-5">
+        <div className="mt-3 space-y-3">
           {/* Full Day Options */}
           <div>
             <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-gray-500">Quick Full Day Status</span>
-            <div className="mt-2 grid grid-cols-2 gap-3">
+            <div className="mt-1.5 grid grid-cols-2 gap-2">
               {[
                 {
                   label: "Full Present",
                   status: "present",
                   desc: "All classes attended",
                   icon: (
-                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                     </svg>
                   ),
@@ -1163,7 +1163,7 @@ export default function Calendar() {
                   status: "absent",
                   desc: "Missed all classes",
                   icon: (
-                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
                     </svg>
                   ),
@@ -1174,7 +1174,7 @@ export default function Calendar() {
                   status: "holiday",
                   desc: "No classes scheduled",
                   icon: (
-                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                     </svg>
                   ),
@@ -1185,7 +1185,7 @@ export default function Calendar() {
                   status: "exam",
                   desc: "Exam conducted",
                   icon: (
-                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
                     </svg>
                   ),
@@ -1193,77 +1193,72 @@ export default function Calendar() {
                 },
               ].map(btn => (
                 <button key={btn.status} type="button" onClick={() => handleDayStatusUpdate(btn.status)}
-                  className={`flex items-start gap-3 rounded-2xl border p-3 text-left transition hover:-translate-y-0.5 hover:shadow-md cursor-pointer ${btn.cls}`}>
-                  <div className="mt-0.5 rounded-lg p-1.5 bg-white/80 dark:bg-gray-800 shadow-sm flex items-center justify-center shrink-0">{btn.icon}</div>
-                  <div>
-                    <div className="font-bold text-sm leading-tight">{btn.label}</div>
-                    <div className="text-[10px] opacity-80 mt-0.5 font-normal leading-tight">{btn.desc}</div>
+                  className={`flex items-center gap-2.5 rounded-xl border p-2 text-left transition hover:-translate-y-0.5 hover:shadow-md cursor-pointer ${btn.cls}`}>
+                  <div className="rounded-lg p-1.5 bg-white/80 dark:bg-gray-800 shadow-sm flex items-center justify-center shrink-0">{btn.icon}</div>
+                  <div className="min-w-0">
+                    <div className="font-bold text-xs leading-tight truncate">{btn.label}</div>
+                    <div className="text-[10px] opacity-80 mt-0.5 leading-tight truncate">{btn.desc}</div>
                   </div>
                 </button>
               ))}
             </div>
           </div>
 
-          {/* Custom / Detailed marking */}
+          {/* Custom Day Changes (Side-by-Side) */}
           <div>
-            <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-gray-500">Detailed Status</span>
-            <button type="button" onClick={() => { setPartialSelection(selectedDayLectures.reduce((acc, l) => { const key = l.slotIndex != null ? `${l.subjectId}::${l.slotIndex}` : l.subjectId; acc[key] = l.status ?? "absent"; return acc; }, {})); setPartialMarkOpen(true); }}
-              className="mt-2 w-full flex items-center justify-between rounded-2xl border border-amber-200/80 dark:border-amber-500/20 bg-amber-50/50 dark:bg-amber-500/5 p-3.5 text-left text-amber-800 dark:text-amber-300 transition hover:-translate-y-0.5 hover:bg-amber-100/60 dark:hover:bg-amber-500/10 hover:shadow-md cursor-pointer">
-              <div className="flex items-center gap-3">
-                <div className="rounded-lg p-2 bg-white/80 dark:bg-gray-800 shadow-sm flex items-center justify-center shrink-0">
-                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-gray-500">Detailed & Timetable Options</span>
+            <div className="mt-1.5 grid grid-cols-1 sm:grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  setPartialSelection(selectedDayLectures.reduce((acc, l) => { const key = l.slotIndex != null ? `${l.subjectId}::${l.slotIndex}` : l.subjectId; acc[key] = l.status ?? "absent"; return acc; }, {}));
+                  setPartialMarkOpen(true);
+                }}
+                className="flex items-center gap-2.5 rounded-xl border border-amber-200/80 dark:border-amber-500/20 bg-amber-50/50 dark:bg-amber-500/5 p-2 text-left text-amber-800 dark:text-amber-300 transition hover:-translate-y-0.5 hover:bg-amber-100/60 dark:hover:bg-amber-500/10 hover:shadow-md cursor-pointer"
+              >
+                <div className="rounded-lg p-1.5 bg-white/80 dark:bg-gray-800 shadow-sm flex items-center justify-center shrink-0">
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
                   </svg>
                 </div>
-                <div>
-                  <div className="font-bold text-sm">Partial Presentee Marking</div>
-                  <div className="text-[10px] opacity-80 mt-0.5 font-normal">Mark attendance for each lecture individually</div>
+                <div className="min-w-0">
+                  <div className="font-bold text-xs leading-tight truncate">Partial Marking</div>
+                  <div className="text-[10px] opacity-80 mt-0.5 leading-tight truncate">Mark lectures individually</div>
                 </div>
-              </div>
-              <svg className="w-5 h-5 opacity-60" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-              </svg>
-            </button>
-          </div>
+              </button>
 
-          {/* Timetable Change for this Day */}
-          <div>
-            <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-gray-500">Timetable Change for this Day</span>
-            <button
-              type="button"
-              onClick={() => {
-                setEditDayOpen(false);
-                setEditTimetableOpen(true);
-              }}
-              className="mt-2 w-full flex items-center justify-between rounded-2xl border border-blue-200/80 dark:border-blue-500/20 bg-blue-50/50 dark:bg-blue-500/5 p-3.5 text-left text-blue-800 dark:text-blue-300 transition hover:-translate-y-0.5 hover:bg-blue-100/60 dark:hover:bg-blue-500/10 hover:shadow-md cursor-pointer"
-            >
-              <div className="flex items-center gap-3">
-                <div className="rounded-lg p-2 bg-white/80 dark:bg-gray-800 shadow-sm flex items-center justify-center shrink-0">
-                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+              <button
+                type="button"
+                onClick={() => {
+                  setEditDayOpen(false);
+                  setEditTimetableOpen(true);
+                }}
+                className="flex items-center gap-2.5 rounded-xl border border-blue-200/80 dark:border-blue-500/20 bg-blue-50/50 dark:bg-blue-500/5 p-2 text-left text-blue-800 dark:text-blue-300 transition hover:-translate-y-0.5 hover:bg-blue-100/60 dark:hover:bg-blue-500/10 hover:shadow-md cursor-pointer"
+              >
+                <div className="rounded-lg p-1.5 bg-white/80 dark:bg-gray-800 shadow-sm flex items-center justify-center shrink-0">
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                   </svg>
                 </div>
-                <div>
-                  <div className="font-bold text-sm">Edit This Day&apos;s Lectures</div>
-                  <div className="text-[10px] opacity-80 mt-0.5 font-normal">Add, delete, swap subjects or change types for this date only</div>
+                <div className="min-w-0">
+                  <div className="font-bold text-xs leading-tight truncate">Edit Day's Lectures</div>
+                  <div className="text-[10px] opacity-80 mt-0.5 leading-tight truncate">Change schedule for this date</div>
                 </div>
-              </div>
-              <svg className="w-5 h-5 opacity-60" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-              </svg>
-            </button>
+              </button>
+            </div>
           </div>
 
           {/* Destructive Action */}
-          <div className="pt-2 border-t border-gray-100 dark:border-gray-800/60">
-            <button type="button" onClick={() => { if (!selectedDay?.date) return; removeDayAttendance(formatDateKey(selectedDay.date)); setEditDayOpen(false); setSelectedDay(null); }}
-              className="w-full flex items-center gap-3 rounded-2xl border border-rose-100 dark:border-rose-500/10 bg-rose-50/20 dark:bg-rose-500/5 px-4 py-3 text-left text-rose-700 dark:text-rose-400 transition hover:bg-rose-50 dark:hover:bg-rose-500/10 cursor-pointer">
-              <div className="rounded-lg p-1.5 bg-white/80 dark:bg-gray-800 shadow-sm flex items-center justify-center shrink-0">
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                </svg>
-              </div>
-              <div className="font-semibold text-xs uppercase tracking-wide">Remove Attendance Data For This Day</div>
+          <div className="pt-1">
+            <button
+              type="button"
+              onClick={() => { if (!selectedDay?.date) return; removeDayAttendance(formatDateKey(selectedDay.date)); setEditDayOpen(false); setSelectedDay(null); }}
+              className="w-full flex items-center justify-center gap-2 rounded-xl border border-rose-200/70 dark:border-rose-500/20 bg-rose-50/30 dark:bg-rose-500/5 py-2 px-3 text-center text-rose-600 dark:text-rose-400 transition hover:bg-rose-100/50 dark:hover:bg-rose-500/10 cursor-pointer active:scale-95"
+            >
+              <svg className="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+              </svg>
+              <span className="font-bold text-xs uppercase tracking-wide">Remove Attendance Data For This Day</span>
             </button>
           </div>
         </div>

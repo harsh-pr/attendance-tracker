@@ -623,30 +623,15 @@ export default function AiTimetable() {
           }`}
         >
           <td
-            className={`p-3 sm:p-4 font-black uppercase text-[10px] tracking-widest border-r border-zinc-200 dark:border-zinc-800 w-[110px] ${
+            className={`p-4 font-black uppercase text-[10px] tracking-widest border-r border-zinc-200 dark:border-zinc-800 w-[110px] ${
               !isLastRow ? "border-b border-zinc-200 dark:border-zinc-800/80" : ""
             } ${
               isToday
-                ? "bg-blue-50/90 dark:bg-blue-950/60 border-l-4 border-l-blue-500 dark:border-l-blue-400"
+                ? "bg-blue-50/80 dark:bg-blue-950/60 border-l-4 border-l-blue-500 dark:border-l-blue-400 text-blue-600 dark:text-blue-400 font-black"
                 : "bg-zinc-100/70 dark:bg-zinc-950/80 text-zinc-500 dark:text-zinc-400"
             }`}
           >
-            {isToday ? (
-              <div className="flex flex-col gap-1 items-start">
-                <span className="text-xs font-black uppercase tracking-wider text-blue-600 dark:text-blue-400 font-[Poppins]">
-                  {dayKey.substring(0, 3)}
-                </span>
-                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[8px] font-black uppercase tracking-wider bg-blue-500/20 text-blue-600 dark:text-blue-300 border border-blue-500/30 shadow-2xs">
-                  <span className="relative flex h-1.5 w-1.5">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
-                    <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-blue-500"></span>
-                  </span>
-                  Today
-                </span>
-              </div>
-            ) : (
-              <span>{dayKey.substring(0, 3)}</span>
-            )}
+            {dayKey.substring(0, 3)}
           </td>
           <td colSpan={totalSlotCols} className="p-5 text-center font-black text-blue-600 dark:text-blue-400 uppercase tracking-[0.25em] text-xs font-[Poppins]">
             HOLIDAY
@@ -704,30 +689,15 @@ export default function AiTimetable() {
         }`}
       >
         <td
-          className={`p-3 sm:p-4 font-black uppercase text-[10px] tracking-widest border-r border-zinc-200 dark:border-zinc-800 w-[110px] ${
+          className={`p-4 font-black uppercase text-[10px] tracking-widest border-r border-zinc-200 dark:border-zinc-800 w-[110px] ${
             !isLastRow ? "border-b border-zinc-200 dark:border-zinc-800/80" : ""
           } ${
             isToday
-              ? "bg-blue-50 dark:bg-blue-950/60 border-l-4 border-l-blue-500 dark:border-l-blue-400"
+              ? "bg-blue-50/80 dark:bg-blue-950/60 border-l-4 border-l-blue-500 dark:border-l-blue-400 text-blue-600 dark:text-blue-400 font-black"
               : "bg-zinc-100/70 dark:bg-zinc-950/80 text-zinc-500 dark:text-zinc-400"
           }`}
         >
-          {isToday ? (
-            <div className="flex flex-col gap-1 items-start">
-              <span className="text-xs font-black uppercase tracking-wider text-blue-600 dark:text-blue-400 font-[Poppins]">
-                {dayKey.substring(0, 3)}
-              </span>
-              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[8px] font-black uppercase tracking-wider bg-blue-500/20 text-blue-600 dark:text-blue-300 border border-blue-500/30 shadow-2xs">
-                <span className="relative flex h-1.5 w-1.5">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-blue-500"></span>
-                </span>
-                Today
-              </span>
-            </div>
-          ) : (
-            <span>{dayKey.substring(0, 3)}</span>
-          )}
+          {dayKey.substring(0, 3)}
         </td>
         {rowTds}
       </tr>

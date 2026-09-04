@@ -1,5 +1,5 @@
-import { NavLink } from "react-router-dom";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { NavLink, useLocation } from "react-router-dom";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 
 function ShareIcon({ className = "w-3.5 h-3.5" }) {
@@ -399,12 +399,7 @@ export default function Navbar() {
           </div>
 
           {/* Center: Kokonut Morphic Segmented Navbar Bar (Desktop Only) */}
-          <motion.nav layoutRoot className="hidden lg:flex items-center gap-1 bg-zinc-100/90 dark:bg-zinc-950/80 p-1 rounded-full border border-zinc-200/80 dark:border-zinc-800/80 shadow-inner">
-            <NavItem to="/">Home</NavItem>
-            <NavItem to="/today">Detailed</NavItem>
-            <NavItem to="/calendar">Calendar</NavItem>
-            <NavItem to="/timetable">Class Timetable</NavItem>
-          </motion.nav>
+          <DesktopNavLinks />
 
           {/* Right Actions & Profile Dropdown */}
           <div className="flex items-center gap-2">
@@ -961,35 +956,98 @@ export default function Navbar() {
   );
 }
 
-function NavItem({ to, children }) {
-  return (
-    <NavLink
-      to={to}
-      className={({ isActive }) =>
-        `relative px-3.5 py-1.5 rounded-xl text-xs font-bold transition-colors cursor-pointer select-none ${
-          isActive
-            ? "text-zinc-900 dark:text-white"
-            : "text-zinc-500 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-200"
-        }`
+const DESKTOP_NAV_ITEMS = [
+  { to: "/", label: "Home" },
+  { to: "/today", label: "Detailed" },
+  { to: "/calendar", label: "Calendar" },
+  { to: "/timetable", label: "Class Timetable" },
+];
+
+function DesktopNavLinks() {
+  const location = useLocation();
+  const containerRef = useRef(null);
+  const itemRefs = useRef({});
+  const [pillRect, setPillRect] = useState(null);
+
+  const activePath = useMemo(() => {
+    const path = location.pathname;
+    if (path === "/ai-timetable") return "/timetable";
+    const found = DESKTOP_NAV_ITEMS.find((item) => item.to === path);
+    return found ? found.to : null;
+  }, [location.pathname]);
+
+  useLayoutEffect(() => {
+    function calculatePill() {
+      if (!activePath) {
+        setPillRect(null);
+        return;
       }
+      const activeEl = itemRefs.current[activePath];
+      const containerEl = containerRef.current;
+      if (!activeEl || !containerEl) return;
+
+      const containerBox = containerEl.getBoundingClientRect();
+      const activeBox = activeEl.getBoundingClientRect();
+
+      setPillRect({
+        left: activeBox.left - containerBox.left,
+        width: activeBox.width,
+      });
+    }
+
+    calculatePill();
+    const rafId = requestAnimationFrame(calculatePill);
+    window.addEventListener("resize", calculatePill);
+    return () => {
+      cancelAnimationFrame(rafId);
+      window.removeEventListener("resize", calculatePill);
+    };
+  }, [activePath]);
+
+  return (
+    <nav
+      ref={containerRef}
+      className="relative hidden lg:flex items-center gap-1 bg-zinc-100/90 dark:bg-zinc-950/80 p-1 rounded-full border border-zinc-200/80 dark:border-zinc-800/80 shadow-inner"
     >
-      {({ isActive }) => (
-        <>
-          {isActive && (
-            <motion.div
-              layoutId="morphic-active-pill"
-              transition={{
-                type: "spring",
-                stiffness: 400,
-                damping: 32,
-                y: { duration: 0 }
-              }}
-              className="absolute inset-0 bg-white dark:bg-zinc-800 rounded-xl shadow-sm border border-zinc-200/80 dark:border-zinc-700/60"
-            />
-          )}
-          <span className="relative z-10">{children}</span>
-        </>
+      {/* Morphic Active Pill Indicator - purely X-axis translation, physically locked to container */}
+      {pillRect && (
+        <motion.div
+          className="absolute top-1 bottom-1 bg-white dark:bg-zinc-800 rounded-xl shadow-sm border border-zinc-200/80 dark:border-zinc-700/60 pointer-events-none"
+          initial={false}
+          animate={{
+            x: pillRect.left,
+            width: pillRect.width,
+          }}
+          transition={{
+            type: "spring",
+            stiffness: 450,
+            damping: 35,
+          }}
+          style={{
+            left: 0,
+          }}
+        />
       )}
-    </NavLink>
+
+      {DESKTOP_NAV_ITEMS.map((item) => {
+        const isActive = activePath === item.to;
+        return (
+          <NavLink
+            key={item.to}
+            to={item.to}
+            ref={(el) => {
+              if (el) itemRefs.current[item.to] = el;
+            }}
+            className={`relative z-10 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-colors cursor-pointer select-none ${
+              isActive
+                ? "text-zinc-900 dark:text-white"
+                : "text-zinc-500 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-200"
+            }`}
+          >
+            {item.label}
+          </NavLink>
+        );
+      })}
+    </nav>
   );
 }

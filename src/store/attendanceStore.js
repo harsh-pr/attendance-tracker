@@ -22,15 +22,24 @@ export function ensureDayExists(semester, date) {
 
     day = {
       date,
-      lectures: lecturesFromTT.map(l => ({
+      dayType: null,
+      lectures: lecturesFromTT.map((l, idx) => ({
         subjectId: l.subjectId,
         status: null,
         type: l.type,      // theory / lab
-        slotIndex: l.slotIndex,
+        slotIndex: l.slotIndex ?? idx,
       })),
     };
 
     semester.attendanceData.push(day);
+  } else if (!day.lectures || day.lectures.length === 0) {
+    const lecturesFromTT = getLecturesForDate(date, semester);
+    day.lectures = lecturesFromTT.map((l, idx) => ({
+      subjectId: l.subjectId,
+      status: null,
+      type: l.type,
+      slotIndex: l.slotIndex ?? idx,
+    }));
   }
 
   return day;
@@ -51,11 +60,14 @@ export function markTodayAttendance(
 
   if (!day) return;
 
+  // Clear holiday / exam flag when actively marking attendance
+  day.dayType = null;
+
   // Use slotIndex for precise matching when available
   let lecture;
   if (slotIndex != null) {
     lecture = day.lectures.find(
-      l => l.subjectId === subjectId && l.slotIndex === slotIndex
+      (l, idx) => l.subjectId === subjectId && (l.slotIndex ?? idx) === slotIndex
     );
   }
   // Fallback: match by subjectId only (backward compat for old data without slotIndex)
@@ -67,6 +79,13 @@ export function markTodayAttendance(
 
   if (lecture) {
     lecture.status = status;
+  } else {
+    day.lectures.push({
+      subjectId,
+      status,
+      type: "theory",
+      slotIndex: slotIndex ?? day.lectures.length,
+    });
   }
 }
 

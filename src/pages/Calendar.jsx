@@ -96,7 +96,7 @@ function parseDateString(dateString) {
   return new Date(year, month - 1, day);
 }
 
-function getDayStatus({ lectures, isWeekend, hasEntry, dayType }) {
+function getDayStatus({ lectures, isWeekend, hasEntry, dayType, hasScheduledLectures }) {
   if (dayType === "exam")    return "exam";
   if (dayType === "holiday") return "holiday";
 
@@ -104,13 +104,20 @@ function getDayStatus({ lectures, isWeekend, hasEntry, dayType }) {
   const absentCount    = lectures.filter(l => l.status === "absent").length;
   const cancelledCount = lectures.filter(l => l.status === "cancelled").length;
 
-  if (lectures.length === 0 && isWeekend)   return "holiday";
-  if (lectures.length === 0 && hasEntry)    return "holiday";
   if (presentCount > 0 && absentCount === 0) return "full";
   if (absentCount > 0 && presentCount === 0) return "absent";
   if (presentCount > 0 && absentCount > 0)   return "partial";
   if (lectures.length > 0 && cancelledCount === lectures.length) return "holiday";
+
+  // If there are lectures scheduled in the timetable/schedule for this day,
+  // it is an active class day awaiting attendance - NOT a holiday!
+  if (hasScheduledLectures) return "none";
+
+  // Only if no lectures are scheduled does a weekend default to holiday
   if (isWeekend) return "holiday";
+
+  if (lectures.length === 0 && hasEntry && dayType === "holiday") return "holiday";
+
   return "none";
 }
 
@@ -219,11 +226,20 @@ export default function Calendar() {
   const calendarDays = Array.from({ length: daysInMonth }, (_, index) => {
     const dayNumber = index + 1;
     const date      = new Date(year, monthIndex, dayNumber);
+    const dateKey   = formatDateKey(date);
     const isWeekend = date.getDay() === 0 || date.getDay() === 6;
     const dayEntry  = entriesByDay.get(dayNumber);
+    const timetableLectures = getLecturesForDate(dateKey, currentSemester);
     const lectures  = dayEntry?.lectures ?? [];
-    const status    = getDayStatus({ lectures, isWeekend, hasEntry: Boolean(dayEntry), dayType: dayEntry?.dayType });
-    const isToday   = formatDateKey(date) === todayKey;
+    const hasScheduledLectures = timetableLectures.length > 0 || lectures.length > 0;
+    const status    = getDayStatus({
+      lectures,
+      isWeekend,
+      hasEntry: Boolean(dayEntry),
+      dayType: dayEntry?.dayType,
+      hasScheduledLectures,
+    });
+    const isToday   = dateKey === todayKey;
     return { dayNumber, status, date, dayEntry, isWeekend, isToday };
   });
 
@@ -343,10 +359,19 @@ export default function Calendar() {
   const previousStatusCounts = { full: 0, partial: 0, absent: 0, holiday: 0, exam: 0, none: 0 };
   for (let day = 1; day <= prevDays; day++) {
     const date      = new Date(prevYear, prevMonth, day);
+    const dateKey   = formatDateKey(date);
     const isWeekend = date.getDay() === 0 || date.getDay() === 6;
     const entry     = prevEntriesByDay.get(day);
+    const prevTtLectures = getLecturesForDate(dateKey, currentSemester);
     const lectures  = entry?.lectures ?? [];
-    const status    = getDayStatus({ lectures, isWeekend, hasEntry: Boolean(entry), dayType: entry?.dayType });
+    const hasScheduledLectures = prevTtLectures.length > 0 || lectures.length > 0;
+    const status    = getDayStatus({
+      lectures,
+      isWeekend,
+      hasEntry: Boolean(entry),
+      dayType: entry?.dayType,
+      hasScheduledLectures,
+    });
     previousStatusCounts[status]++;
   }
 
@@ -599,6 +624,8 @@ export default function Calendar() {
   const timetableLectures   = selectedDayDateKey ? getLecturesForDate(selectedDayDateKey, currentSemester) : [];
   const selectedDayLectures = selectedDay?.dayEntry?.lectures?.length
     ? selectedDay.dayEntry.lectures
+    : (selectedDay?.dayEntry?.dayType === "holiday" || selectedDay?.dayEntry?.dayType === "exam")
+    ? []
     : timetableLectures.map(lecture => ({ ...lecture, status: null }));
 
   useEffect(() => {
@@ -613,9 +640,18 @@ export default function Calendar() {
     const dateKey   = formatDateKey(selectedDay.date);
     const liveEntry = attendanceData.find(d => d.date === dateKey);
     const isWeekend = selectedDay.date.getDay() === 0 || selectedDay.date.getDay() === 6;
-    const liveStatus = getDayStatus({ lectures: liveEntry?.lectures ?? [], isWeekend, hasEntry: Boolean(liveEntry), dayType: liveEntry?.dayType });
+    const ttLectures = getLecturesForDate(dateKey, currentSemester);
+    const lectures  = liveEntry?.lectures ?? [];
+    const hasScheduledLectures = ttLectures.length > 0 || lectures.length > 0;
+    const liveStatus = getDayStatus({
+      lectures,
+      isWeekend,
+      hasEntry: Boolean(liveEntry),
+      dayType: liveEntry?.dayType,
+      hasScheduledLectures,
+    });
     setSelectedDay(prev => prev ? { ...prev, dayEntry: liveEntry, status: liveStatus } : prev);
-  }, [attendanceData, selectedDay?.date]);
+  }, [attendanceData, selectedDay?.date, currentSemester]);
 
   return (
     <div className="max-w-6xl mx-auto px-4 pt-6 pb-10 space-y-6">
@@ -1111,8 +1147,8 @@ export default function Calendar() {
               )}
             </div>
             <div className="mt-3 space-y-2">
-              {activeSelectedDay.dayEntry?.lectures?.length ? (
-                activeSelectedDay.dayEntry.lectures.map((lecture, index) => {
+              {selectedDayLectures?.length ? (
+                selectedDayLectures.map((lecture, index) => {
                   const subject     = subjectsById.get(lecture.subjectId);
                   const statusLabel = lecture.status || "pending";
                   return (

@@ -489,32 +489,68 @@ export function SemesterProvider({ children }) {
       const existing = sem.attendanceData.find((d) => d.date === today);
       let newData;
 
-      if (existing) {
-        const newLectures = existing.lectures.map((l, idx) => {
-          const currentSlot = l.slotIndex ?? idx;
-          if (slotIndex != null) {
-            return (l.subjectId === subjectId && currentSlot === slotIndex) ? { ...l, status } : l;
+      const timetableLectures = getLecturesForDate(today, sem);
+      let baseLectures = [];
+
+      if (existing?.lectures && existing.lectures.length > 0) {
+        baseLectures = [...existing.lectures];
+      } else {
+        baseLectures = timetableLectures.map((l, idx) => ({
+          subjectId: l.subjectId,
+          type: l.type || "theory",
+          slotIndex: l.slotIndex ?? idx,
+          status: null,
+        }));
+      }
+
+      // Check if target lecture exists in baseLectures
+      const matchIndex = baseLectures.findIndex((l, idx) => {
+        const currentSlot = l.slotIndex ?? idx;
+        if (slotIndex != null) {
+          return l.subjectId === subjectId && currentSlot === slotIndex;
+        }
+        return l.subjectId === subjectId;
+      });
+
+      let newLectures;
+      if (matchIndex >= 0) {
+        newLectures = baseLectures.map((l, idx) => {
+          if (idx === matchIndex) {
+            return { ...l, status };
           }
-          return l.subjectId === subjectId ? { ...l, status } : l;
+          return l;
         });
+      } else {
+        newLectures = [
+          ...baseLectures,
+          {
+            subjectId,
+            type: "theory",
+            slotIndex: slotIndex ?? baseLectures.length,
+            status,
+          },
+        ];
+      }
+
+      if (existing) {
         newData = sem.attendanceData.map((day) =>
-          day.date === today ? { ...day, lectures: newLectures } : day
+          day.date === today
+            ? {
+                ...day,
+                dayType: null,
+                lectures: newLectures,
+              }
+            : day
         );
       } else {
-        const timetableLectures = getLecturesForDate(today, sem);
-        const newLectures = timetableLectures.map((l, idx) => {
-          const currentSlot = l.slotIndex ?? idx;
-          const match = slotIndex != null
-            ? (l.subjectId === subjectId && currentSlot === slotIndex)
-            : l.subjectId === subjectId;
-          return {
-            subjectId: l.subjectId,
-            type: l.type,
-            slotIndex: currentSlot,
-            status: match ? status : null,
-          };
-        });
-        newData = [...sem.attendanceData, { date: today, dayType: null, lectures: newLectures }];
+        newData = [
+          ...sem.attendanceData,
+          {
+            date: today,
+            dayType: null,
+            lectures: newLectures,
+          },
+        ];
       }
 
       updatedAttendance = newData;
@@ -607,7 +643,7 @@ export function SemesterProvider({ children }) {
                 ...d,
                 lectures: cleanLectures,
                 isCustomSchedule: true,
-                dayType: dayType !== undefined && dayType !== null ? dayType : d.dayType || null,
+                dayType: dayType || null,
               }
             : d
         );
@@ -660,6 +696,7 @@ export function SemesterProvider({ children }) {
           d.date === targetDate
             ? {
                 ...d,
+                dayType: null,
                 lectures: defaultLectures,
                 isCustomSchedule: false,
               }

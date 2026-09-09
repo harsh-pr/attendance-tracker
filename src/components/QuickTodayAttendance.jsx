@@ -42,7 +42,7 @@ const statusPillStyles = {
 };
 
 export default function QuickTodayAttendance({ open, onClose }) {
-  const { currentSemester, markTodayAttendance, updateDayLectures, resetDayLecturesToDefault } = useSemester();
+  const { currentSemester, markTodayAttendance, updateDayLectures, resetDayLecturesToDefault, markDayStatus } = useSemester();
   const [isEditing, setIsEditing] = useState(false);
   const today = getTodayDate();
 
@@ -51,6 +51,7 @@ export default function QuickTodayAttendance({ open, onClose }) {
   );
   const timetableLectures = getLecturesForDate(today, currentSemester);
   const isCustom = Boolean(todayEntry?.isCustomSchedule);
+  const isHoliday = todayEntry?.dayType === "holiday";
 
   const lectureKey = (l) => (l.slotIndex != null ? `${l.subjectId}::${l.slotIndex}` : l.subjectId);
 
@@ -95,18 +96,29 @@ export default function QuickTodayAttendance({ open, onClose }) {
     return (
       <Modal open={open} onClose={onClose} size="md">
         <div className="text-center py-6 space-y-4">
-          <div className="w-12 h-12 rounded-2xl bg-amber-500/10 text-amber-500 flex items-center justify-center mx-auto text-2xl">
-            📅
+          <div className="w-12 h-12 rounded-2xl bg-sky-500/10 text-sky-500 flex items-center justify-center mx-auto text-2xl">
+            {isHoliday ? "🏖️" : "📅"}
           </div>
           <div className="space-y-1">
             <h3 className="text-base font-bold text-zinc-900 dark:text-white">
-              No lectures scheduled for today
+              {isHoliday ? "Today is marked as a Holiday" : "No lectures scheduled for today"}
             </h3>
             <p className="text-xs text-zinc-500 dark:text-zinc-400 max-w-xs mx-auto">
-              Your standard timetable has no classes today. If your timetable changed or extra classes were held, you can add them for today only.
+              {isHoliday
+                ? "This day has been designated as a holiday in your calendar. You can resume regular classes or add custom lectures."
+                : "Your standard timetable has no classes today. If your timetable changed or extra classes were held, you can add them for today only."}
             </p>
           </div>
-          <div className="flex justify-center gap-2 pt-2">
+          <div className="flex flex-wrap justify-center gap-2 pt-2">
+            {isHoliday && (
+              <button
+                type="button"
+                onClick={() => markDayStatus(today, null)}
+                className="px-4 py-2 rounded-xl bg-sky-600 hover:bg-sky-500 text-white text-xs font-bold shadow-md shadow-sky-500/20 cursor-pointer transition active:scale-95"
+              >
+                Resume Regular Schedule
+              </button>
+            )}
             <button
               type="button"
               onClick={() => setIsEditing(true)}
@@ -168,7 +180,7 @@ export default function QuickTodayAttendance({ open, onClose }) {
         </div>
       ) : (
         <>
-          {/* Header with Title and Edit Timetable Button */}
+          {/* Header with Title and Actions */}
           <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-2.5 mb-4 pb-3 border-b border-zinc-100 dark:border-zinc-800/80">
             <div className="space-y-1">
               <h2 className="text-lg sm:text-xl font-bold text-zinc-900 dark:text-zinc-100 tracking-tight">
@@ -177,26 +189,80 @@ export default function QuickTodayAttendance({ open, onClose }) {
               <p className="text-xs text-zinc-500 dark:text-zinc-400">
                 Mark your presence or select lecture status below.
               </p>
-              {isCustom && (
-                <div className="pt-0.5">
+              <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
+                {isHoliday && (
+                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-sky-500/15 text-sky-600 dark:text-sky-400 border border-sky-500/30 whitespace-nowrap shrink-0">
+                    <span>🏖️</span> Holiday
+                  </span>
+                )}
+                {isCustom && (
                   <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30 whitespace-nowrap shrink-0">
                     <span>✨</span> Custom Schedule
                   </span>
-                </div>
-              )}
+                )}
+              </div>
             </div>
 
-            {/* Edit 1-Day Timetable Button */}
-            <button
-              type="button"
-              onClick={() => setIsEditing(true)}
-              className="self-start sm:self-center px-3 py-1.5 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-700 text-xs font-bold text-zinc-700 dark:text-zinc-200 shadow-xs cursor-pointer flex items-center gap-1.5 transition active:scale-95 shrink-0 whitespace-nowrap"
-              title="Edit lectures for today only if timetable changed"
-            >
-              <span>✏️</span>
-              <span>Edit Today&apos;s Lectures</span>
-            </button>
+            {/* Action Buttons */}
+            <div className="flex flex-wrap items-center gap-2 self-start sm:self-center shrink-0">
+              {isHoliday ? (
+                <button
+                  type="button"
+                  onClick={() => markDayStatus(today, null)}
+                  className="px-2.5 py-1.5 rounded-xl border border-sky-300 dark:border-sky-500/40 bg-sky-50 dark:bg-sky-500/15 hover:bg-sky-100 dark:hover:bg-sky-500/25 text-xs font-bold text-sky-700 dark:text-sky-300 shadow-xs cursor-pointer flex items-center gap-1.5 transition active:scale-95 shrink-0 whitespace-nowrap"
+                  title="Resume regular classes for today"
+                >
+                  <span>▶️</span>
+                  <span>Resume Classes</span>
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => markDayStatus(today, "holiday")}
+                  className="px-2.5 py-1.5 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-700 text-xs font-bold text-zinc-700 dark:text-zinc-200 shadow-xs cursor-pointer flex items-center gap-1.5 transition active:scale-95 shrink-0 whitespace-nowrap"
+                  title="Mark today as a holiday"
+                >
+                  <span>🏖️</span>
+                  <span>Mark Holiday</span>
+                </button>
+              )}
+
+              {/* Edit 1-Day Timetable Button */}
+              <button
+                type="button"
+                onClick={() => setIsEditing(true)}
+                className="px-2.5 py-1.5 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-700 text-xs font-bold text-zinc-700 dark:text-zinc-200 shadow-xs cursor-pointer flex items-center gap-1.5 transition active:scale-95 shrink-0 whitespace-nowrap"
+                title="Edit lectures for today only if timetable changed"
+              >
+                <span>✏️</span>
+                <span>Edit Lectures</span>
+              </button>
+            </div>
           </div>
+
+          {/* Holiday Alert Banner */}
+          {isHoliday && (
+            <div className="mb-3.5 rounded-2xl p-3 bg-sky-50/80 dark:bg-sky-950/40 border border-sky-200 dark:border-sky-800/80 flex items-center justify-between gap-3 shadow-2xs">
+              <div className="flex items-center gap-2.5 min-w-0">
+                <span className="text-lg shrink-0">🏖️</span>
+                <div className="min-w-0">
+                  <p className="text-xs font-bold text-sky-900 dark:text-sky-200 truncate">
+                    Today is marked as a Holiday in your calendar
+                  </p>
+                  <p className="text-[11px] text-sky-700 dark:text-sky-400 truncate">
+                    Marking any lecture below or clicking Resume will clear the holiday status.
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => markDayStatus(today, null)}
+                className="px-2.5 py-1 rounded-lg bg-sky-600 hover:bg-sky-500 text-white text-[11px] font-bold shrink-0 transition active:scale-95 cursor-pointer shadow-xs"
+              >
+                Resume
+              </button>
+            </div>
+          )}
 
           {/* Clean Lecture Cards Container - NO NESTED SCROLLBAR */}
           <div className="space-y-3">

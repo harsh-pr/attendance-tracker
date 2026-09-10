@@ -8,9 +8,19 @@ import {
 } from "firebase/firestore";
 import { db, auth } from "./config";
 
+export function isGuestMode() {
+  return (
+    !auth.currentUser ||
+    (typeof window !== "undefined" && (
+      window.sessionStorage?.getItem("is_guest_session") === "true" ||
+      window.localStorage?.getItem("is_guest_mode") === "true"
+    ))
+  );
+}
+
 function getUserId() {
-  if (!auth.currentUser) {
-    throw new Error("No authenticated user.");
+  if (isGuestMode()) {
+    throw new Error("No authenticated user in guest mode.");
   }
   return auth.currentUser.uid;
 }
@@ -52,7 +62,7 @@ function saveGuestAppData(updater) {
 
 // ─── LOAD ALL DATA ────────────────────────────────────────────────────────────
 export async function loadAllData() {
-  if (!auth.currentUser) {
+  if (isGuestMode()) {
     const raw = localStorage.getItem("GUEST_APP_DATA");
     if (raw) {
       try {
@@ -121,7 +131,7 @@ export async function loadAllData() {
 
 // ─── SAVE META ────────────────────────────────────────────────────────────────
 export async function saveMeta(currentSemesterId, semesters) {
-  if (!auth.currentUser) {
+  if (isGuestMode()) {
     saveGuestAppData((prev) => ({
       ...prev,
       currentSemesterId,
@@ -135,7 +145,7 @@ export async function saveMeta(currentSemesterId, semesters) {
 
 // ─── SAVE ATTENDANCE ─────────────────────────────────────────────────────────
 export async function saveAttendance(semesterId, attendanceData) {
-  if (!auth.currentUser) {
+  if (isGuestMode()) {
     saveGuestAppData((prev) => {
       const sems = (prev.semesters || []).map((s) =>
         s.id === semesterId ? { ...s, attendanceData } : s
@@ -149,7 +159,7 @@ export async function saveAttendance(semesterId, attendanceData) {
 
 // ─── SAVE SUBJECTS ────────────────────────────────────────────────────────────
 export async function saveSubjects(subjectsBySemester) {
-  if (!auth.currentUser) {
+  if (isGuestMode()) {
     saveGuestAppData((prev) => ({ ...prev, subjectsBySemester }));
     return;
   }
@@ -158,7 +168,7 @@ export async function saveSubjects(subjectsBySemester) {
 
 // ─── SAVE TIMETABLES ─────────────────────────────────────────────────────────
 export async function saveTimetables(timetablesBySemester) {
-  if (!auth.currentUser) {
+  if (isGuestMode()) {
     saveGuestAppData((prev) => ({ ...prev, timetablesBySemester }));
     return;
   }
@@ -167,7 +177,7 @@ export async function saveTimetables(timetablesBySemester) {
 
 // ─── SAVE REMINDERS ──────────────────────────────────────────────────────────
 export async function saveReminders(remindersBySemester) {
-  if (!auth.currentUser) {
+  if (isGuestMode()) {
     saveGuestAppData((prev) => ({ ...prev, remindersBySemester }));
     return;
   }
@@ -176,7 +186,7 @@ export async function saveReminders(remindersBySemester) {
 
 // ─── COLLEGE TIMETABLE SYNC ──────────────────────────────────────────────────
 export async function getCollegeTimetable(semesterId) {
-  if (!auth.currentUser) {
+  if (isGuestMode()) {
     const raw = localStorage.getItem(`GUEST_COLLEGE_TIMETABLE_${semesterId}`);
     return raw ? JSON.parse(raw) : null;
   }
@@ -191,7 +201,7 @@ export async function getCollegeTimetable(semesterId) {
 }
 
 export async function saveCollegeTimetable(semesterId, timetableData) {
-  if (!auth.currentUser) {
+  if (isGuestMode()) {
     localStorage.setItem(`GUEST_COLLEGE_TIMETABLE_${semesterId}`, JSON.stringify(timetableData));
     return;
   }

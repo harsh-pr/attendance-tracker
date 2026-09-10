@@ -145,7 +145,12 @@ export function AuthProvider({ children }) {
   }, [user]);
 
   // 2. Authentication Actions
-  function loginAsGuest() {
+  async function loginAsGuest() {
+    try {
+      if (auth.currentUser) {
+        await signOut(auth);
+      }
+    } catch (_) {}
     sessionStorage.setItem("is_guest_session", "true");
     localStorage.setItem("is_guest_mode", "true");
     setUser(GUEST_USER);

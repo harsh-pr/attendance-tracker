@@ -11,7 +11,8 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "split:data": "node scripts/splitAttendanceData.mjs",
-    "clean-orphans": "node scripts/cleanOrphanedUsers.js"
+    "clean-orphans": "node scripts/cleanOrphanedUsers.js",
+    "deploy:rules": "node scripts/deploy_firestore_rules.mjs"
   },
   "dependencies": {
     "firebase": "^12.9.0",

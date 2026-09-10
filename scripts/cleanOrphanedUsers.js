@@ -14,7 +14,7 @@ if (process.env.FIREBASE_SERVICE_ACCOUNT_KEY) {
     const parsed = raw.trim().startsWith("{") ? JSON.parse(raw) : JSON.parse(readFileSync(raw, "utf8"));
     credential = admin.credential.cert(parsed);
   } catch (err) {
-    console.error("❌ Failed to parse FIREBASE_SERVICE_ACCOUNT_KEY environment variable:", err.message);
+    console.error("Failed to parse FIREBASE_SERVICE_ACCOUNT_KEY environment variable:", err.message);
     process.exit(1);
   }
 } else if (existsSync(serviceAccountPath)) {
@@ -22,14 +22,14 @@ if (process.env.FIREBASE_SERVICE_ACCOUNT_KEY) {
     const serviceAccount = JSON.parse(readFileSync(serviceAccountPath, "utf8"));
     credential = admin.credential.cert(serviceAccount);
   } catch (error) {
-    console.error("❌ Failed to read serviceAccountKey.json:", error.message);
+    console.error("Failed to read serviceAccountKey.json:", error.message);
     process.exit(1);
   }
 } else {
   try {
     credential = admin.credential.applicationDefault();
-  } catch (e) {
-    console.error("❌ No Firebase admin credentials found. Provide FIREBASE_SERVICE_ACCOUNT_KEY or applicationDefault.");
+  } catch {
+    console.error("No Firebase admin credentials found. Provide FIREBASE_SERVICE_ACCOUNT_KEY or applicationDefault.");
     process.exit(1);
   }
 }
@@ -60,17 +60,17 @@ async function getAllActiveUids() {
 }
 
 async function cleanOrphanedUsers() {
-  console.log("🧹 Starting Firestore orphaned users cleanup...");
+  console.log("Starting Firestore orphaned users cleanup...");
   
   // 1. Get active user UIDs from Auth
-  console.log("👉 Fetching active users from Firebase Authentication...");
+  console.log("Fetching active users from Firebase Authentication...");
   const activeUids = await getAllActiveUids();
-  console.log(`ℹ️ Found ${activeUids.size} active users in Auth.\n`);
+  console.log(`Found ${activeUids.size} active users in Auth.\n`);
 
   // 2. Get user document IDs from Firestore "users" collection
-  console.log("👉 Fetching users from Firestore...");
+  console.log("Fetching users from Firestore...");
   const documentRefs = await db.collection("users").listDocuments();
-  console.log(`ℹ️ Found ${documentRefs.length} user documents in Firestore.`);
+  console.log(`Found ${documentRefs.length} user documents in Firestore.`);
   
   const orphanedUids = [];
   documentRefs.forEach((docRef) => {
@@ -81,31 +81,31 @@ async function cleanOrphanedUsers() {
   });
 
   if (orphanedUids.length === 0) {
-    console.log("🎉 No orphaned users found in Firestore. Everything is clean!");
+    console.log("No orphaned users found in Firestore.");
     return;
   }
 
-  console.log(`⚠️ Found ${orphanedUids.length} orphaned user documents in Firestore:`);
+  console.log(`Found ${orphanedUids.length} orphaned user documents in Firestore:`);
   orphanedUids.forEach(uid => console.log(`   - users/${uid}`));
   console.log("");
 
   // 3. Delete orphaned documents and subcollections recursively
   for (const uid of orphanedUids) {
-    console.log(`🔴 Deleting users/${uid} and all its subcollections...`);
+    console.log(`Deleting users/${uid} and all its subcollections...`);
     const docRef = db.collection("users").doc(uid);
     
     try {
       await db.recursiveDelete(docRef);
-      console.log(`✅ Successfully deleted users/${uid}`);
+      console.log(`Successfully deleted users/${uid}`);
     } catch (err) {
-      console.error(`❌ Failed to delete users/${uid}:`, err.message);
+      console.error(`Failed to delete users/${uid}:`, err.message);
     }
   }
 
-  console.log("\n✨ Cleanup finished!");
+  console.log("\nCleanup finished.");
 }
 
 cleanOrphanedUsers().catch((err) => {
-  console.error("❌ Cleanup script failed:", err);
+  console.error("Cleanup script failed:", err);
   process.exit(1);
 });

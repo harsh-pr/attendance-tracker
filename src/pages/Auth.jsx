@@ -112,20 +112,15 @@ export default function Auth() {
 
   return (
     <div className="relative min-h-screen lg:h-screen lg:max-h-screen flex items-center justify-center px-4 py-4 sm:py-6 overflow-hidden transition-colors duration-300">
-      {/* ─── GPU-ACCELERATED DARK AMBIENT STEALTH BACKGROUND ─── */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none select-none">
-        {/* Deep Dark Ambient Base Canvas */}
         <div className="absolute inset-0 bg-gradient-to-br from-zinc-50 via-zinc-100 to-zinc-50 dark:from-zinc-950 dark:via-zinc-900 dark:to-zinc-950 transition-colors duration-500" />
 
-        {/* Dark Ambient Neutral Orbs */}
         <div className="animate-bg-float-1 transform-gpu absolute -top-24 -left-20 w-[20rem] sm:w-[36rem] h-[20rem] sm:h-[36rem] bg-gradient-to-tr from-zinc-300/30 via-zinc-200/20 to-transparent dark:from-zinc-800/30 dark:via-zinc-850/20 dark:to-transparent rounded-full blur-3xl sm:blur-[120px]" />
         <div className="animate-bg-float-2 transform-gpu absolute -bottom-28 -right-20 w-[20rem] sm:w-[38rem] h-[20rem] sm:h-[38rem] bg-gradient-to-tr from-zinc-400/25 via-slate-300/20 to-transparent dark:from-zinc-800/30 dark:via-slate-900/20 dark:to-transparent rounded-full blur-3xl sm:blur-[120px]" />
 
-        {/* Geometric Grid / Dot Overlay */}
         <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px] sm:bg-[size:32px_32px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_50%,#000_70%,transparent_100%)] opacity-50 dark:opacity-25" />
       </div>
 
-      {/* TOP FLOATING THEME TOGGLE */}
       <div className="absolute top-4 sm:top-6 right-4 sm:right-6 z-30">
         <motion.button
           whileTap={{ scale: 0.9 }}
@@ -143,10 +138,7 @@ export default function Auth() {
         </motion.button>
       </div>
 
-      {/* ─── RESPONSIVE SPLIT PAGE LAYOUT (DESKTOP HERO & GLASS AUTH CARD) ─── */}
       <div className="relative z-10 w-full max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
-        
-        {/* LEFT COLUMN: DESKTOP SHOWCASE HERO */}
         <motion.div
           initial={{ opacity: 0, x: -24 }}
           animate={{ opacity: 1, x: 0 }}
@@ -171,7 +163,6 @@ export default function Auth() {
             </p>
           </div>
 
-          {/* INTERACTIVE DEMO PREVIEW CARD */}
           <div className="p-4 sm:p-5 rounded-3xl bg-white/70 dark:bg-zinc-900/70 border border-zinc-200/80 dark:border-zinc-800/80 shadow-xl backdrop-blur-xl space-y-3.5 max-w-lg">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2.5">
@@ -188,7 +179,6 @@ export default function Auth() {
               </span>
             </div>
 
-            {/* Attendance Progress Bar */}
             <div className="space-y-1">
               <div className="flex justify-between text-[11px] font-bold text-zinc-600 dark:text-zinc-400">
                 <span>Overall Attendance Progress</span>
@@ -199,7 +189,6 @@ export default function Auth() {
               </div>
             </div>
 
-            {/* Feature Highlights Pills */}
             <div className="grid grid-cols-3 gap-2 pt-2 border-t border-zinc-200/60 dark:border-zinc-800/60 text-[11px] font-bold">
               <div className="p-2 rounded-xl bg-zinc-100/80 dark:bg-zinc-800/50 text-zinc-700 dark:text-zinc-300 flex items-center gap-1.5">
                 <span>⚡</span> Auto Math
@@ -214,7 +203,6 @@ export default function Auth() {
           </div>
         </motion.div>
 
-        {/* RIGHT COLUMN: KOKONUT GLASS AUTH CARD */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -222,7 +210,6 @@ export default function Auth() {
           className="lg:col-span-5 w-full max-w-md mx-auto"
         >
           <div className="bg-white/80 dark:bg-zinc-900/80 border border-zinc-200/80 dark:border-zinc-800/80 shadow-[0_20px_60px_rgba(0,0,0,0.08)] dark:shadow-[0_20px_60px_rgba(0,0,0,0.45)] backdrop-blur-xl rounded-3xl p-5 sm:p-6 space-y-4">
-            {/* LOGO & HEADER */}
             <div className="text-center space-y-1.5">
               <div className="relative inline-flex items-center justify-center w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-gradient-to-tr from-blue-600 via-indigo-600 to-purple-600 text-white font-black text-xl shadow-lg shadow-blue-500/30">
                 <span>A</span>
@@ -242,7 +229,6 @@ export default function Auth() {
               </div>
             </div>
 
-            {/* MORPHIC TAB SWITCHER */}
             <div className="relative flex p-1 rounded-2xl bg-zinc-100 dark:bg-zinc-800/60 border border-zinc-200/60 dark:border-zinc-700/50">
               <button
                 type="button"
@@ -279,7 +265,6 @@ export default function Auth() {
               </button>
             </div>
 
-            {/* ERROR CALLOUT */}
             <AnimatePresence mode="wait">
               {errorMsg && (
                 <motion.div
@@ -295,7 +280,6 @@ export default function Auth() {
               )}
             </AnimatePresence>
 
-            {/* FORM FIELDS */}
             <form onSubmit={handleSubmit} className="space-y-3">
               <AnimatePresence mode="wait">
                 {!isLoginTab && (
@@ -381,7 +365,6 @@ export default function Auth() {
                   </button>
                 </div>
 
-                {/* ULTRA-COMPACT SINGLE-LINE PASSWORD REQUIREMENTS BADGE */}
                 {!isLoginTab && password.length > 0 && (
                   <motion.div
                     initial={{ opacity: 0, y: -2 }}
@@ -436,7 +419,6 @@ export default function Auth() {
               </motion.button>
             </form>
 
-            {/* DIVIDER */}
             <div className="relative my-2.5 flex items-center justify-center">
               <div className="absolute inset-0 flex items-center">
                 <div className="w-full border-t border-zinc-200 dark:border-zinc-800" />
@@ -446,7 +428,6 @@ export default function Auth() {
               </span>
             </div>
 
-            {/* GOOGLE SIGN-IN BUTTON */}
             <motion.button
               whileHover={{ scale: 1.01 }}
               whileTap={{ scale: 0.98 }}
@@ -476,7 +457,6 @@ export default function Auth() {
               <span>Continue with Google</span>
             </motion.button>
 
-            {/* GUEST DEMO MODE SECTION */}
             <div className="pt-2 border-t border-zinc-200/80 dark:border-zinc-800/80 space-y-1 text-center">
               <motion.button
                 whileHover={{ scale: 1.01 }}

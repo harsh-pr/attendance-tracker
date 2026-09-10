@@ -52,7 +52,6 @@ export default function Today() {
       animate="visible"
       className="max-w-6xl mx-auto px-4 pt-6 space-y-6"
     >
-      {/* ===== EXECUTIVE SECTION HEADER ===== */}
       <motion.div variants={cardVariants} className="space-y-2">
         <div className="flex items-center gap-2.5">
           <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-zinc-900 dark:text-white font-[Poppins]">
@@ -87,7 +86,6 @@ export default function Today() {
         </div>
       </motion.div>
 
-      {/* ===== SUBJECT GRID ===== */}
       <div className="space-y-6">
         <SubjectSection
           title="Theory"
@@ -101,7 +99,6 @@ export default function Today() {
         />
       </div>
 
-      {/* ===== CALENDAR MODAL ===== */}
       <SubjectCalendarModal
         open={Boolean(selectedSubjectData)}
         onClose={() => setSelectedSubjectData(null)}
@@ -111,9 +108,6 @@ export default function Today() {
   );
 }
 
-/* =======================
-   SUBJECT CARD
-======================= */
 function SubjectCard({ data, onClick }) {
   const { subject, attended, conducted, percentage, status } =
     data;

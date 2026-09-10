@@ -92,9 +92,7 @@ function sanitizeTimetableStructure(raw) {
   return clean;
 }
 
-// ─── PROVIDER ────────────────────────────────────────────────────────────────
 export function SemesterProvider({ children }) {
-  // ── STATE — starts completely empty, filled from Firestore ─────────────────
   const [semesters, setSemesters] = useState([]);
   const [currentSemesterId, setCurrentSemesterId] = useState(DEFAULT_SEMESTER_ID);
   const [subjectsBySemester, setSubjectsBySemester] = useState({});
@@ -158,9 +156,7 @@ export function SemesterProvider({ children }) {
     reloadAllData();
   }, []);
 
-  // ── EXPLICIT SAVE HELPERS ──────────────────────────────────────────────────
-  // These are called directly from mutation functions — never automatically.
-
+  // Save helpers called directly from mutation functions
   function persistMeta(nextCurrentId, nextSemesters) {
     saveMeta(nextCurrentId, nextSemesters).catch((err) =>
       console.error("Failed to save meta:", err)
@@ -191,7 +187,6 @@ export function SemesterProvider({ children }) {
     );
   }
 
-  // ── DERIVED STATE ──────────────────────────────────────────────────────────
   const baseCurrentSemester =
     semesters.find((s) => s.id === currentSemesterId) ||
     semesters[0] ||
@@ -218,7 +213,6 @@ export function SemesterProvider({ children }) {
     [baseCurrentSemester, currentSubjects, currentTimetable, timetablesBySemester, remindersBySemester, currentSemesterId]
   );
 
-  // ── HELPERS ────────────────────────────────────────────────────────────────
   function normalizeDateString(dateString) {
     const parsed = new Date(dateString);
     if (Number.isNaN(parsed.getTime())) return dateString;
@@ -247,7 +241,6 @@ export function SemesterProvider({ children }) {
     }));
   }
 
-  // ── SEMESTER CRUD ──────────────────────────────────────────────────────────
   function addSemester(name, options = {}) {
     const trimmedName = name?.trim();
     if (!trimmedName) return null;
@@ -307,7 +300,6 @@ export function SemesterProvider({ children }) {
     persistReminders(nextReminders);
   }
 
-  // ── SUBJECTS ───────────────────────────────────────────────────────────────
   function addSubject(name, type = "theory") {
     const trimmedName = name?.trim();
     if (!trimmedName) return;
@@ -377,8 +369,7 @@ export function SemesterProvider({ children }) {
     persistAttendance(currentSemesterId, nextSemesters.find((s) => s.id === currentSemesterId)?.attendanceData || []);
   }
 
-  function setSubjectsDraftAction(semesterId, subjectsArr) {
-    // dummy check in case Navbar is mounted, subjectsDraft will sync automatically next time openTimetableModal is called.
+  function setSubjectsDraftAction() {
   }
 
   function setSemesterSubjects(semesterId, nextSubjectsArr = []) {
@@ -431,11 +422,9 @@ export function SemesterProvider({ children }) {
     persistAttendance(semesterId, nextSemesters.find((s) => s.id === semesterId)?.attendanceData || []);
   }
 
-  // ── TIMETABLE ──────────────────────────────────────────────────────────────
   function setSemesterTimetable(semesterId, timetable) {
     const rawVal = timetablesBySemester[semesterId];
     const todayStr = getTodayDate();
-    let nextVal;
 
     const cleanedTimetable = {
       monday: timetable?.monday || [],
@@ -476,7 +465,6 @@ export function SemesterProvider({ children }) {
     persistTimetables(nextTimetables);
   }
 
-  // ── ATTENDANCE ─────────────────────────────────────────────────────────────
   function markDayStatus(date, status) {
     const targetDate = normalizeDateString(date);
     let updatedAttendance = [];
@@ -798,7 +786,6 @@ export function SemesterProvider({ children }) {
     persistMeta(currentSemesterId, nextSemesters);
   }
 
-  // ── REMINDERS ─────────────────────────────────────────────────────────────
   function addReminder(reminder) {
     const nextReminders = {
       ...remindersBySemester,
@@ -828,7 +815,6 @@ export function SemesterProvider({ children }) {
     persistReminders(nextReminders);
   }
 
-  // ── TIMETABLE SHARE & IMPORT FUNCTIONS ─────────────────────────────────────
   async function generateShareCodeForSemester({
     sourceSemesterId,
     includeSubjects = true,
@@ -922,7 +908,6 @@ export function SemesterProvider({ children }) {
     return payload;
   }
 
-  // ── CONTEXT VALUE ──────────────────────────────────────────────────────────
   const contextValue = {
     semesters,
     currentSemester,

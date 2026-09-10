@@ -156,7 +156,6 @@ export default function Calendar() {
     removeDayAttendance,
   } = useSemester();
 
-  // ── NOTIFICATION PERMISSION (custom modal) ──────────────────────────────────
   const { showModal: showNotifModal, requestPermissionIfNeeded, onAllow, onDismiss } =
     useNotificationPermission();
 
@@ -200,14 +199,6 @@ export default function Calendar() {
 
   const today = useMemo(() => new Date(), []);
   const todayKey = formatDateKey(today);
-  const isViewingCurrentMonth =
-    activeMonthDate.getFullYear() === today.getFullYear() &&
-    activeMonthDate.getMonth() === today.getMonth();
-
-  const isTodayDate = useCallback((date) => {
-    if (!date) return false;
-    return formatDateKey(date) === todayKey;
-  }, [todayKey]);
 
   const monthLabel      = formatMonthLabel(activeMonthDate);
   const year            = activeMonthDate.getFullYear();
@@ -507,7 +498,7 @@ export default function Calendar() {
     pdf.save(`attendance-${year}-${String(monthIndex + 1).padStart(2, "0")}.pdf`);
   };
 
-  // ── FIXED: ask for permission BEFORE saving the reminder ───────────────────
+  // Ask for permission before saving the reminder
   const handleAddReminder = async (event) => {
     event.preventDefault();
     if (!reminderForm.title || !reminderForm.date) return;
@@ -615,8 +606,6 @@ export default function Calendar() {
     setEditDayOpen(false);
   };
 
-  const lectureKey = (l) => l.slotIndex != null ? `${l.subjectId}::${l.slotIndex}` : l.subjectId;
-
   const setPartialStatus = (key, status) => {
     setPartialSelection(prev => ({ ...prev, [key]: status }));
   };
@@ -657,14 +646,12 @@ export default function Calendar() {
   return (
     <div className="max-w-6xl mx-auto px-4 pt-6 pb-10 space-y-6">
 
-      {/* ── NOTIFICATION PERMISSION MODAL (custom, shown before browser prompt) ── */}
       <NotificationPermissionModal
         open={showNotifModal}
         onAllow={onAllow}
         onDismiss={onDismiss}
       />
 
-      {/* ── OFF-SCREEN PDF EXPORT ── */}
       <div
         ref={exportRef}
         style={{
@@ -864,7 +851,6 @@ export default function Calendar() {
         </div>
       </div>
 
-      {/* ── HEADER ── */}
       <section className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
         <div className="space-y-1">
           <div className="flex items-center gap-2">
@@ -898,7 +884,6 @@ export default function Calendar() {
         </div>
       </section>
 
-      {/* ── STATS ── */}
       <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {[
           { title: "Full days",    value: statusCounts.full,    change: formatDelta(statusCounts.full    - previousStatusCounts.full),    status: "full"    },
@@ -919,7 +904,6 @@ export default function Calendar() {
         ))}
       </section>
 
-      {/* ── CALENDAR + SIDEBAR ── */}
       <section className="grid gap-6 lg:grid-cols-[2.1fr_1fr]">
         <div className="space-y-4 rounded-3xl border border-zinc-200 dark:border-zinc-800 bg-white/80 dark:bg-zinc-900/80 p-6 shadow-sm backdrop-blur-xl">
           <div className="flex flex-wrap items-start justify-between gap-4 pt-1">
@@ -1030,7 +1014,6 @@ export default function Calendar() {
         </div>
       </section>
 
-      {/* ── ALL REMINDERS MODAL ── */}
       <Modal open={allRemindersOpen} onClose={() => setAllRemindersOpen(false)} size="lg">
         <div className="flex items-start justify-between gap-4">
           <div>
@@ -1062,7 +1045,6 @@ export default function Calendar() {
         </div>
       </Modal>
 
-      {/* ── ADD/EDIT REMINDER MODAL ── */}
       <Modal open={addReminderOpen} onClose={handleCloseReminderModal} size="lg" showCloseButton={false}>
         <div className="flex items-start justify-between gap-4">
           <div>
@@ -1105,7 +1087,6 @@ export default function Calendar() {
         </form>
       </Modal>
 
-      {/* ── DAY DETAIL MODAL ── */}
       <Modal
         open={Boolean(selectedDay)}
         onClose={() => setSelectedDay(null)}
@@ -1175,7 +1156,6 @@ export default function Calendar() {
         )}
       </Modal>
 
-      {/* ── EDIT DAY MODAL ── */}
       <Modal open={editDayOpen} onClose={() => setEditDayOpen(false)} size="md" noScroll={true}>
         <div className="flex flex-col gap-0.5 pb-1 border-b border-zinc-100 dark:border-zinc-800/80">
           <h3 className="text-base sm:text-lg font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
@@ -1307,7 +1287,6 @@ export default function Calendar() {
         </div>
       </Modal>
 
-      {/* ── PARTIAL MARK MODAL ── */}
       <Modal open={partialMarkOpen} onClose={() => setPartialMarkOpen(false)} size="md">
         <div className="flex flex-col gap-1 mb-4">
           <h3 className="text-xl font-bold text-zinc-900 dark:text-zinc-100">Mark Subject-Wise Status</h3>
@@ -1362,7 +1341,6 @@ export default function Calendar() {
         </div>
       </Modal>
 
-      {/* ── EDIT DAY TIMETABLE MODAL ── */}
       <Modal open={editTimetableOpen} onClose={() => setEditTimetableOpen(false)} size="md">
         {selectedDay && (
           <div className="space-y-4">

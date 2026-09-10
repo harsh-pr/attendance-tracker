@@ -3,7 +3,6 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useSemester } from "../context/SemesterContext";
 import { getLecturesForDate } from "../utils/timetableUtils";
 
-// ── INLINE SVG ICONS ──────────────────────────────────────────────────────────
 const Icons = {
   Zap: ({ className = "w-5 h-5" }) => (
     <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">

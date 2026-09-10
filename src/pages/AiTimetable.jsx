@@ -149,7 +149,6 @@ export default function AiTimetable() {
   const [activeTab, setActiveTab] = useState("grid"); // grid | list | faculty
   const [loadingDb, setLoadingDb] = useState(true);
 
-  // ── DRAFT states for modals (only committed on explicit Save) ──────────
   // Metadata modal drafts
   const [draftMetadata, setDraftMetadata] = useState(DEFAULT_METADATA);
 
@@ -239,7 +238,6 @@ export default function AiTimetable() {
     localStorage.setItem("TT_DAYS", JSON.stringify(newDays));
   };
 
-  // ── MODAL OPEN HANDLERS (snapshot current state into drafts) ────────────
   const openStructureModal = () => {
     setDraftTimeSlots(JSON.parse(JSON.stringify(timeSlots)));
     setDraftBreaks(JSON.parse(JSON.stringify(breaks)));
@@ -264,7 +262,6 @@ export default function AiTimetable() {
     setCellColSpan(cell.colSpan || 1);
   };
 
-  // ── DISCARD (close without saving) ─────────────────────────────────────
   const discardStructureModal = () => {
     setIsStructureModalOpen(false);
     // Drafts are simply abandoned — real state is untouched
@@ -278,7 +275,6 @@ export default function AiTimetable() {
     setEditingCell(null);
   };
 
-  // ── SAVE & COMMIT handlers ─────────────────────────────────────────────
   const saveCellEdit = async () => {
     if (!editingCell) return;
     const { day, index } = editingCell;
@@ -351,7 +347,6 @@ export default function AiTimetable() {
     });
   };
 
-  // ── DRAFT-ONLY mutators for Structure modal (no persistence) ───────────
   const handleAddTimeSlot = () => {
     const nextIdx = draftTimeSlots.length + 1;
     const newSlot = {
@@ -413,7 +408,6 @@ export default function AiTimetable() {
     });
   };
 
-  // ── DRAFT-ONLY mutator for Metadata modal ──────────────────────────────
   const handleDraftMetadataChange = (field, value) => {
     setDraftMetadata((prev) => ({ ...prev, [field]: value }));
   };

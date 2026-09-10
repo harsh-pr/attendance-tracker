@@ -96,7 +96,6 @@ export default function Home() {
 
   return (
     <div className="w-full max-w-6xl mx-auto px-4 pt-6 pb-24 space-y-8 overflow-x-hidden">
-      {/* ===== PREMIUM EXECUTIVE DASHBOARD HEADER ===== */}
       <div className="space-y-1">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2.5">
@@ -108,7 +107,6 @@ export default function Home() {
             </span>
           </div>
 
-          {/* ===== MOBILE ONLY SEMESTER SELECTOR ===== */}
           <div className="sm:hidden">
             <select
               value={currentSemester.id}
@@ -136,7 +134,6 @@ export default function Home() {
         </p>
       </div>
 
-      {/* ===== STAT CARDS ===== */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* TODAY */}
         <StatCard onClick={() => setQuickOpen(true)}>
@@ -244,12 +241,10 @@ export default function Home() {
         </StatCard>
       </div>
 
-      {/* ===== GRAPH ===== */}
       <div className="w-full overflow-hidden">
         <AttendanceOverviewChart />
       </div>
 
-      {/* ===== LOGS ===== */}
       <section className="space-y-4">
         <div className="flex items-center justify-between gap-4">
           <div>
@@ -338,7 +333,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ===== MODALS ===== */}
       <QuickTodayAttendance
         open={quickOpen}
         onClose={() => setQuickOpen(false)}
@@ -425,7 +419,6 @@ export default function Home() {
   );
 }
 
-/* ===== CARD ===== */
 function StatCard({ children, onClick }) {
   return (
     <motion.div

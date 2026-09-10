@@ -150,7 +150,9 @@ export function AuthProvider({ children }) {
       if (auth.currentUser) {
         await signOut(auth);
       }
-    } catch (_) {}
+    } catch {
+      // Ignore signOut failure when switching to guest mode
+    }
     sessionStorage.setItem("is_guest_session", "true");
     localStorage.setItem("is_guest_mode", "true");
     setUser(GUEST_USER);
@@ -191,7 +193,9 @@ export function AuthProvider({ children }) {
       }
       try {
         await userCredential.user.reload();
-      } catch (_) {}
+      } catch {
+        // Profile reload is non-blocking
+      }
       setUser(auth.currentUser || userCredential.user);
       localStorage.setItem("last_active_heartbeat", Date.now().toString());
       return userCredential.user;

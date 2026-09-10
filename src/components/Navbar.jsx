@@ -14,7 +14,6 @@ import HoldButton from "./HoldButton";
 import ShareTimetableModal from "./ShareTimetableModal";
 import ThemeToggle from "./ThemeToggle";
 import { useSemester } from "../context/SemesterContext";
-import { useTheme } from "../context/ThemeContext";
 import { useAuth } from "../context/AuthContext";
 import { calculateOverallAttendance } from "../utils/attendanceUtils";
 
@@ -52,7 +51,6 @@ export default function Navbar() {
     weekDays,
   } = useSemester();
 
-  const { theme, toggleTheme } = useTheme();
   const { user, logout, connectGoogle, deleteAccount } = useAuth();
 
   const [isSemesterMenuOpen, setIsSemesterMenuOpen] = useState(false);
@@ -312,8 +310,6 @@ export default function Navbar() {
     deleteSemester(currentSemesterId);
     setIsSemesterMenuOpen(false);
   }
-
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   return (
     <>

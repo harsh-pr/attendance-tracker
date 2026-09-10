@@ -60,7 +60,6 @@ function saveGuestAppData(updater) {
   }
 }
 
-// ─── LOAD ALL DATA ────────────────────────────────────────────────────────────
 export async function loadAllData() {
   if (isGuestMode()) {
     const raw = localStorage.getItem("GUEST_APP_DATA");
@@ -86,18 +85,12 @@ export async function loadAllData() {
 
   // No meta doc = Firestore is empty, first time use
   if (!meta) {
-    console.log("[Firestore] No meta found — first time use");
     return null;
   }
 
   const subjectsDoc   = subjectsSnap.exists()   ? subjectsSnap.data()   : {};
   const timetablesDoc = timetablesSnap.exists()  ? timetablesSnap.data() : {};
   const remindersDoc  = remindersSnap.exists()   ? remindersSnap.data()  : {};
-
-  console.log("[Firestore] meta:", meta);
-  console.log("[Firestore] subjectsDoc keys:", Object.keys(subjectsDoc));
-  console.log("[Firestore] timetablesDoc keys:", Object.keys(timetablesDoc));
-  console.log("[Firestore] remindersDoc keys:", Object.keys(remindersDoc));
 
   const semesterStubs = meta.semesters || [];
 
@@ -106,7 +99,6 @@ export async function loadAllData() {
     semesterStubs.map(async (sem) => {
       const snap = await getDoc(attendanceRef(sem.id));
       const records = snap.exists() ? (snap.data().records || []) : [];
-      console.log(`[Firestore] attendance for ${sem.id}: ${records.length} days`);
       return { semId: sem.id, attendanceData: records };
     })
   );
@@ -129,7 +121,6 @@ export async function loadAllData() {
   };
 }
 
-// ─── SAVE META ────────────────────────────────────────────────────────────────
 export async function saveMeta(currentSemesterId, semesters) {
   if (isGuestMode()) {
     saveGuestAppData((prev) => ({
@@ -143,7 +134,6 @@ export async function saveMeta(currentSemesterId, semesters) {
   await setDoc(metaRef(), { currentSemesterId, semesters: semesterStubs });
 }
 
-// ─── SAVE ATTENDANCE ─────────────────────────────────────────────────────────
 export async function saveAttendance(semesterId, attendanceData) {
   if (isGuestMode()) {
     saveGuestAppData((prev) => {
@@ -157,7 +147,6 @@ export async function saveAttendance(semesterId, attendanceData) {
   await setDoc(attendanceRef(semesterId), { records: attendanceData || [] });
 }
 
-// ─── SAVE SUBJECTS ────────────────────────────────────────────────────────────
 export async function saveSubjects(subjectsBySemester) {
   if (isGuestMode()) {
     saveGuestAppData((prev) => ({ ...prev, subjectsBySemester }));
@@ -166,7 +155,6 @@ export async function saveSubjects(subjectsBySemester) {
   await setDoc(subjectsRef(), { data: subjectsBySemester });
 }
 
-// ─── SAVE TIMETABLES ─────────────────────────────────────────────────────────
 export async function saveTimetables(timetablesBySemester) {
   if (isGuestMode()) {
     saveGuestAppData((prev) => ({ ...prev, timetablesBySemester }));
@@ -175,7 +163,6 @@ export async function saveTimetables(timetablesBySemester) {
   await setDoc(timetablesRef(), { data: timetablesBySemester });
 }
 
-// ─── SAVE REMINDERS ──────────────────────────────────────────────────────────
 export async function saveReminders(remindersBySemester) {
   if (isGuestMode()) {
     saveGuestAppData((prev) => ({ ...prev, remindersBySemester }));
@@ -184,7 +171,6 @@ export async function saveReminders(remindersBySemester) {
   await setDoc(remindersRef(), { data: remindersBySemester });
 }
 
-// ─── COLLEGE TIMETABLE SYNC ──────────────────────────────────────────────────
 export async function getCollegeTimetable(semesterId) {
   if (isGuestMode()) {
     const raw = localStorage.getItem(`GUEST_COLLEGE_TIMETABLE_${semesterId}`);
@@ -213,7 +199,6 @@ export async function saveCollegeTimetable(semesterId, timetableData) {
   }
 }
 
-// ─── LEGACY DATA OPERATIONS ──────────────────────────────────────────────────
 export async function checkLegacyDataExists() {
   try {
     const legacyMetaRef = doc(db, "users", "default_user", "meta", "app");
@@ -321,7 +306,6 @@ export async function deleteLegacyData() {
   }
 }
 
-// ─── DELETE ALL USER DATA ───────────────────────────────────────────────────
 export async function deleteAllUserData(userId) {
   if (!userId) return;
   try {
@@ -355,8 +339,6 @@ export async function deleteAllUserData(userId) {
     throw error;
   }
 }
-
-// ─── TEMPORARY SHARE TIMETABLE FUNCTIONS ─────────────────────────────────────
 
 function generateShareCode() {
   const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";

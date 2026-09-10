@@ -10,7 +10,6 @@ import {
 } from "recharts";
 import { useSemester } from "../context/SemesterContext";
 
-/* ===== PREMIUM TOOLTIP (NO WHITE OVERLAY) ===== */
 function CustomTooltip({ active, payload, label }) {
   if (!active || !payload || !payload.length) return null;
 
@@ -45,12 +44,10 @@ function CustomTooltip({ active, payload, label }) {
 export default function AttendanceOverviewChart() {
   const { currentSemester } = useSemester();
 
-  /* ===== SORT DAYS ===== */
   const sortedDays = [...currentSemester.attendanceData]
     .filter(d => d.lectures.length > 0)
     .sort((a, b) => new Date(a.date) - new Date(b.date));
 
-  /* ===== CUMULATIVE TOTAL ===== */
   let totalConducted = 0;
   let totalAttended = 0;
 
@@ -99,7 +96,6 @@ export default function AttendanceOverviewChart() {
         <ResponsiveContainer width="99%" height={320}>
           <BarChart data={data}>
 
-          {/* ===== AXES ===== */}
           <XAxis
             dataKey="date"
             tick={{ fill: "#6b7280", fontSize: 12 }}
@@ -126,12 +122,11 @@ export default function AttendanceOverviewChart() {
 
           <Tooltip
             content={<CustomTooltip />}
-            cursor={{ fill: "transparent" }}   // 🚫 NO WHITE OVERLAY
+            cursor={{ fill: "transparent" }}
           />
 
           <Legend />
 
-          {/* ===== GRADIENTS ===== */}
           <defs>
             <linearGradient id="attendedGradient" x1="0" y1="0" x2="0" y2="1">
               <stop offset="0%" stopColor="#3b82f6" stopOpacity={0.9} />

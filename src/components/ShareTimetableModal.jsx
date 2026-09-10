@@ -3,7 +3,6 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useSemester } from "../context/SemesterContext";
 import { useAuth } from "../context/AuthContext";
 
-// ── INLINE SVG ICONS ──────────────────────────────────────────────────────────
 const Icons = {
   Share: ({ className = "w-5 h-5" }) => (
     <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -84,7 +83,6 @@ export default function ShareTimetableModal({ isOpen, onClose }) {
 
   const [activeTab, setActiveTab] = useState("share"); // 'share' | 'import'
 
-  // ── SHARE STATE ─────────────────────────────────────────────────────────────
   const [sourceSemId, setSourceSemId] = useState(currentSemesterId || "");
   const [senderDisplayName, setSenderDisplayName] = useState(() => {
     return (
@@ -114,7 +112,6 @@ export default function ShareTimetableModal({ isOpen, onClose }) {
     }
   }, [isOpen, user]);
 
-  // ── IMPORT STATE ────────────────────────────────────────────────────────────
   const [inputCode, setInputCode] = useState("");
   const [targetSemId, setTargetSemId] = useState(currentSemesterId || "");
   const [importMode, setImportMode] = useState("replace"); // 'replace' | 'merge'
@@ -127,7 +124,6 @@ export default function ShareTimetableModal({ isOpen, onClose }) {
 
   if (!isOpen) return null;
 
-  // ── GENERATE CODE HANDLER ───────────────────────────────────────────────────
   const handleGenerateCode = async () => {
     setShareError("");
     setIsGenerating(true);
@@ -164,7 +160,6 @@ export default function ShareTimetableModal({ isOpen, onClose }) {
     setTimeout(() => setCopied(false), 2500);
   };
 
-  // ── INSPECT CODE HANDLER ────────────────────────────────────────────────────
   const handleInspectCode = async () => {
     if (!inputCode.trim()) {
       setImportError("Please enter a 6-character share code.");
@@ -185,7 +180,6 @@ export default function ShareTimetableModal({ isOpen, onClose }) {
     }
   };
 
-  // ── EXECUTE IMPORT HANDLER ──────────────────────────────────────────────────
   const handleExecuteImport = async () => {
     setImportError("");
     setIsImporting(true);

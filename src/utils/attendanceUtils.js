@@ -1,6 +1,5 @@
 import { getTodayDate } from "../store/attendanceStore";
 
-/* ===== HELPERS ===== */
 export function isConducted(status) {
   return status != null && status !== "cancelled";
 }
@@ -9,7 +8,6 @@ export function isAttended(status) {
   return status === "present" || status === "free";
 }
 
-/* ===== SUBJECT-WISE ATTENDANCE ===== */
 export function getSubjectWiseStatus(attendanceData, subjects) {
   const result = {};
 
@@ -52,7 +50,6 @@ export function getSubjectWiseStatus(attendanceData, subjects) {
   return result;
 }
 
-/* ===== DASHBOARD OVERALL (THEORY ONLY) ===== */
 export function calculateOverallAttendance(semester) {
   const today = getTodayDate();
 

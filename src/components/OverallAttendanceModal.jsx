@@ -10,7 +10,6 @@ import {
 import Modal from "./Modal";
 import { useSemester } from "../context/SemesterContext";
 
-/* ===== Premium tooltip ===== */
 function CustomTooltip({ active, payload, label }) {
   if (!active || !payload || !payload.length) return null;
 
@@ -27,7 +26,6 @@ function CustomTooltip({ active, payload, label }) {
 export default function OverallAttendanceModal({ open, onClose }) {
   const { currentSemester } = useSemester();
 
-  /* ===== SORT DAYS CHRONOLOGICALLY ===== */
   const sortedDays = [...currentSemester.attendanceData].sort(
     (a, b) => new Date(a.date) - new Date(b.date)
   );
@@ -35,7 +33,6 @@ export default function OverallAttendanceModal({ open, onClose }) {
   let totalConducted = 0;
   let totalAttended = 0;
 
-  /* ===== CUMULATIVE OVERALL ATTENDANCE ===== */
   const data = sortedDays.map((day) => {
     day.lectures.forEach((l) => {
       if (l.status === "cancelled") return;

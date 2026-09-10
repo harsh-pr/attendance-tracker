@@ -191,13 +191,18 @@ export function SemesterProvider({ children }) {
     return `${parsed.getFullYear()}-${month}-${day}`;
   }
 
-  function buildDayLectures(targetDate, semesterId, status) {
+  function getSemesterWithData(semesterId) {
     const semMeta = semesters.find((s) => s.id === semesterId);
-    const semWithData = {
+    return {
       ...semMeta,
       subjects: subjectsBySemester[semesterId] || [],
       timetable: timetablesBySemester[semesterId] || cloneEmptyTimetable(),
+      rawTimetable: timetablesBySemester[semesterId],
     };
+  }
+
+  function buildDayLectures(targetDate, semesterId, status) {
+    const semWithData = getSemesterWithData(semesterId);
     return getLecturesForDate(targetDate, semWithData).map((l) => ({
       subjectId: l.subjectId,
       type: l.type,
@@ -484,22 +489,42 @@ export function SemesterProvider({ children }) {
     const today = getTodayDate();
     let updatedAttendance = [];
 
+    const semWithData = getSemesterWithData(currentSemesterId);
+    const timetableLectures = getLecturesForDate(today, semWithData);
+    const lectureKey = (l) => (l.slotIndex != null ? `${l.subjectId}::${l.slotIndex}` : l.subjectId);
+
     const nextSemesters = semesters.map((sem) => {
       if (sem.id !== currentSemesterId) return sem;
       const existing = sem.attendanceData.find((d) => d.date === today);
       let newData;
 
-      const timetableLectures = getLecturesForDate(today, sem);
-      let baseLectures = [];
+      const isCustom = Boolean(existing?.isCustomSchedule);
 
-      if (existing?.lectures && existing.lectures.length > 0) {
-        baseLectures = [...existing.lectures];
-      } else {
+      const existingStatusMap = new Map(
+        (existing?.lectures || []).map((l, idx) => [
+          lectureKey({ ...l, slotIndex: l.slotIndex ?? idx }),
+          l.status,
+        ])
+      );
+
+      let baseLectures = [];
+      if (isCustom && existing?.lectures && existing.lectures.length > 0) {
+        baseLectures = existing.lectures.map((l, idx) => ({
+          ...l,
+          slotIndex: l.slotIndex ?? idx,
+        }));
+      } else if (timetableLectures.length > 0) {
+        // Master weekly timetable - always preserve all timetable lectures!
         baseLectures = timetableLectures.map((l, idx) => ({
           subjectId: l.subjectId,
           type: l.type || "theory",
           slotIndex: l.slotIndex ?? idx,
-          status: null,
+          status: existingStatusMap.get(lectureKey({ ...l, slotIndex: l.slotIndex ?? idx })) ?? null,
+        }));
+      } else if (existing?.lectures && existing.lectures.length > 0) {
+        baseLectures = existing.lectures.map((l, idx) => ({
+          ...l,
+          slotIndex: l.slotIndex ?? idx,
         }));
       }
 
@@ -678,7 +703,8 @@ export function SemesterProvider({ children }) {
     const nextSemesters = semesters.map((sem) => {
       if (sem.id !== currentSemesterId) return sem;
 
-      const timetableLectures = getLecturesForDate(targetDate, sem);
+      const semWithData = getSemesterWithData(currentSemesterId);
+      const timetableLectures = getLecturesForDate(targetDate, semWithData);
       const defaultLectures = timetableLectures.map((l, idx) => ({
         subjectId: l.subjectId,
         type: l.type,

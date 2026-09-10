@@ -55,26 +55,32 @@ export default function QuickTodayAttendance({ open, onClose }) {
 
   const lectureKey = (l) => (l.slotIndex != null ? `${l.subjectId}::${l.slotIndex}` : l.subjectId);
 
-  // If todayEntry already has lectures (custom timetable or saved attendance), use them!
-  // Otherwise use timetableLectures
-  const baseLectures =
-    todayEntry?.lectures && todayEntry.lectures.length > 0
-      ? todayEntry.lectures
-      : timetableLectures.map((l, idx) => ({ ...l, slotIndex: idx, status: null }));
-
   const statusByLectureKey = new Map(
-    (todayEntry?.lectures || []).map((lecture) => [
-      lectureKey(lecture),
+    (todayEntry?.lectures || []).map((lecture, idx) => [
+      lectureKey({ ...lecture, slotIndex: lecture.slotIndex ?? idx }),
       lecture.status,
     ])
   );
+
+  let baseLectures = [];
+  if (isCustom && todayEntry?.lectures && todayEntry.lectures.length > 0) {
+    baseLectures = todayEntry.lectures;
+  } else if (timetableLectures.length > 0) {
+    baseLectures = timetableLectures.map((l, idx) => ({
+      ...l,
+      slotIndex: l.slotIndex ?? idx,
+      status: statusByLectureKey.get(lectureKey({ ...l, slotIndex: l.slotIndex ?? idx })) ?? l.status ?? null,
+    }));
+  } else if (todayEntry?.lectures && todayEntry.lectures.length > 0) {
+    baseLectures = todayEntry.lectures;
+  }
 
   const todayData = {
     date: today,
     lectures: baseLectures.map((lecture, idx) => ({
       ...lecture,
       slotIndex: lecture.slotIndex ?? idx,
-      status: lecture.status ?? statusByLectureKey.get(lectureKey(lecture)) ?? null,
+      status: lecture.status ?? statusByLectureKey.get(lectureKey({ ...lecture, slotIndex: lecture.slotIndex ?? idx })) ?? null,
     })),
   };
 
@@ -87,7 +93,7 @@ export default function QuickTodayAttendance({ open, onClose }) {
 
   function getStatus(lecture) {
     return todayData.lectures.find(
-      (l) => l.subjectId === lecture.subjectId && l.slotIndex === lecture.slotIndex
+      (l) => l.subjectId === lecture.subjectId && (l.slotIndex ?? 0) === (lecture.slotIndex ?? 0)
     )?.status;
   }
 

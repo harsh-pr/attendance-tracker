@@ -40,6 +40,25 @@ export function ensureDayExists(semester, date) {
       type: l.type,
       slotIndex: l.slotIndex ?? idx,
     }));
+  } else if (!day.isCustomSchedule) {
+    const lecturesFromTT = getLecturesForDate(date, semester);
+    if (lecturesFromTT.length > 0 && day.lectures.length < lecturesFromTT.length) {
+      const existingStatusMap = new Map(
+        day.lectures.map((l, idx) => [
+          l.slotIndex != null ? `${l.subjectId}::${l.slotIndex}` : `${l.subjectId}::${idx}`,
+          l.status,
+        ])
+      );
+      day.lectures = lecturesFromTT.map((l, idx) => {
+        const key = `${l.subjectId}::${l.slotIndex ?? idx}`;
+        return {
+          subjectId: l.subjectId,
+          type: l.type || "theory",
+          slotIndex: l.slotIndex ?? idx,
+          status: existingStatusMap.get(key) ?? null,
+        };
+      });
+    }
   }
 
   return day;

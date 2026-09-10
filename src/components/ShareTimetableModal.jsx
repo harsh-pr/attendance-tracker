@@ -459,7 +459,7 @@ export default function ShareTimetableModal({ isOpen, onClose }) {
                         Code Verified!
                       </span>
                       <span className="text-[11px] text-zinc-500 dark:text-zinc-400">
-                        Shared by {inspectedData.sharedBy}
+                        Shared by {inspectedData.sharedBy?.includes("@") ? inspectedData.sharedBy.split("@")[0] : (inspectedData.sharedBy || "Classmate")}
                       </span>
                     </div>
 

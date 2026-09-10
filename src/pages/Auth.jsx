@@ -344,7 +344,7 @@ export default function Auth() {
               </div>
 
               <div className="space-y-1 text-left">
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between pb-0.5">
                   <label className="block text-[11px] font-bold text-zinc-700 dark:text-zinc-300 uppercase tracking-wider">
                     Password
                   </label>
@@ -352,9 +352,9 @@ export default function Auth() {
                     <button
                       type="button"
                       onClick={handleForgotPassword}
-                      className="text-[10px] font-semibold text-blue-600 dark:text-blue-400 hover:underline cursor-pointer"
+                      className="text-xs font-semibold text-blue-500 hover:text-blue-400 dark:text-blue-400 dark:hover:text-blue-300 transition-colors cursor-pointer"
                     >
-                      Forgot?
+                      Forgot password?
                     </button>
                   )}
                 </div>

@@ -367,8 +367,10 @@ export async function createTemporaryShareCode(payload) {
     const now = Date.now();
     const expiresAt = now + 24 * 60 * 60 * 1000; // 24 hours
 
-    // Use displayName or generic label rather than exposing raw user email
-    const senderName = auth.currentUser?.displayName?.trim() || "Classmate";
+    // Use displayName, username handle, or generic label rather than exposing raw user email
+    const senderName = auth.currentUser?.displayName?.trim()
+      || (auth.currentUser?.email ? auth.currentUser.email.split("@")[0] : null)
+      || "Classmate";
 
     const shareData = {
       code,

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useSemester } from "../context/SemesterContext";
 import { useAuth } from "../context/AuthContext";
@@ -80,7 +80,7 @@ export default function ShareTimetableModal({ isOpen, onClose }) {
     inspectSharedCode,
     importSharedTimetable,
   } = useSemester();
-  const { user, updateUserDisplayName } = useAuth();
+  const { user } = useAuth();
 
   const [activeTab, setActiveTab] = useState("share"); // 'share' | 'import'
 
@@ -101,6 +101,18 @@ export default function ShareTimetableModal({ isOpen, onClose }) {
   const [isGenerating, setIsGenerating] = useState(false);
   const [copied, setCopied] = useState(false);
   const [shareError, setShareError] = useState("");
+
+  useEffect(() => {
+    if (isOpen) {
+      setSenderDisplayName(
+        user?.displayName ||
+        (typeof window !== "undefined" && window.localStorage ? window.localStorage.getItem("USER_DISPLAY_NAME") : "") ||
+        ""
+      );
+      setGeneratedCodeData(null);
+      setShareError("");
+    }
+  }, [isOpen, user]);
 
   // ── IMPORT STATE ────────────────────────────────────────────────────────────
   const [inputCode, setInputCode] = useState("");
@@ -127,19 +139,13 @@ export default function ShareTimetableModal({ isOpen, onClose }) {
       }
 
       const cleanName = senderDisplayName.trim();
-      if (cleanName) {
-        localStorage.setItem("USER_DISPLAY_NAME", cleanName);
-        if (updateUserDisplayName && !user?.isGuest) {
-          updateUserDisplayName(cleanName).catch(() => {});
-        }
-      }
 
       const res = await generateShareCodeForSemester({
         sourceSemesterId: sourceSemId || currentSemesterId,
         includeSubjects,
         includeTimetable,
         includeCollegeTimetable,
-        senderName: cleanName,
+        senderName: cleanName || user?.displayName || (typeof window !== "undefined" ? window.localStorage.getItem("USER_DISPLAY_NAME") : "") || "Student",
       });
 
       setGeneratedCodeData(res);
@@ -301,7 +307,7 @@ export default function ShareTimetableModal({ isOpen, onClose }) {
                 {/* 2. Sender Display Name */}
                 <div>
                   <label className="block text-xs font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">
-                    Your Name / Username <span className="text-zinc-400 font-normal">(shown to the receiver)</span>
+                    Your Name <span className="text-zinc-400 font-normal">(shown to the receiver)</span>
                   </label>
                   <input
                     type="text"

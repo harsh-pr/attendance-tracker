@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useSemester } from "../context/SemesterContext";
+import { useAuth } from "../context/AuthContext";
 
 // ── INLINE SVG ICONS ──────────────────────────────────────────────────────────
 const Icons = {
@@ -79,11 +80,19 @@ export default function ShareTimetableModal({ isOpen, onClose }) {
     inspectSharedCode,
     importSharedTimetable,
   } = useSemester();
+  const { user, updateUserDisplayName } = useAuth();
 
   const [activeTab, setActiveTab] = useState("share"); // 'share' | 'import'
 
   // ── SHARE STATE ─────────────────────────────────────────────────────────────
   const [sourceSemId, setSourceSemId] = useState(currentSemesterId || "");
+  const [senderDisplayName, setSenderDisplayName] = useState(() => {
+    return (
+      user?.displayName ||
+      (typeof window !== "undefined" && window.localStorage ? window.localStorage.getItem("USER_DISPLAY_NAME") : "") ||
+      ""
+    );
+  });
   const [includeSubjects, setIncludeSubjects] = useState(true);
   const [includeTimetable, setIncludeTimetable] = useState(true);
   const [includeCollegeTimetable, setIncludeCollegeTimetable] = useState(false);
@@ -117,11 +126,20 @@ export default function ShareTimetableModal({ isOpen, onClose }) {
         return;
       }
 
+      const cleanName = senderDisplayName.trim();
+      if (cleanName) {
+        localStorage.setItem("USER_DISPLAY_NAME", cleanName);
+        if (updateUserDisplayName && !user?.isGuest) {
+          updateUserDisplayName(cleanName).catch(() => {});
+        }
+      }
+
       const res = await generateShareCodeForSemester({
         sourceSemesterId: sourceSemId || currentSemesterId,
         includeSubjects,
         includeTimetable,
         includeCollegeTimetable,
+        senderName: cleanName,
       });
 
       setGeneratedCodeData(res);
@@ -280,7 +298,24 @@ export default function ShareTimetableModal({ isOpen, onClose }) {
                   </select>
                 </div>
 
-                {/* 2. Selection Options */}
+                {/* 2. Sender Display Name */}
+                <div>
+                  <label className="block text-xs font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">
+                    Your Name / Username <span className="text-zinc-400 font-normal">(shown to the receiver)</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={senderDisplayName}
+                    onChange={(e) => {
+                      setSenderDisplayName(e.target.value);
+                      setGeneratedCodeData(null);
+                    }}
+                    placeholder="e.g. Harsh, Alex, etc."
+                    className="w-full px-3 py-2 text-sm rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 focus:ring-2 focus:ring-violet-500 outline-none"
+                  />
+                </div>
+
+                {/* 3. Selection Options */}
                 <div className="p-3.5 rounded-xl bg-zinc-50 dark:bg-zinc-800/40 border border-zinc-200/80 dark:border-zinc-700/60 space-y-2.5">
                   <span className="text-xs font-semibold text-zinc-600 dark:text-zinc-400 block mb-1">
                     Select Items to Share:
@@ -458,8 +493,8 @@ export default function ShareTimetableModal({ isOpen, onClose }) {
                       <span className="font-semibold text-violet-900 dark:text-violet-200">
                         Code Verified!
                       </span>
-                      <span className="text-[11px] text-zinc-500 dark:text-zinc-400">
-                        Shared by {inspectedData.sharedBy?.includes("@") ? inspectedData.sharedBy.split("@")[0] : (inspectedData.sharedBy || "Classmate")}
+                      <span className="text-[11px] text-zinc-500 dark:text-zinc-400 font-medium">
+                        Shared by {inspectedData.sharedBy && !inspectedData.sharedBy.includes("@") ? inspectedData.sharedBy : "Classmate"}
                       </span>
                     </div>
 

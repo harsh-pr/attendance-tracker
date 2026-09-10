@@ -61,7 +61,9 @@ export default function Auth() {
           setLoading(false);
           return;
         }
-        await register(email, password, name.trim());
+        const cleanName = name.trim();
+        localStorage.setItem("USER_DISPLAY_NAME", cleanName);
+        await register(email, password, cleanName);
       }
     } catch (err) {
       let friendlyMessage = "Authentication failed. Please check your credentials.";
@@ -352,7 +354,7 @@ export default function Auth() {
                     <button
                       type="button"
                       onClick={handleForgotPassword}
-                      className="text-xs font-semibold text-blue-500 hover:text-blue-400 dark:text-blue-400 dark:hover:text-blue-300 transition-colors cursor-pointer"
+                      className="text-xs font-bold text-blue-600 dark:text-blue-400 hover:text-blue-500 dark:hover:text-blue-300 underline underline-offset-2 transition-all cursor-pointer"
                     >
                       Forgot password?
                     </button>

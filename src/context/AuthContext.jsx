@@ -110,6 +110,20 @@ export function AuthProvider({ children }) {
       if (currentUser && isAutoLoggingOut) {
         return;
       }
+
+      if (currentUser) {
+        if (currentUser.displayName) {
+          localStorage.setItem("USER_DISPLAY_NAME", currentUser.displayName);
+        } else {
+          // If currentUser has no displayName, check localStorage and auto-sync
+          const cachedName = localStorage.getItem("USER_DISPLAY_NAME");
+          if (cachedName && cachedName.trim() && !cachedName.includes("@")) {
+            updateProfile(currentUser, { displayName: cachedName.trim() })
+              .catch((err) => console.warn("[Auth] Background updateProfile error:", err));
+          }
+        }
+      }
+
       setUser(currentUser);
       setLoading(false);
     });
@@ -160,15 +174,20 @@ export function AuthProvider({ children }) {
     setLoading(true);
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      if (displayName) {
-        await updateProfile(userCredential.user, { displayName });
+      const cleanName = displayName ? displayName.trim() : "";
+      if (cleanName) {
+        await updateProfile(userCredential.user, { displayName: cleanName });
+        localStorage.setItem("USER_DISPLAY_NAME", cleanName);
       }
       try {
         await sendEmailVerification(userCredential.user);
       } catch (verifErr) {
         console.warn("[Auth] Email verification dispatch error:", verifErr);
       }
-      setUser({ ...auth.currentUser });
+      try {
+        await userCredential.user.reload();
+      } catch (_) {}
+      setUser(auth.currentUser || userCredential.user);
       localStorage.setItem("last_active_heartbeat", Date.now().toString());
       return userCredential.user;
     } catch (error) {
@@ -176,6 +195,21 @@ export function AuthProvider({ children }) {
       throw error;
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function updateUserDisplayName(newName) {
+    const trimmed = (newName || "").trim();
+    if (!trimmed) return;
+    localStorage.setItem("USER_DISPLAY_NAME", trimmed);
+    if (auth.currentUser) {
+      try {
+        await updateProfile(auth.currentUser, { displayName: trimmed });
+        await auth.currentUser.reload();
+      } catch (err) {
+        console.warn("[Auth] Failed to update profile in Firebase:", err);
+      }
+      setUser(auth.currentUser);
     }
   }
 
@@ -268,6 +302,7 @@ export function AuthProvider({ children }) {
     loading,
     login,
     register,
+    updateUserDisplayName,
     loginWithGoogle,
     loginAsGuest,
     connectGoogle,

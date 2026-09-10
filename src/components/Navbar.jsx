@@ -53,7 +53,7 @@ export default function Navbar() {
   } = useSemester();
 
   const { theme, toggleTheme } = useTheme();
-  const { user, logout, connectGoogle, deleteAccount } = useAuth();
+  const { user, logout, connectGoogle, deleteAccount, updateUserDisplayName } = useAuth();
 
   const [isSemesterMenuOpen, setIsSemesterMenuOpen] = useState(false);
   const [isCreateSemesterOpen, setIsCreateSemesterOpen] = useState(false);
@@ -69,6 +69,10 @@ export default function Navbar() {
 
   // User Profile Dropdown Menu & Delete Account Modal State
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
+  const [isEditingProfileName, setIsEditingProfileName] = useState(false);
+  const [tempProfileName, setTempProfileName] = useState("");
+  const displayUserName = user?.displayName || (typeof window !== "undefined" ? window.localStorage.getItem("USER_DISPLAY_NAME") : "") || "";
+
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [isDeleteAccountWarningOpen, setIsDeleteAccountWarningOpen] = useState(false);
   const [isDeletingAccount, setIsDeletingAccount] = useState(false);
@@ -420,7 +424,7 @@ export default function Navbar() {
                   aria-label="User profile menu"
                 >
                   <div className="w-8 h-8 rounded-full bg-zinc-900 text-white font-bold flex items-center justify-center text-xs shadow-inner">
-                    {user.displayName ? user.displayName.charAt(0).toUpperCase() : "👤"}
+                    {displayUserName ? displayUserName.charAt(0).toUpperCase() : "👤"}
                   </div>
                 </motion.button>
 
@@ -437,9 +441,47 @@ export default function Navbar() {
                       <div className="space-y-1 text-xs font-semibold">
                         <div className="flex items-center justify-between px-3 py-2 rounded-xl hover:bg-zinc-100 dark:hover:bg-zinc-800/60 transition-colors">
                           <span className="flex items-center gap-2 font-bold">👤 Profile</span>
-                          <span className="text-xs text-zinc-700 dark:text-zinc-300 font-bold truncate max-w-[120px]">
-                            {user?.displayName || user?.email?.split("@")[0] || "User"}
-                          </span>
+                          {isEditingProfileName ? (
+                            <form
+                              onSubmit={async (e) => {
+                                e.preventDefault();
+                                const trimmed = tempProfileName.trim();
+                                if (trimmed && updateUserDisplayName) {
+                                  await updateUserDisplayName(trimmed);
+                                }
+                                setIsEditingProfileName(false);
+                              }}
+                              className="flex items-center gap-1.5"
+                            >
+                              <input
+                                type="text"
+                                value={tempProfileName}
+                                onChange={(e) => setTempProfileName(e.target.value)}
+                                className="w-24 px-1.5 py-0.5 text-xs rounded border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white outline-none focus:ring-1 focus:ring-blue-500"
+                                placeholder="Your Name"
+                                autoFocus
+                              />
+                              <button
+                                type="submit"
+                                className="text-[10px] text-blue-600 dark:text-blue-400 font-bold hover:underline cursor-pointer"
+                              >
+                                Save
+                              </button>
+                            </form>
+                          ) : (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setTempProfileName(displayUserName);
+                                setIsEditingProfileName(true);
+                              }}
+                              className="text-xs text-zinc-700 dark:text-zinc-300 font-bold truncate max-w-[140px] hover:text-blue-600 dark:hover:text-blue-400 flex items-center gap-1 cursor-pointer"
+                              title="Click to edit name"
+                            >
+                              <span className="truncate">{displayUserName || "Set Name"}</span>
+                              <span className="text-[10px] text-zinc-400">✎</span>
+                            </button>
+                          )}
                         </div>
 
                         <div className="flex items-center justify-between px-3 py-2 rounded-xl hover:bg-zinc-100 dark:hover:bg-zinc-800/60 transition-colors">
@@ -581,7 +623,7 @@ export default function Navbar() {
                       <div className="p-3 bg-zinc-100 dark:bg-zinc-800/60 rounded-2xl flex items-center justify-between border border-zinc-200/80 dark:border-zinc-700/50">
                         <div className="min-w-0 pr-2">
                           <p className="font-bold text-xs text-zinc-900 dark:text-white truncate">
-                            {user.displayName || "Attendance User"}
+                            {displayUserName || "Student"}
                           </p>
                           <p className="text-[11px] text-zinc-500 dark:text-zinc-400 truncate">
                             {user.email}
@@ -589,7 +631,7 @@ export default function Navbar() {
                         </div>
                         <div className="w-8 h-8 shrink-0 rounded-full bg-gradient-to-tr from-purple-500 to-pink-500 p-0.5 shadow">
                           <div className="w-full h-full rounded-full bg-zinc-900 flex items-center justify-center text-white text-xs font-bold">
-                            {user.displayName ? user.displayName.charAt(0).toUpperCase() : "👤"}
+                            {displayUserName ? displayUserName.charAt(0).toUpperCase() : "👤"}
                           </div>
                         </div>
                       </div>

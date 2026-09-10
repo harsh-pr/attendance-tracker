@@ -834,6 +834,7 @@ export function SemesterProvider({ children }) {
     includeSubjects = true,
     includeTimetable = true,
     includeCollegeTimetable = false,
+    senderName = "",
   }) {
     const semId = sourceSemesterId || currentSemesterId;
     const targetSemObj = semesters.find((s) => s.id === semId);
@@ -857,7 +858,7 @@ export function SemesterProvider({ children }) {
       collegeTimetable: collegeTimetableData,
     };
 
-    return await createTemporaryShareCode(payload);
+    return await createTemporaryShareCode(payload, senderName);
   }
 
   async function inspectSharedCode(code) {

@@ -359,7 +359,7 @@ function generateShareCode() {
   return code;
 }
 
-export async function createTemporaryShareCode(payload) {
+export async function createTemporaryShareCode(payload, senderNameOverride) {
   try {
     const code = generateShareCode();
     const shareRef = doc(db, "temp_shared_timetables", code);
@@ -367,10 +367,19 @@ export async function createTemporaryShareCode(payload) {
     const now = Date.now();
     const expiresAt = now + 24 * 60 * 60 * 1000; // 24 hours
 
-    // Use displayName, username handle, or generic label rather than exposing raw user email
-    const senderName = auth.currentUser?.displayName?.trim()
-      || (auth.currentUser?.email ? auth.currentUser.email.split("@")[0] : null)
-      || "Classmate";
+    // Resolve display name: senderNameOverride > auth.currentUser.displayName > localStorage > "Student"
+    // NEVER fall back to email or email prefix!
+    let senderName = (
+      (typeof senderNameOverride === "string" && senderNameOverride.trim()) ||
+      auth.currentUser?.displayName?.trim() ||
+      (typeof window !== "undefined" && window.localStorage ? window.localStorage.getItem("USER_DISPLAY_NAME")?.trim() : "") ||
+      ""
+    );
+
+    // If still empty or contains an '@', fallback to a friendly default name instead of email
+    if (!senderName || senderName.includes("@")) {
+      senderName = "Student";
+    }
 
     const shareData = {
       code,

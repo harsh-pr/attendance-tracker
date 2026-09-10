@@ -350,9 +350,11 @@ export async function deleteAllUserData(userId) {
 
 function generateShareCode() {
   const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  const bytes = new Uint8Array(6);
+  crypto.getRandomValues(bytes);
   let code = "";
   for (let i = 0; i < 6; i++) {
-    code += chars.charAt(Math.floor(Math.random() * chars.length));
+    code += chars[bytes[i] % chars.length];
   }
   return code;
 }
@@ -365,12 +367,13 @@ export async function createTemporaryShareCode(payload) {
     const now = Date.now();
     const expiresAt = now + 24 * 60 * 60 * 1000; // 24 hours
 
-    const userEmail = auth.currentUser?.email || "Anonymous";
+    // Use displayName or generic label rather than exposing raw user email
+    const senderName = auth.currentUser?.displayName?.trim() || "Classmate";
 
     const shareData = {
       code,
       payload,
-      sharedBy: userEmail,
+      sharedBy: senderName,
       createdAt: now,
       expiresAt,
     };
@@ -416,12 +419,6 @@ export async function consumeShareCode(code) {
   if (data.expiresAt && Date.now() > data.expiresAt) {
     await deleteDoc(shareRef).catch(() => {});
     throw new Error("This share code has expired.");
-  }
-
-  try {
-    await deleteDoc(shareRef);
-  } catch (err) {
-    console.warn("[Firestore] Failed to delete consumed code:", err);
   }
 
   return data.payload;

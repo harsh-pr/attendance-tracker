@@ -5,7 +5,7 @@ import { useAuth } from "../context/AuthContext";
 import { useTheme } from "../context/ThemeContext";
 
 export default function Auth() {
-  const { login, register, loginWithGoogle, loginAsGuest } = useAuth();
+  const { login, register, loginWithGoogle, loginAsGuest, sendPasswordReset } = useAuth();
   const { theme, toggleTheme } = useTheme();
 
   const [isLoginTab, setIsLoginTab] = useState(true);
@@ -14,6 +14,7 @@ export default function Auth() {
   const [name, setName] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
+  const [resetSuccessMsg, setResetSuccessMsg] = useState("");
   const [loading, setLoading] = useState(false);
 
   const isMinLength = password.length >= 8;
@@ -83,9 +84,28 @@ export default function Auth() {
     }
   }
 
+  async function handleForgotPassword() {
+    if (!email.trim()) {
+      setErrorMsg("Please enter your email above to reset your password.");
+      return;
+    }
+    setErrorMsg("");
+    setResetSuccessMsg("");
+    setLoading(true);
+    try {
+      await sendPasswordReset(email.trim());
+      setResetSuccessMsg("Password reset link sent! Please check your email inbox.");
+    } catch (err) {
+      setErrorMsg(err.message || "Failed to send password reset email. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
   function handleSwitchTab(isLogin) {
     setIsLoginTab(isLogin);
     setErrorMsg("");
+    setResetSuccessMsg("");
   }
 
   return (
@@ -324,9 +344,20 @@ export default function Auth() {
               </div>
 
               <div className="space-y-1 text-left">
-                <label className="block text-[11px] font-bold text-zinc-700 dark:text-zinc-300 uppercase tracking-wider">
-                  Password
-                </label>
+                <div className="flex items-center justify-between">
+                  <label className="block text-[11px] font-bold text-zinc-700 dark:text-zinc-300 uppercase tracking-wider">
+                    Password
+                  </label>
+                  {isLoginTab && (
+                    <button
+                      type="button"
+                      onClick={handleForgotPassword}
+                      className="text-[10px] font-semibold text-blue-600 dark:text-blue-400 hover:underline cursor-pointer"
+                    >
+                      Forgot?
+                    </button>
+                  )}
+                </div>
                 <div className="relative">
                   <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-xs text-zinc-400">
                     🔒
@@ -377,6 +408,16 @@ export default function Auth() {
                   </motion.div>
                 )}
               </div>
+
+              {resetSuccessMsg && (
+                <motion.div
+                  initial={{ opacity: 0, y: -4 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="p-2.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs font-medium text-center"
+                >
+                  {resetSuccessMsg}
+                </motion.div>
+              )}
 
               <motion.button
                 whileHover={{ scale: 1.01 }}

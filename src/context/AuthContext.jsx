@@ -11,6 +11,8 @@ import {
   signInWithPopup,
   linkWithPopup,
   deleteUser,
+  sendPasswordResetEmail,
+  sendEmailVerification,
 } from "firebase/auth";
 import { auth } from "../firebase/config";
 import { deleteAllUserData } from "../firebase/firestoreService";
@@ -161,6 +163,11 @@ export function AuthProvider({ children }) {
       if (displayName) {
         await updateProfile(userCredential.user, { displayName });
       }
+      try {
+        await sendEmailVerification(userCredential.user);
+      } catch (verifErr) {
+        console.warn("[Auth] Email verification dispatch error:", verifErr);
+      }
       setUser({ ...auth.currentUser });
       localStorage.setItem("last_active_heartbeat", Date.now().toString());
       return userCredential.user;
@@ -251,6 +258,11 @@ export function AuthProvider({ children }) {
     }
   }
 
+  async function sendPasswordReset(targetEmail) {
+    if (!targetEmail || !targetEmail.trim()) throw new Error("Please enter your email address.");
+    return await sendPasswordResetEmail(auth, targetEmail.trim());
+  }
+
   const contextValue = {
     user,
     loading,
@@ -261,6 +273,7 @@ export function AuthProvider({ children }) {
     connectGoogle,
     logout,
     deleteAccount,
+    sendPasswordReset,
   };
 
   return (

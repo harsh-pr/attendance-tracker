@@ -1,23 +1,41 @@
 /* global process */
 import admin from "firebase-admin";
-import { readFileSync } from "fs";
+import { readFileSync, existsSync } from "fs";
 import { fileURLToPath } from "url";
 import { dirname, join } from "path";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const serviceAccountPath = join(__dirname, "..", "serviceAccountKey.json");
 
-let serviceAccount;
-try {
-  serviceAccount = JSON.parse(readFileSync(serviceAccountPath, "utf8"));
-} catch (error) {
-  console.error("❌ Failed to read serviceAccountKey.json. Ensure it exists in the root folder.");
-  console.error(error.message);
-  process.exit(1);
+let credential;
+if (process.env.FIREBASE_SERVICE_ACCOUNT_KEY) {
+  try {
+    const raw = process.env.FIREBASE_SERVICE_ACCOUNT_KEY;
+    const parsed = raw.trim().startsWith("{") ? JSON.parse(raw) : JSON.parse(readFileSync(raw, "utf8"));
+    credential = admin.credential.cert(parsed);
+  } catch (err) {
+    console.error("❌ Failed to parse FIREBASE_SERVICE_ACCOUNT_KEY environment variable:", err.message);
+    process.exit(1);
+  }
+} else if (existsSync(serviceAccountPath)) {
+  try {
+    const serviceAccount = JSON.parse(readFileSync(serviceAccountPath, "utf8"));
+    credential = admin.credential.cert(serviceAccount);
+  } catch (error) {
+    console.error("❌ Failed to read serviceAccountKey.json:", error.message);
+    process.exit(1);
+  }
+} else {
+  try {
+    credential = admin.credential.applicationDefault();
+  } catch (e) {
+    console.error("❌ No Firebase admin credentials found. Provide FIREBASE_SERVICE_ACCOUNT_KEY or applicationDefault.");
+    process.exit(1);
+  }
 }
 
 admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount),
+  credential,
 });
 
 const auth = admin.auth();

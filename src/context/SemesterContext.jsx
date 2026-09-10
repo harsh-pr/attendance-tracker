@@ -6,7 +6,7 @@ import {
   DEFAULT_SEMESTER_ID,
 } from "../data/defaultSemesters";
 import { getLecturesForDate } from "../utils/timetableUtils";
-import { getTodayDate, ensureDayExists } from "../store/attendanceStore";
+import { getTodayDate } from "../store/attendanceStore";
 import {
   loadAllData,
   saveMeta,
@@ -54,6 +54,42 @@ function createSemesterId(semesters) {
 }
 function slugifySubjectId(name) {
   return name.toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_+|_+$/g, "") || "subject";
+}
+
+function sanitizeSubjectItem(raw) {
+  if (!raw || typeof raw !== "object") return null;
+  const id = typeof raw.id === "string" ? raw.id.trim().slice(0, 80) : null;
+  const name = typeof raw.name === "string" ? raw.name.trim().slice(0, 120) : "Subject";
+  if (!id) return null;
+  return {
+    id,
+    name,
+    code: typeof raw.code === "string" ? raw.code.trim().slice(0, 30) : "",
+    color: typeof raw.color === "string" && /^#[0-9A-Fa-f]{6}$/.test(raw.color.trim()) ? raw.color.trim() : "#6366f1",
+    theoryHours: Number.isFinite(raw.theoryHours) ? Math.max(0, Math.min(raw.theoryHours, 40)) : 0,
+    labHours: Number.isFinite(raw.labHours) ? Math.max(0, Math.min(raw.labHours, 40)) : 0,
+    isLab: Boolean(raw.isLab),
+  };
+}
+
+function sanitizeTimetableStructure(raw) {
+  if (!raw || typeof raw !== "object") return null;
+  const clean = {};
+  for (const day of WEEK_DAYS) {
+    if (Array.isArray(raw[day])) {
+      clean[day] = raw[day].slice(0, 30).map((slot, idx) => {
+        if (!slot || typeof slot !== "object") return null;
+        return {
+          subjectId: typeof slot.subjectId === "string" ? slot.subjectId.trim().slice(0, 80) : "",
+          type: slot.type === "lab" ? "lab" : "theory",
+          slotIndex: Number.isInteger(slot.slotIndex) ? slot.slotIndex : idx,
+        };
+      }).filter(Boolean);
+    } else {
+      clean[day] = [];
+    }
+  }
+  return clean;
 }
 
 // ─── PROVIDER ────────────────────────────────────────────────────────────────
@@ -832,6 +868,10 @@ export function SemesterProvider({ children }) {
     const semId = targetSemesterId || currentSemesterId;
     const payload = await consumeShareCode(code);
 
+    if (!payload || typeof payload !== "object") {
+      throw new Error("Invalid or corrupt share code payload.");
+    }
+
     const {
       subjects = [],
       timetable = null,
@@ -841,15 +881,21 @@ export function SemesterProvider({ children }) {
       includeCollegeTimetable = false,
     } = payload;
 
-    if (includeSubjects && subjects.length > 0) {
+    const cleanSubjects = (Array.isArray(subjects) ? subjects : [])
+      .map(sanitizeSubjectItem)
+      .filter(Boolean);
+
+    const cleanTimetable = timetable ? sanitizeTimetableStructure(timetable) : null;
+
+    if (includeSubjects && cleanSubjects.length > 0) {
       let nextSubjectsList = [];
       if (options.mode === "merge") {
         const existingSubjects = subjectsBySemester[semId] || [];
         const existingIds = new Set(existingSubjects.map((s) => s.id));
-        const newUnique = subjects.filter((s) => !existingIds.has(s.id));
+        const newUnique = cleanSubjects.filter((s) => !existingIds.has(s.id));
         nextSubjectsList = [...existingSubjects, ...newUnique];
       } else {
-        nextSubjectsList = [...subjects];
+        nextSubjectsList = [...cleanSubjects];
       }
       const nextSubjects = {
         ...subjectsBySemester,
@@ -859,16 +905,16 @@ export function SemesterProvider({ children }) {
       persistSubjects(nextSubjects);
     }
 
-    if (includeTimetable && timetable) {
+    if (includeTimetable && cleanTimetable) {
       const nextTimetables = {
         ...timetablesBySemester,
-        [semId]: timetable,
+        [semId]: cleanTimetable,
       };
       setTimetablesBySemester(nextTimetables);
       persistTimetables(nextTimetables);
     }
 
-    if (includeCollegeTimetable && collegeTimetable) {
+    if (includeCollegeTimetable && collegeTimetable && typeof collegeTimetable === "object") {
       await saveCollegeTimetable(semId, collegeTimetable);
     }
 

@@ -6,6 +6,8 @@ import { useNotificationPermission } from "../hooks/useNotificationPermission";
 import { useSemester } from "../context/SemesterContext";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { getLecturesForDate } from "../utils/timetableUtils";
+import html2canvasLib from "html2canvas";
+import { jsPDF as jsPDFLib } from "jspdf";
 
 const weekDays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
@@ -425,10 +427,9 @@ export default function Calendar() {
   };
 
   const handleExportMonth = async () => {
-    if (!exportRef.current) return;
-    const html2canvas = window.html2canvas;
-    const jsPDF       = window.jspdf?.jsPDF;
-    if (!html2canvas || !jsPDF) return;
+    const html2canvas = html2canvasLib || window.html2canvas;
+    const jsPDF       = jsPDFLib || window.jspdf?.jsPDF;
+    if (!html2canvas || !jsPDF || !exportRef.current) return;
 
     // Measure row positions BEFORE html2canvas to avoid any DOM interference
     const rows = Array.from(exportRef.current.querySelectorAll(".export-log-row"));

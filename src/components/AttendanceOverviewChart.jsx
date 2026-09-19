@@ -20,21 +20,24 @@ function CustomTooltip({ active, payload, label }) {
 
   return (
     <div className="
-      rounded-xl px-4 py-3
-      bg-gray-900 text-white
-      shadow-2xl border border-gray-700
+      rounded-2xl px-4 py-3
+      bg-[#0c0d12] text-white border border-zinc-700/80
+      shadow-2xl
     ">
-      <p className="text-sm font-semibold mb-2">{label}</p>
+      <p className="text-xs font-black uppercase tracking-wider text-zinc-500 dark:text-zinc-400 mb-2">{label}</p>
 
-      <div className="space-y-1 text-sm">
-        <p className="text-gray-300">
-          Conducted: <span className="text-white">{data.conducted ?? 0}</span>
+      <div className="space-y-1.5 text-xs font-semibold">
+        <p className="text-zinc-600 dark:text-zinc-300 flex items-center justify-between gap-4">
+          <span>Conducted:</span>
+          <span className="text-zinc-900 dark:text-white font-extrabold">{data.conducted ?? 0}</span>
         </p>
-        <p className="text-blue-400">
-          Attended: <span>{data.attended ?? 0}</span>
+        <p className="text-blue-600 dark:text-blue-400 flex items-center justify-between gap-4">
+          <span>Attended:</span>
+          <span className="font-extrabold">{data.attended ?? 0}</span>
         </p>
-        <p className="text-green-400">
-          Overall Attendance: <span>{data.percentage ?? 0}%</span>
+        <p className="text-emerald-600 dark:text-emerald-400 flex items-center justify-between gap-4 pt-1 border-t border-zinc-200 dark:border-white/[0.08]">
+          <span>Overall:</span>
+          <span className="font-extrabold">{data.percentage ?? 0}%</span>
         </p>
       </div>
     </div>
@@ -83,12 +86,14 @@ export default function AttendanceOverviewChart() {
   return (
     <div
       className="
-        rounded-3xl p-6 transition-transform overflow-hidden w-full max-w-full
-        bg-white border border-zinc-200 text-zinc-900
-        dark:bg-zinc-900 dark:border-zinc-800 dark:text-zinc-100 shadow-sm
+        rounded-3xl p-6 overflow-hidden w-full max-w-full
+        bg-white dark:bg-[#09090d] sm:dark:bg-[#0c0d12]
+        border border-zinc-200 dark:border-zinc-800/90 hover:border-zinc-300 dark:hover:border-zinc-700
+        shadow-sm hover:shadow-lg dark:hover:shadow-[0_12px_32px_rgba(0,0,0,0.8)]
+        transition-all duration-200
       "
     >
-      <h2 className="text-lg font-bold mb-4">
+      <h2 className="text-lg font-bold mb-4 font-[Poppins] text-zinc-900 dark:text-white">
         Attendance – Last 7 Days
       </h2>
 

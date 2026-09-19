@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
 import Modal from "./Modal";
 import { useSemester } from "../context/SemesterContext";
 import { getLecturesForDate } from "../utils/timetableUtils";
@@ -8,43 +9,43 @@ const weekDays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 const statusConfig = {
   present: {
     label: "Present",
-    badge: "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-200",
-    tile:  "bg-emerald-50/80 text-emerald-900 dark:bg-emerald-500/15 dark:text-emerald-100",
+    badge: "bg-emerald-100 text-emerald-800 dark:bg-emerald-500/20 dark:text-emerald-200 border border-emerald-300/80 dark:border-emerald-500/30",
+    tile:  "bg-emerald-100/90 text-emerald-900 border-emerald-300/80 dark:bg-[#0c2a1e] dark:text-emerald-200 dark:border-emerald-500/30 shadow-xs dark:shadow-[0_0_12px_rgba(16,185,129,0.12)]",
   },
   absent: {
     label: "Absent",
-    badge: "bg-rose-100 text-rose-700 dark:bg-rose-500/20 dark:text-rose-200",
-    tile:  "bg-rose-50/80 text-rose-900 dark:bg-rose-500/15 dark:text-rose-100",
+    badge: "bg-rose-100 text-rose-800 dark:bg-rose-500/20 dark:text-rose-200 border border-rose-300/80 dark:border-rose-500/30",
+    tile:  "bg-rose-100/90 text-rose-900 border-rose-300/80 dark:bg-[#2c0e14] dark:text-rose-200 dark:border-rose-500/30 shadow-xs dark:shadow-[0_0_12px_rgba(244,63,94,0.12)]",
   },
   free: {
     label: "Free",
-    badge: "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-200",
-    tile:  "bg-emerald-50/80 text-emerald-900 dark:bg-emerald-500/15 dark:text-emerald-100",
+    badge: "bg-sky-100 text-sky-800 dark:bg-sky-500/20 dark:text-sky-200 border border-sky-300/80 dark:border-sky-500/30",
+    tile:  "bg-sky-100/90 text-sky-900 border-sky-300/80 dark:bg-[#0c2333] dark:text-sky-200 dark:border-sky-500/30 shadow-xs dark:shadow-[0_0_12px_rgba(14,165,233,0.12)]",
   },
   cancelled: {
     label: "Cancelled",
-    badge: "bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300",
-    tile:  "bg-zinc-50/80 text-zinc-900 dark:bg-zinc-800/80 dark:text-zinc-100",
+    badge: "bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300 border border-zinc-300 dark:border-zinc-700",
+    tile:  "bg-zinc-100/90 text-zinc-700 border-zinc-300 dark:bg-zinc-800/90 dark:text-zinc-300 dark:border-zinc-700 shadow-xs",
   },
   holiday: {
     label: "Holiday",
-    badge: "bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-200",
-    tile:  "bg-zinc-50/20 dark:bg-zinc-900/40 text-zinc-300 dark:text-zinc-600 border-dashed opacity-40",
+    badge: "bg-sky-100 text-sky-800 dark:bg-sky-500/20 dark:text-sky-200 border border-sky-300/80 dark:border-sky-500/30",
+    tile:  "bg-slate-100/70 text-slate-400 border-slate-200 border-dashed opacity-75 dark:bg-zinc-900/40 dark:text-zinc-500 dark:border-zinc-800/60 dark:border-dashed dark:opacity-50",
   },
   exam: {
     label: "Exam Day",
-    badge: "bg-purple-100 text-purple-700 dark:bg-purple-500/20 dark:text-purple-200",
-    tile:  "bg-purple-50/80 text-purple-900 dark:bg-purple-500/15 dark:text-purple-100",
+    badge: "bg-purple-100 text-purple-800 dark:bg-purple-500/20 dark:text-purple-200 border border-purple-300/80 dark:border-purple-500/30",
+    tile:  "bg-purple-100/90 text-purple-900 border-purple-300/80 dark:bg-[#221233] dark:text-purple-200 dark:border-purple-500/30 shadow-xs dark:shadow-[0_0_12px_rgba(168,85,247,0.12)]",
   },
   none: {
     label: "No Data",
-    badge: "bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300",
-    tile:  "bg-white text-zinc-700 dark:bg-zinc-900 dark:text-zinc-200",
+    badge: "bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-700",
+    tile:  "bg-white text-zinc-600 border-zinc-200/90 dark:bg-[#09090d] dark:text-zinc-400 dark:border-zinc-800/80",
   },
   unscheduled: {
     label: "Not in Timetable",
-    badge: "bg-zinc-100/50 text-zinc-400 dark:bg-zinc-950/40 dark:text-zinc-600",
-    tile:  "bg-zinc-50/20 dark:bg-zinc-950/30 text-zinc-300 dark:text-zinc-700 border-dashed opacity-40 select-none pointer-events-none",
+    badge: "bg-zinc-100/50 text-zinc-400 dark:bg-zinc-950/40 dark:text-zinc-600 border border-zinc-200/50 dark:border-zinc-800/40",
+    tile:  "bg-zinc-50/30 text-zinc-300 border-zinc-200/40 dark:bg-zinc-950/30 dark:text-zinc-700 dark:border-zinc-800/40 border-dashed opacity-40 select-none pointer-events-none",
   }
 };
 
@@ -103,9 +104,21 @@ export default function SubjectCalendarModal({ open, onClose, data }) {
   const [activeMonthDate, setActiveMonthDate] = useState(
     new Date(initialMonthDate.getFullYear(), initialMonthDate.getMonth(), 1)
   );
+  const [monthDirection, setMonthDirection] = useState(0);
+
+  const handlePrevMonth = () => {
+    setMonthDirection(-1);
+    setActiveMonthDate(prev => new Date(prev.getFullYear(), prev.getMonth() - 1, 1));
+  };
+
+  const handleNextMonth = () => {
+    setMonthDirection(1);
+    setActiveMonthDate(prev => new Date(prev.getFullYear(), prev.getMonth() + 1, 1));
+  };
 
   useEffect(() => {
     if (open) {
+      setMonthDirection(0);
       setActiveMonthDate(
         new Date(initialMonthDate.getFullYear(), initialMonthDate.getMonth(), 1)
       );
@@ -222,11 +235,11 @@ export default function SubjectCalendarModal({ open, onClose, data }) {
 
         {/* Calendar Nav */}
         <div className="flex items-center justify-between">
-          <h3 className="text-base sm:text-lg font-bold text-zinc-900 dark:text-white">{monthLabel}</h3>
+          <h3 className="text-base sm:text-lg font-bold text-zinc-900 dark:text-white font-[Poppins]">{monthLabel}</h3>
           <div className="flex items-center gap-4">
-            <button type="button" onClick={() => setActiveMonthDate(prev => new Date(prev.getFullYear(), prev.getMonth() - 1, 1))}
+            <button type="button" onClick={handlePrevMonth}
               aria-label="Previous month" className="text-2xl leading-none text-zinc-600 transition hover:scale-110 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white cursor-pointer">←</button>
-            <button type="button" onClick={() => setActiveMonthDate(prev => new Date(prev.getFullYear(), prev.getMonth() + 1, 1))}
+            <button type="button" onClick={handleNextMonth}
               aria-label="Next month" className="text-2xl leading-none text-zinc-600 transition hover:scale-110 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white cursor-pointer">→</button>
           </div>
         </div>
@@ -236,31 +249,78 @@ export default function SubjectCalendarModal({ open, onClose, data }) {
           {weekDays.map(day => <div key={day}>{day}</div>)}
         </div>
 
-        {/* Calendar Grid */}
-        <div className="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-zinc-100/70 dark:bg-zinc-950/80 p-2">
-          <div className="grid grid-cols-7 gap-1 sm:gap-1.5">
-            {leadingBlanks.map(blank => <div key={blank.key} className="h-10 sm:h-12 rounded-xl border border-transparent" />)}
-            {calendarDays.map((day, index) => {
-              const config = statusConfig[day.status];
-              return (
-                <div key={day.dayNumber}
-                  className={`group relative overflow-hidden flex flex-col justify-between min-h-[3.25rem] sm:min-h-[3.75rem] h-auto rounded-xl border border-zinc-200/80 dark:border-zinc-800/80 bg-white dark:bg-zinc-900 p-1.5 text-[10px] sm:text-xs font-semibold transition ${config.tile} ${
-                    day.isToday ? "ring-2 ring-blue-500 dark:ring-blue-400 !opacity-100" : ""
-                  } hover:-translate-y-0.5 hover:border-zinc-300 hover:shadow-md dark:hover:border-zinc-700`}
-                  style={{ animation: "fadeUp 0.4s ease-out", animationDelay: `${(index % 7) * 40}ms`, animationFillMode: "both" }}>
-                  <div className="w-full flex items-center justify-between text-[9px] sm:text-[10px] text-zinc-500 dark:text-zinc-400 font-semibold leading-none">
-                    <span>{day.dayNumber}</span>
+        {/* Calendar Grid with 60 FPS Directional Swipe Transition */}
+        <div className="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-zinc-100/70 dark:bg-zinc-950/80 p-2 overflow-hidden relative">
+          <AnimatePresence mode="wait" custom={monthDirection} initial={false}>
+            <motion.div
+              key={`${year}-${monthIndex}`}
+              custom={monthDirection}
+              variants={{
+                enter: (dir) => ({
+                  x: dir > 0 ? 50 : dir < 0 ? -50 : 0,
+                  opacity: 0,
+                }),
+                center: {
+                  x: 0,
+                  opacity: 1,
+                },
+                exit: (dir) => ({
+                  x: dir > 0 ? -50 : dir < 0 ? 50 : 0,
+                  opacity: 0,
+                }),
+              }}
+              initial="enter"
+              animate="center"
+              exit="exit"
+              transition={{
+                x: { type: "spring", stiffness: 380, damping: 30 },
+                opacity: { duration: 0.15 },
+              }}
+              drag="x"
+              dragConstraints={{ left: 0, right: 0 }}
+              dragElastic={0.15}
+              onDragEnd={(_, info) => {
+                if (info.offset.x < -40 || info.velocity.x < -300) {
+                  handleNextMonth();
+                } else if (info.offset.x > 40 || info.velocity.x > 300) {
+                  handlePrevMonth();
+                }
+              }}
+              className="grid grid-cols-7 gap-1 sm:gap-1.5 cursor-grab active:cursor-grabbing"
+            >
+              {leadingBlanks.map(blank => <div key={blank.key} className="h-10 sm:h-12 rounded-xl border border-transparent" />)}
+              {calendarDays.map((day) => {
+                const config = statusConfig[day.status];
+                return (
+                  <div key={day.dayNumber}
+                    className={`group relative overflow-hidden flex flex-col justify-between min-h-[3.25rem] sm:min-h-[3.75rem] h-auto rounded-xl border p-1.5 text-[10px] sm:text-xs font-semibold transition ${config.tile} ${
+                      day.isToday ? "ring-2 ring-blue-500 dark:ring-blue-400 !opacity-100 shadow-[0_0_14px_rgba(59,130,246,0.4)]" : ""
+                    } hover:-translate-y-0.5 hover:shadow-md`}>
+                    <div className="w-full flex items-center justify-between text-[9px] sm:text-[10px] opacity-75 font-semibold leading-none">
+                      <span>{day.dayNumber}</span>
+                    </div>
+                    <p className="mt-1 w-full text-center text-[8px] sm:text-[9px] font-bold uppercase tracking-wider truncate pb-0.5 select-none">{config.label}</p>
+                    {day.status === "holiday" && (
+                      <svg className="absolute inset-0 w-full h-full pointer-events-none stroke-zinc-300 dark:stroke-zinc-800 opacity-60 dark:opacity-40" viewBox="0 0 100 100" preserveAspectRatio="none">
+                        <line x1="0" y1="0" x2="100" y2="100" strokeWidth="1.5" />
+                        <line x1="100" y1="0" x2="0" y2="100" strokeWidth="1.5" />
+                      </svg>
+                    )}
                   </div>
-                  <p className="mt-1 w-full text-center text-[8px] sm:text-[9px] font-bold uppercase tracking-wider truncate pb-0.5 select-none">{config.label}</p>
-                  {day.status === "holiday" && (
-                    <svg className="absolute inset-0 w-full h-full pointer-events-none stroke-zinc-300 dark:stroke-zinc-800 opacity-60 dark:opacity-40" viewBox="0 0 100 100" preserveAspectRatio="none">
-                      <line x1="0" y1="0" x2="100" y2="100" strokeWidth="1.5" />
-                      <line x1="100" y1="0" x2="0" y2="100" strokeWidth="1.5" />
-                    </svg>
-                  )}
-                </div>
-              );
-            })}
+                );
+              })}
+            </motion.div>
+          </AnimatePresence>
+        </div>
+
+        {/* Status Legend Pills */}
+        <div className="flex justify-end pt-1">
+          <div className="flex flex-wrap gap-1.5 sm:gap-2">
+            {Object.entries(statusConfig).filter(([key]) => key !== "none" && key !== "unscheduled").map(([key, cfg]) => (
+              <span key={key} className={`rounded-full px-2.5 py-0.5 text-[10px] sm:text-xs font-bold ${cfg.badge}`}>
+                {cfg.label}
+              </span>
+            ))}
           </div>
         </div>
       </div>

@@ -313,7 +313,7 @@ export default function Navbar() {
 
   return (
     <>
-      <header className="fixed top-0 left-0 right-0 z-50 px-3 sm:px-6 pt-2 pb-2 bg-gradient-to-b from-zinc-50/95 via-zinc-50/80 to-transparent dark:from-zinc-950/95 dark:via-zinc-950/80 dark:to-transparent backdrop-blur-md">
+      <header className="fixed top-0 left-0 right-0 z-40 px-3 sm:px-6 pt-2 pb-2 bg-gradient-to-b from-slate-200/50 via-slate-100/20 to-transparent dark:from-black/90 dark:via-black/75 dark:to-transparent backdrop-blur-md transition-colors duration-200">
         {user?.isGuest && (
           <div className="max-w-6xl mx-auto mb-1.5 px-3 py-1 rounded-full bg-gradient-to-r from-amber-500/90 via-orange-500/90 to-amber-600/90 text-white text-[11px] font-extrabold flex items-center justify-between shadow-sm backdrop-blur-xl border border-amber-400/40">
             <div className="flex items-center gap-1.5 truncate">
@@ -330,7 +330,7 @@ export default function Navbar() {
           </div>
         )}
 
-        <div className="max-w-6xl mx-auto h-12 sm:h-14 px-1 sm:px-5 rounded-full bg-transparent sm:bg-white/80 sm:dark:bg-zinc-900/80 border-0 sm:border sm:border-zinc-200/80 sm:dark:border-zinc-800/80 shadow-none sm:shadow-[0_8px_30px_rgb(0,0,0,0.08)] sm:dark:shadow-[0_8px_30px_rgb(0,0,0,0.4)] flex items-center justify-between backdrop-blur-none sm:backdrop-blur-2xl transition-all duration-300">
+        <div className="max-w-6xl mx-auto h-12 sm:h-14 px-1 sm:px-5 rounded-full bg-transparent sm:bg-white/90 sm:dark:bg-[#09090d]/90 border-0 sm:border sm:border-zinc-200/90 sm:dark:border-zinc-800/90 shadow-none sm:shadow-lg sm:dark:shadow-[0_8px_32px_rgba(0,0,0,0.8)] flex items-center justify-between backdrop-blur-xl transition-colors duration-200">
           
           {/* Logo & Desktop Semester Selector */}
           <div className="flex items-center gap-2.5 sm:gap-3">
@@ -343,13 +343,13 @@ export default function Navbar() {
             {/* Desktop-Only Semester Selector Pill Dropdown */}
             <div ref={menuRef} className="relative hidden sm:block">
               <motion.button
-                whileHover={{ scale: 1.02 }}
+                whileHover={{ scale: 1.02, y: -0.5 }}
                 whileTap={{ scale: 0.96 }}
                 type="button"
                 onClick={() => setIsSemesterMenuOpen((prev) => !prev)}
-                className="px-3 py-1.5 rounded-full bg-zinc-100/90 dark:bg-zinc-800/70 text-zinc-800 dark:text-zinc-200 text-xs font-bold inline-flex items-center gap-1.5 border border-zinc-200/80 dark:border-zinc-700/50 cursor-pointer hover:bg-zinc-200/90 dark:hover:bg-zinc-700/80 transition-all shadow-xs"
+                className="px-3 py-1.5 rounded-full bg-zinc-100/90 dark:bg-zinc-900/80 text-zinc-800 dark:text-zinc-200 text-xs font-bold inline-flex items-center gap-1.5 border border-zinc-200/80 dark:border-white/[0.08] cursor-pointer hover:bg-zinc-200/90 dark:hover:bg-zinc-800/80 transition-all shadow-xs"
               >
-                <span className="w-1.5 h-1.5 rounded-full bg-blue-500" />
+                <span className="w-1.5 h-1.5 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.8)]" />
                 <span className="truncate max-w-[90px] sm:max-w-[120px]">{currentSemesterName}</span>
                 <span
                   className={`text-[10px] text-zinc-400 transition-transform duration-300 ${
@@ -367,7 +367,7 @@ export default function Navbar() {
                     animate={{ opacity: 1, scale: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.95, y: -10 }}
                     transition={{ duration: 0.18, ease: "easeOut" }}
-                    className="absolute left-0 mt-2 w-64 rounded-3xl border border-zinc-200 dark:border-zinc-800 bg-white/95 dark:bg-zinc-900/95 shadow-2xl backdrop-blur-2xl overflow-hidden z-50 p-2 space-y-1"
+                    className="absolute left-0 mt-2 w-64 rounded-3xl border border-zinc-200 dark:border-white/[0.1] bg-white/95 dark:bg-zinc-950/95 shadow-2xl backdrop-blur-2xl overflow-hidden z-50 p-2 space-y-1"
                   >
                     <p className="px-3 py-1.5 text-[10px] font-extrabold uppercase tracking-wider text-zinc-400">
                       Select Semester
@@ -1005,12 +1005,12 @@ function DesktopNavLinks() {
   return (
     <nav
       ref={containerRef}
-      className="relative hidden lg:flex items-center gap-1 bg-zinc-100/90 dark:bg-zinc-950/80 p-1 rounded-full border border-zinc-200/80 dark:border-zinc-800/80 shadow-inner"
+      className="relative hidden lg:flex items-center gap-1 bg-zinc-100/90 dark:bg-[#050508] p-1 rounded-full border border-zinc-200/90 dark:border-zinc-800/80 shadow-inner"
     >
       {/* Morphic Active Pill Indicator - purely X-axis translation, physically locked to container */}
       {pillRect && (
         <motion.div
-          className="absolute top-1 bottom-1 bg-white dark:bg-zinc-800 rounded-xl shadow-sm border border-zinc-200/80 dark:border-zinc-700/60 pointer-events-none"
+          className="absolute top-1 bottom-1 bg-white dark:bg-zinc-800/90 rounded-xl shadow-xs border border-zinc-200/80 dark:border-zinc-700/60 pointer-events-none"
           initial={false}
           animate={{
             x: pillRect.left,

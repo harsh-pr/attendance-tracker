@@ -112,36 +112,36 @@ function SubjectCard({ data, onClick }) {
   const { subject, attended, conducted, percentage, status } =
     data;
   const statusStyles = {
-    Safe: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20",
-    Risk: "bg-red-500/10 text-red-600 dark:text-red-400 border border-red-500/20",
+    Safe: "bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 shadow-[0_0_10px_rgba(16,185,129,0.2)]",
+    Risk: "bg-rose-500/15 text-rose-400 border border-rose-500/30 shadow-[0_0_10px_rgba(244,63,94,0.2)]",
     "No Data":
-      "bg-zinc-500/10 text-zinc-600 dark:text-zinc-400 border border-zinc-500/20",
+      "bg-zinc-800/60 text-zinc-400 border border-zinc-700/50",
   };
 
   return (
-    <motion.div
-      whileHover={{ y: -3, scale: 1.01 }}
-      whileTap={{ scale: 0.98 }}
-      transition={{ type: "spring", stiffness: 400, damping: 25 }}
+    <div
       onClick={onClick}
       className="
-        p-5 rounded-3xl
-        bg-white dark:bg-zinc-900
-        border border-zinc-200 dark:border-zinc-800
-        cursor-pointer shadow-sm hover:shadow-lg transition-shadow duration-200
+        p-5 rounded-3xl cursor-pointer transform-gpu
+        bg-white dark:bg-[#09090d] sm:dark:bg-[#0c0d12]
+        border border-zinc-200 dark:border-zinc-800/90 hover:border-zinc-300 dark:hover:border-indigo-500/40
+        shadow-sm hover:shadow-lg dark:hover:shadow-[0_16px_36px_rgba(0,0,0,0.8),0_0_24px_rgba(99,102,241,0.15)]
+        transition-all duration-200 ease-[cubic-bezier(0.16,1,0.3,1)]
+        hover:-translate-y-1 hover:scale-[1.01] active:scale-[0.98]
+        will-change-transform
       "
     >
       <div className="flex items-start justify-between gap-3">
         <div>
-          <h2 className="font-bold text-base text-zinc-900 dark:text-zinc-100">
+          <h2 className="font-bold text-base text-zinc-900 dark:text-white font-[Poppins]">
             {subject.name}
           </h2>
-          <p className="text-xs uppercase tracking-wider font-semibold text-gray-400 dark:text-gray-500 mt-0.5">
+          <p className="text-xs uppercase tracking-wider font-semibold text-zinc-500 dark:text-zinc-400 mt-0.5">
             {subject.type}
           </p>
         </div>
         <span
-          className={`rounded-full px-3 py-1 text-xs font-semibold ${
+          className={`rounded-full px-3 py-1 text-xs font-bold ${
             statusStyles[status]
           }`}
         >
@@ -150,26 +150,24 @@ function SubjectCard({ data, onClick }) {
       </div>
 
       <div className="mt-4">
-        <div className="flex items-center justify-between text-sm text-gray-600 dark:text-gray-300">
+        <div className="flex items-center justify-between text-xs sm:text-sm text-zinc-600 dark:text-zinc-300">
           <span>
             {attended} / {conducted} attended
           </span>
-          <span className="font-semibold">{percentage}%</span>
+          <span className="font-extrabold text-zinc-900 dark:text-white">{percentage}%</span>
         </div>
-        <div className="mt-2 h-2 rounded-full bg-gray-200 dark:bg-gray-700 overflow-hidden">
-          <motion.div
-            initial={{ width: 0 }}
-            animate={{ width: `${Math.min(100, Math.max(0, percentage))}%` }}
-            transition={{ duration: 0.8, ease: "easeOut" }}
-            className={`h-2 rounded-full ${
+        <div className="mt-2 h-2 rounded-full bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800/80 overflow-hidden p-0.5">
+          <div
+            className={`h-full rounded-full transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] ${
               percentage >= 75
-                ? "bg-green-500"
-                : "bg-red-500"
+                ? "bg-gradient-to-r from-emerald-500 to-teal-400 shadow-[0_0_10px_rgba(16,185,129,0.35)]"
+                : "bg-gradient-to-r from-rose-500 to-red-500 shadow-[0_0_10px_rgba(244,63,94,0.35)]"
             }`}
+            style={{ width: `${Math.min(100, Math.max(0, percentage))}%` }}
           />
         </div>
       </div>
-    </motion.div>
+    </div>
   );
 }
 

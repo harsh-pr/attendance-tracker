@@ -1,4 +1,5 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { useSemester } from "../context/SemesterContext";
 import { getLecturesForDate } from "../utils/timetableUtils";
@@ -93,6 +94,27 @@ export default function QuickBackfillModal({ isOpen, onClose }) {
     }
     return list;
   }, [startDate, endDate, excludeWeekends]);
+
+  // Lock background body scroll and listen for ESC key when open
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [isOpen]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isOpen, onClose]);
 
   if (!isOpen) return null;
 
@@ -206,22 +228,23 @@ export default function QuickBackfillModal({ isOpen, onClose }) {
     }
   };
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
+  return createPortal(
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-3 sm:p-4 bg-black/70 backdrop-blur-md animate-fade-in" onClick={onClose}>
       <motion.div
+        onClick={(e) => e.stopPropagation()}
         initial={{ opacity: 0, scale: 0.95, y: 15 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.95, y: 15 }}
-        className="relative w-full max-w-lg max-h-[90vh] flex flex-col overflow-hidden rounded-3xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 shadow-2xl"
+        className="relative w-full max-w-lg max-h-[90vh] flex flex-col overflow-hidden rounded-3xl border border-zinc-200 dark:border-zinc-800/90 bg-white dark:bg-[#0c0d12] shadow-2xl"
       >
         {/* Header Bar */}
-        <div className="flex items-center justify-between px-5 py-4 border-b border-zinc-100 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/50 shrink-0">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-zinc-100 dark:border-zinc-800/80 bg-zinc-50/70 dark:bg-[#09090d]/80 shrink-0">
           <div className="flex items-center gap-2.5">
-            <div className="p-2 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400">
+            <div className="p-2 rounded-xl bg-amber-500/15 text-amber-500 border border-amber-500/30 shadow-[0_0_12px_rgba(245,158,11,0.2)]">
               <Icons.Zap className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="text-base sm:text-lg font-bold text-zinc-900 dark:text-zinc-100">
+              <h2 className="text-base sm:text-lg font-bold text-zinc-900 dark:text-white font-[Poppins]">
                 Backfill Past Days Attendance
               </h2>
               <p className="text-xs text-zinc-500 dark:text-zinc-400">
@@ -232,7 +255,7 @@ export default function QuickBackfillModal({ isOpen, onClose }) {
 
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
+            className="p-1.5 rounded-xl text-zinc-400 hover:text-zinc-700 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
           >
             <Icons.X className="w-5 h-5" />
           </button>
@@ -241,7 +264,7 @@ export default function QuickBackfillModal({ isOpen, onClose }) {
         {/* Scrollable Modal Content */}
         <div className="p-5 overflow-y-auto space-y-4 flex-1">
           {/* 1. Date Range Picker */}
-          <div className="p-3.5 rounded-2xl bg-zinc-50 dark:bg-zinc-800/40 border border-zinc-200/80 dark:border-zinc-700/60 space-y-3">
+          <div className="p-4 rounded-2xl bg-zinc-50 dark:bg-[#07070a] border border-zinc-200/80 dark:border-zinc-800/80 space-y-3">
             <span className="text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 block">
               1. Select Date Range
             </span>
@@ -258,7 +281,7 @@ export default function QuickBackfillModal({ isOpen, onClose }) {
                     setStartDate(e.target.value);
                     setCurrentIndex(0);
                   }}
-                  className="w-full px-3 py-2 text-xs font-bold rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-amber-500"
+                  className="w-full px-3 py-2 text-xs font-bold rounded-xl border border-zinc-200 dark:border-zinc-700/80 bg-white dark:bg-[#12131a] text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-amber-500/50"
                 />
               </div>
 
@@ -273,7 +296,7 @@ export default function QuickBackfillModal({ isOpen, onClose }) {
                     setEndDate(e.target.value);
                     setCurrentIndex(0);
                   }}
-                  className="w-full px-3 py-2 text-xs font-bold rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-amber-500"
+                  className="w-full px-3 py-2 text-xs font-bold rounded-xl border border-zinc-200 dark:border-zinc-700/80 bg-white dark:bg-[#12131a] text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-amber-500/50"
                 />
               </div>
             </div>
@@ -298,14 +321,14 @@ export default function QuickBackfillModal({ isOpen, onClose }) {
               2. Select Backfill Mode ({dateList.length} days selected)
             </span>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
               <button
                 type="button"
                 onClick={() => setStrategy("full_present")}
-                className={`p-3 rounded-2xl border text-left transition-all cursor-pointer ${
+                className={`p-3.5 rounded-2xl border text-left transition-all duration-150 cursor-pointer ${
                   strategy === "full_present"
-                    ? "border-emerald-500 bg-emerald-500/10 text-emerald-900 dark:text-emerald-200 font-bold"
-                    : "border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400"
+                    ? "border-emerald-500/70 bg-emerald-500/10 text-emerald-900 dark:text-emerald-300 font-bold ring-1 ring-emerald-500/40 shadow-[0_0_16px_rgba(16,185,129,0.15)]"
+                    : "border-zinc-200 dark:border-zinc-800/80 bg-white dark:bg-[#07070a] text-zinc-600 dark:text-zinc-400 hover:border-zinc-300 dark:hover:border-zinc-700"
                 }`}
               >
                 <div className="text-xs font-extrabold flex items-center gap-1.5">
@@ -319,10 +342,10 @@ export default function QuickBackfillModal({ isOpen, onClose }) {
               <button
                 type="button"
                 onClick={() => setStrategy("rapid_logger")}
-                className={`p-3 rounded-2xl border text-left transition-all cursor-pointer ${
+                className={`p-3.5 rounded-2xl border text-left transition-all duration-150 cursor-pointer ${
                   strategy === "rapid_logger"
-                    ? "border-amber-500 bg-amber-500/10 text-amber-900 dark:text-amber-200 font-bold"
-                    : "border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400"
+                    ? "border-amber-500/70 bg-amber-500/10 text-amber-900 dark:text-amber-300 font-bold ring-1 ring-amber-500/40 shadow-[0_0_16px_rgba(245,158,11,0.15)]"
+                    : "border-zinc-200 dark:border-zinc-800/80 bg-white dark:bg-[#07070a] text-zinc-600 dark:text-zinc-400 hover:border-zinc-300 dark:hover:border-zinc-700"
                 }`}
               >
                 <div className="text-xs font-extrabold flex items-center gap-1.5">
@@ -344,7 +367,7 @@ export default function QuickBackfillModal({ isOpen, onClose }) {
                   <span className="text-[10px] font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400">
                     Day {currentIndex + 1} of {dateList.length}
                   </span>
-                  <h3 className="text-sm font-black text-zinc-900 dark:text-white">
+                  <h3 className="text-sm font-black text-zinc-900 dark:text-white font-[Poppins]">
                     {new Date(currentWorkingDate).toLocaleDateString("en-GB", {
                       weekday: "short",
                       day: "2-digit",
@@ -359,7 +382,7 @@ export default function QuickBackfillModal({ isOpen, onClose }) {
                     type="button"
                     disabled={currentIndex === 0}
                     onClick={() => setCurrentIndex((i) => Math.max(0, i - 1))}
-                    className="p-1.5 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-700 dark:text-zinc-200 disabled:opacity-30 cursor-pointer"
+                    className="p-1.5 rounded-xl border border-zinc-200 dark:border-zinc-700/80 bg-white dark:bg-[#12131a] text-zinc-700 dark:text-zinc-200 disabled:opacity-30 cursor-pointer hover:border-zinc-300 dark:hover:border-zinc-600"
                   >
                     <Icons.ChevronLeft className="w-4 h-4" />
                   </button>
@@ -367,7 +390,7 @@ export default function QuickBackfillModal({ isOpen, onClose }) {
                     type="button"
                     disabled={currentIndex === dateList.length - 1}
                     onClick={() => setCurrentIndex((i) => Math.min(dateList.length - 1, i + 1))}
-                    className="p-1.5 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-700 dark:text-zinc-200 disabled:opacity-30 cursor-pointer"
+                    className="p-1.5 rounded-xl border border-zinc-200 dark:border-zinc-700/80 bg-white dark:bg-[#12131a] text-zinc-700 dark:text-zinc-200 disabled:opacity-30 cursor-pointer hover:border-zinc-300 dark:hover:border-zinc-600"
                   >
                     <Icons.ChevronRight className="w-4 h-4" />
                   </button>
@@ -381,8 +404,8 @@ export default function QuickBackfillModal({ isOpen, onClose }) {
                   onClick={() => handleSetDayMode(currentWorkingDate, "full")}
                   className={`py-1.5 px-3 text-xs font-bold rounded-xl border transition-all cursor-pointer ${
                     (rapidData[currentWorkingDate]?.dayMode || "full") === "full"
-                      ? "bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 border-emerald-500/30"
-                      : "bg-white dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 border-zinc-200 dark:border-zinc-700"
+                      ? "bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 border-emerald-500/40 shadow-[0_0_10px_rgba(16,185,129,0.15)]"
+                      : "bg-white dark:bg-[#12131a] text-zinc-600 dark:text-zinc-400 border-zinc-200 dark:border-zinc-800"
                   }`}
                 >
                   Full Present
@@ -392,8 +415,8 @@ export default function QuickBackfillModal({ isOpen, onClose }) {
                   onClick={() => handleSetDayMode(currentWorkingDate, "absent")}
                   className={`py-1.5 px-3 text-xs font-bold rounded-xl border transition-all cursor-pointer ${
                     rapidData[currentWorkingDate]?.dayMode === "absent"
-                      ? "bg-rose-500/20 text-rose-700 dark:text-rose-300 border-rose-500/30"
-                      : "bg-white dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 border-zinc-200 dark:border-zinc-700"
+                      ? "bg-rose-500/20 text-rose-700 dark:text-rose-300 border-rose-500/40 shadow-[0_0_10px_rgba(244,63,94,0.15)]"
+                      : "bg-white dark:bg-[#12131a] text-zinc-600 dark:text-zinc-400 border-zinc-200 dark:border-zinc-800"
                   }`}
                 >
                   Full Absent
@@ -417,7 +440,7 @@ export default function QuickBackfillModal({ isOpen, onClose }) {
                       return (
                         <div
                           key={key}
-                          className="flex items-center justify-between p-2.5 rounded-xl bg-white dark:bg-zinc-800 border border-zinc-200/80 dark:border-zinc-700/80 text-xs"
+                          className="flex items-center justify-between p-2.5 rounded-xl bg-white dark:bg-[#12131a] border border-zinc-200/80 dark:border-zinc-800/80 text-xs"
                         >
                           <span className="font-bold text-zinc-800 dark:text-zinc-200 truncate max-w-[140px] sm:max-w-[180px]">
                             {subName}
@@ -429,8 +452,8 @@ export default function QuickBackfillModal({ isOpen, onClose }) {
                               onClick={() => handleSetLectureStatus(currentWorkingDate, key, "present")}
                               className={`px-2 py-0.5 rounded-lg text-[10px] font-bold transition-all cursor-pointer ${
                                 currentStatus === "present"
-                                  ? "bg-emerald-500 text-white"
-                                  : "bg-zinc-100 dark:bg-zinc-700 text-zinc-500 dark:text-zinc-400"
+                                  ? "bg-emerald-500 text-white shadow-[0_0_8px_rgba(16,185,129,0.3)]"
+                                  : "bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400"
                               }`}
                             >
                               Present
@@ -441,8 +464,8 @@ export default function QuickBackfillModal({ isOpen, onClose }) {
                               onClick={() => handleSetLectureStatus(currentWorkingDate, key, "absent")}
                               className={`px-2 py-0.5 rounded-lg text-[10px] font-bold transition-all cursor-pointer ${
                                 currentStatus === "absent"
-                                  ? "bg-rose-500 text-white"
-                                  : "bg-zinc-100 dark:bg-zinc-700 text-zinc-500 dark:text-zinc-400"
+                                  ? "bg-rose-500 text-white shadow-[0_0_8px_rgba(244,63,94,0.3)]"
+                                  : "bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400"
                               }`}
                             >
                               Absent
@@ -453,8 +476,8 @@ export default function QuickBackfillModal({ isOpen, onClose }) {
                               onClick={() => handleSetLectureStatus(currentWorkingDate, key, "free")}
                               className={`px-2 py-0.5 rounded-lg text-[10px] font-bold transition-all cursor-pointer ${
                                 currentStatus === "free"
-                                  ? "bg-sky-500 text-white"
-                                  : "bg-zinc-100 dark:bg-zinc-700 text-zinc-500 dark:text-zinc-400"
+                                  ? "bg-sky-500 text-white shadow-[0_0_8px_rgba(59,130,246,0.3)]"
+                                  : "bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400"
                               }`}
                             >
                               Free
@@ -475,11 +498,11 @@ export default function QuickBackfillModal({ isOpen, onClose }) {
         </div>
 
         {/* Modal Footer */}
-        <div className="p-4 border-t border-zinc-100 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/50 shrink-0">
+        <div className="p-4 border-t border-zinc-100 dark:border-zinc-800/80 bg-zinc-50/70 dark:bg-[#09090d]/80 shrink-0">
           <button
             onClick={handleSaveBackfill}
             disabled={isSaving || saveSuccess || dateList.length === 0}
-            className="w-full py-2.5 px-4 text-xs font-bold rounded-xl bg-amber-500 hover:bg-amber-600 text-white shadow-md shadow-amber-500/20 disabled:opacity-50 flex items-center justify-center gap-2 transition-all cursor-pointer"
+            className="w-full py-3 px-4 text-xs font-black rounded-2xl bg-gradient-to-r from-amber-500 via-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-black shadow-lg shadow-amber-500/25 disabled:opacity-50 flex items-center justify-center gap-2 transition-all duration-150 active:scale-[0.98] cursor-pointer"
           >
             {isSaving ? (
               <>
@@ -488,7 +511,7 @@ export default function QuickBackfillModal({ isOpen, onClose }) {
               </>
             ) : saveSuccess ? (
               <>
-                <Icons.Check className="w-4 h-4 text-white" />
+                <Icons.Check className="w-4 h-4 text-black" />
                 Backfilled {dateList.length} Days Successfully!
               </>
             ) : (
@@ -500,6 +523,7 @@ export default function QuickBackfillModal({ isOpen, onClose }) {
           </button>
         </div>
       </motion.div>
-    </div>
+    </div>,
+    document.body
   );
 }

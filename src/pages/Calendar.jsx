@@ -1,3 +1,4 @@
+import { AnimatePresence, motion } from "framer-motion";
 import Modal from "../components/Modal";
 import NotificationPermissionModal from "../components/NotificationPermissionModal";
 import QuickBackfillModal from "../components/QuickBackfillModal";
@@ -14,33 +15,33 @@ const weekDays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 const statusConfig = {
   full: {
     label: "Full Day",
-    badge: "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-200",
-    tile:  "bg-emerald-50/80 text-emerald-900 dark:bg-emerald-500/15 dark:text-emerald-100",
+    badge: "bg-emerald-100 text-emerald-800 dark:bg-emerald-500/20 dark:text-emerald-200 border border-emerald-300/80 dark:border-emerald-500/30",
+    tile:  "bg-emerald-100/90 text-emerald-900 border-emerald-300/80 dark:bg-[#0c2a1e] dark:text-emerald-200 dark:border-emerald-500/30 shadow-xs dark:shadow-[0_0_12px_rgba(16,185,129,0.12)]",
   },
   partial: {
     label: "Partial",
-    badge: "bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-200",
-    tile:  "bg-amber-50/80 text-amber-900 dark:bg-amber-500/15 dark:text-amber-100",
+    badge: "bg-amber-100 text-amber-800 dark:bg-amber-500/20 dark:text-amber-200 border border-amber-300/80 dark:border-amber-500/30",
+    tile:  "bg-amber-100/90 text-amber-900 border-amber-300/80 dark:bg-[#2d1c08] dark:text-amber-200 dark:border-amber-500/30 shadow-xs dark:shadow-[0_0_12px_rgba(245,158,11,0.12)]",
   },
   absent: {
     label: "Absent",
-    badge: "bg-rose-100 text-rose-700 dark:bg-rose-500/20 dark:text-rose-200",
-    tile:  "bg-rose-50/80 text-rose-900 dark:bg-rose-500/15 dark:text-rose-100",
+    badge: "bg-rose-100 text-rose-800 dark:bg-rose-500/20 dark:text-rose-200 border border-rose-300/80 dark:border-rose-500/30",
+    tile:  "bg-rose-100/90 text-rose-900 border-rose-300/80 dark:bg-[#2c0e14] dark:text-rose-200 dark:border-rose-500/30 shadow-xs dark:shadow-[0_0_12px_rgba(244,63,94,0.12)]",
   },
   holiday: {
     label: "Holiday",
-    badge: "bg-sky-100 text-sky-700 dark:bg-sky-500/20 dark:text-sky-200",
-    tile:  "bg-zinc-50/20 dark:bg-zinc-900/40 text-zinc-300 dark:text-zinc-600 border-dashed opacity-40",
+    badge: "bg-sky-100 text-sky-800 dark:bg-sky-500/20 dark:text-sky-200 border border-sky-300/80 dark:border-sky-500/30",
+    tile:  "bg-slate-100/70 text-slate-400 border-slate-200 border-dashed opacity-75 dark:bg-zinc-900/40 dark:text-zinc-500 dark:border-zinc-800/60 dark:border-dashed dark:opacity-50",
   },
   exam: {
     label: "Exam Day",
-    badge: "bg-violet-100 text-violet-700 dark:bg-violet-500/20 dark:text-violet-200",
-    tile:  "bg-violet-50/80 text-violet-900 dark:bg-violet-500/15 dark:text-violet-100",
+    badge: "bg-purple-100 text-purple-800 dark:bg-purple-500/20 dark:text-purple-200 border border-purple-300/80 dark:border-purple-500/30",
+    tile:  "bg-purple-100/90 text-purple-900 border-purple-300/80 dark:bg-[#221233] dark:text-purple-200 dark:border-purple-500/30 shadow-xs dark:shadow-[0_0_12px_rgba(168,85,247,0.12)]",
   },
   none: {
     label: "No Data",
-    badge: "bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300",
-    tile:  "bg-white text-zinc-700 dark:bg-zinc-900 dark:text-zinc-200",
+    badge: "bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-700",
+    tile:  "bg-white text-zinc-600 border-zinc-200/90 dark:bg-[#09090d] dark:text-zinc-400 dark:border-zinc-800/80",
   },
 };
 
@@ -191,9 +192,21 @@ export default function Calendar() {
     const now = new Date();
     return new Date(now.getFullYear(), now.getMonth(), 1);
   });
+  const [monthDirection, setMonthDirection] = useState(0);
+
+  const handlePrevMonth = () => {
+    setMonthDirection(-1);
+    setActiveMonthDate(prev => new Date(prev.getFullYear(), prev.getMonth() - 1, 1));
+  };
+
+  const handleNextMonth = () => {
+    setMonthDirection(1);
+    setActiveMonthDate(prev => new Date(prev.getFullYear(), prev.getMonth() + 1, 1));
+  };
 
   useEffect(() => {
     const now = new Date();
+    setMonthDirection(0);
     setActiveMonthDate(new Date(now.getFullYear(), now.getMonth(), 1));
   }, [currentSemester.id]);
 
@@ -870,15 +883,15 @@ export default function Calendar() {
         </div>
         <div className="flex flex-wrap gap-2.5 sm:gap-3">
           <button type="button" onClick={() => setBackfillModalOpen(true)}
-            className="rounded-xl border border-amber-500/30 bg-amber-500/10 hover:bg-amber-500/20 text-amber-700 dark:text-amber-300 px-3.5 sm:px-4 py-2 text-xs font-bold shadow-sm transition hover:-translate-y-0.5 cursor-pointer flex items-center gap-1.5">
+            className="rounded-xl border border-amber-500/30 bg-white dark:bg-[#0e1017] hover:bg-amber-500/10 text-amber-600 dark:text-amber-300 px-3.5 sm:px-4 py-2 text-xs font-bold shadow-xs transition duration-150 hover:-translate-y-0.5 cursor-pointer flex items-center gap-1.5">
             <span>⚡ Backfill Past Days</span>
           </button>
           <button type="button" onClick={handleExportMonth}
-            className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/80 px-3.5 sm:px-4 py-2 text-xs font-bold text-zinc-700 dark:text-zinc-200 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md cursor-pointer">
+            className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-[#0e1017] hover:border-zinc-300 dark:hover:border-zinc-700 px-3.5 sm:px-4 py-2 text-xs font-bold text-zinc-700 dark:text-zinc-200 shadow-xs transition duration-150 hover:-translate-y-0.5 cursor-pointer">
             Export Month
           </button>
           <button type="button" onClick={() => { setEditingReminder(null); setReminderForm({ title: "", date: "", time: "" }); setAddReminderOpen(true); }}
-            className="rounded-xl bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 px-3.5 sm:px-4 py-2 text-xs font-bold shadow-md transition hover:-translate-y-0.5 hover:shadow-lg cursor-pointer">
+            className="rounded-xl bg-zinc-900 dark:bg-white text-white dark:text-black hover:bg-zinc-800 dark:hover:bg-zinc-200 px-3.5 sm:px-4 py-2 text-xs font-black shadow-md transition duration-150 hover:-translate-y-0.5 cursor-pointer">
             + Add Reminder
           </button>
         </div>
@@ -890,8 +903,8 @@ export default function Calendar() {
           { title: "Partial days", value: statusCounts.partial, change: formatDelta(statusCounts.partial - previousStatusCounts.partial), status: "partial" },
           { title: "Absences",     value: statusCounts.absent,  change: formatDelta(statusCounts.absent  - previousStatusCounts.absent),  status: "absent"  },
           { title: "Holidays",     value: statusCounts.holiday, change: formatDelta(statusCounts.holiday - previousStatusCounts.holiday), status: "holiday" },
-        ].map((item, index) => (
-          <div key={item.title} className="animate-[fadeUp_0.6s_ease-out] rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white/80 dark:bg-zinc-900/80 p-4 shadow-sm backdrop-blur-xl" style={{ animationDelay: `${index * 80}ms` }}>
+        ].map((item) => (
+          <div key={item.title} className="rounded-2xl border border-zinc-200 dark:border-zinc-800/90 bg-white dark:bg-[#09090d] p-4 shadow-sm hover:border-zinc-300 dark:hover:border-indigo-500/30 hover:shadow-lg dark:hover:shadow-[0_12px_28px_rgba(0,0,0,0.8),0_0_20px_rgba(99,102,241,0.12)] transition-all duration-200">
             <div className="flex items-center justify-between">
               <p className="text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">{item.title}</p>
               <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide ${statusConfig[item.status].badge}`}>{statusConfig[item.status].label}</span>
@@ -905,48 +918,84 @@ export default function Calendar() {
       </section>
 
       <section className="grid gap-6 lg:grid-cols-[2.1fr_1fr]">
-        <div className="space-y-4 rounded-3xl border border-zinc-200 dark:border-zinc-800 bg-white/80 dark:bg-zinc-900/80 p-6 shadow-sm backdrop-blur-xl">
+        <div className="space-y-4 rounded-3xl border border-zinc-200 dark:border-zinc-800/90 bg-white dark:bg-[#09090d] p-6 shadow-sm">
           <div className="flex flex-wrap items-start justify-between gap-4 pt-1">
             <div className="space-y-1">
               <p className="text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Calendar View</p>
-              <h2 className="text-2xl font-bold text-zinc-900 dark:text-white">{monthLabel}</h2>
+              <h2 className="text-2xl font-bold text-zinc-900 dark:text-white font-[Poppins]">{monthLabel}</h2>
             </div>
             <div className="flex items-center gap-5">
-              <button type="button" onClick={() => setActiveMonthDate(prev => new Date(prev.getFullYear(), prev.getMonth() - 1, 1))}
-                aria-label="Previous month" className="text-2xl leading-none text-zinc-500 transition hover:scale-110 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white cursor-pointer">←</button>
-              <button type="button" onClick={() => setActiveMonthDate(prev => new Date(prev.getFullYear(), prev.getMonth() + 1, 1))}
-                aria-label="Next month" className="text-2xl leading-none text-zinc-500 transition hover:scale-110 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white cursor-pointer">→</button>
+              <button type="button" onClick={handlePrevMonth}
+                aria-label="Previous month" className="text-2xl leading-none text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 transition hover:scale-110 dark:hover:text-white cursor-pointer">←</button>
+              <button type="button" onClick={handleNextMonth}
+                aria-label="Next month" className="text-2xl leading-none text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 transition hover:scale-110 dark:hover:text-white cursor-pointer">→</button>
             </div>
           </div>
 
-          <div className="grid grid-cols-7 gap-2 text-[10px] sm:text-xs font-bold uppercase tracking-wider text-zinc-400">
+          <div className="grid grid-cols-7 gap-2 text-[10px] sm:text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
             {weekDays.map(day => <div key={day} className="text-center">{day}</div>)}
           </div>
 
-          <div className="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-zinc-100/60 dark:bg-zinc-950/60 p-2">
-            <div className="grid grid-cols-7 gap-1 sm:gap-2">
-              {leadingBlanks.map(blank => <div key={blank.key} className="h-12 sm:h-14 rounded-lg border border-transparent" />)}
-              {calendarDays.map((day, index) => (
-                <button key={day.dayNumber} type="button"
-                  onClick={() => setSelectedDay({ day: day.dayNumber, status: day.status, date: day.date, dayEntry: day.dayEntry })}
-                  className={`group relative overflow-hidden flex flex-col justify-between min-h-[3.25rem] sm:min-h-[3.75rem] h-auto rounded-xl border border-zinc-200/80 dark:border-zinc-800/80 bg-white dark:bg-zinc-900 p-1.5 text-[11px] sm:text-sm font-semibold transition ${statusConfig[day.status].tile} ${
-                    day.isToday ? "ring-2 ring-blue-500 dark:ring-blue-400 !opacity-100" : ""
-                  } hover:-translate-y-0.5 hover:border-zinc-400 dark:hover:border-zinc-700 hover:shadow-lg cursor-pointer`}
-                  style={{ animation: "fadeUp 0.5s ease-out", animationDelay: `${(index % 7) * 40}ms`, animationFillMode: "both" }}>
-                  <div className="w-full flex items-center justify-between text-[10px] sm:text-xs text-zinc-500 dark:text-zinc-400 font-bold">
-                    <span>{day.dayNumber}</span>
-                    <span className="h-1.5 w-1.5 rounded-full bg-current opacity-60" />
-                  </div>
-                  <p className="mt-2 w-full text-center text-[8px] sm:text-[9px] font-extrabold uppercase tracking-wider truncate pb-0.5">{statusConfig[day.status].label}</p>
-                  {day.status === "holiday" && (
-                    <svg className="absolute inset-0 w-full h-full pointer-events-none stroke-zinc-300 dark:stroke-zinc-800 opacity-60 dark:opacity-40" viewBox="0 0 100 100" preserveAspectRatio="none">
-                      <line x1="0" y1="0" x2="100" y2="100" strokeWidth="1.5" />
-                      <line x1="100" y1="0" x2="0" y2="100" strokeWidth="1.5" />
-                    </svg>
-                  )}
-                </button>
-              ))}
-            </div>
+          <div className="rounded-2xl border border-zinc-200 dark:border-zinc-800/70 bg-zinc-100/70 dark:bg-[#050508] p-2 overflow-hidden relative">
+            <AnimatePresence mode="wait" custom={monthDirection} initial={false}>
+              <motion.div
+                key={`${year}-${monthIndex}`}
+                custom={monthDirection}
+                variants={{
+                  enter: (dir) => ({
+                    x: dir > 0 ? 50 : dir < 0 ? -50 : 0,
+                    opacity: 0,
+                  }),
+                  center: {
+                    x: 0,
+                    opacity: 1,
+                  },
+                  exit: (dir) => ({
+                    x: dir > 0 ? -50 : dir < 0 ? 50 : 0,
+                    opacity: 0,
+                  }),
+                }}
+                initial="enter"
+                animate="center"
+                exit="exit"
+                transition={{
+                  x: { type: "spring", stiffness: 380, damping: 30 },
+                  opacity: { duration: 0.15 },
+                }}
+                drag="x"
+                dragConstraints={{ left: 0, right: 0 }}
+                dragElastic={0.15}
+                onDragEnd={(_, info) => {
+                  if (info.offset.x < -40 || info.velocity.x < -300) {
+                    handleNextMonth();
+                  } else if (info.offset.x > 40 || info.velocity.x > 300) {
+                    handlePrevMonth();
+                  }
+                }}
+                className="grid grid-cols-7 gap-1 sm:gap-2 cursor-grab active:cursor-grabbing"
+              >
+                {leadingBlanks.map(blank => <div key={blank.key} className="h-12 sm:h-14 rounded-lg border border-transparent" />)}
+                {calendarDays.map((day) => (
+                  <button key={day.dayNumber} type="button"
+                    onClick={() => setSelectedDay({ day: day.dayNumber, status: day.status, date: day.date, dayEntry: day.dayEntry })}
+                    className={`group relative overflow-hidden flex flex-col justify-between min-h-[3.25rem] sm:min-h-[3.75rem] h-auto rounded-xl border p-1.5 text-[11px] sm:text-sm font-semibold transition-all duration-150 transform-gpu ${statusConfig[day.status].tile} ${
+                      day.isToday ? "ring-2 ring-indigo-500 dark:ring-indigo-400 !opacity-100 shadow-[0_0_14px_rgba(99,102,241,0.4)]" : ""
+                    } hover:-translate-y-0.5 hover:border-indigo-500/40 hover:shadow-lg cursor-pointer`}>
+                    <div className="w-full flex items-center justify-between text-[10px] sm:text-xs opacity-75 font-bold">
+                      <span>{day.dayNumber}</span>
+                      <span className="h-1.5 w-1.5 rounded-full bg-current opacity-60" />
+                    </div>
+                    <p className="mt-2 w-full text-center text-[8px] sm:text-[9px] font-extrabold uppercase tracking-wider truncate pb-0.5">{statusConfig[day.status].label}</p>
+                    {day.status === "holiday" && (
+                      <svg className="absolute inset-0 w-full h-full pointer-events-none stroke-zinc-300 dark:stroke-zinc-800 opacity-60 dark:opacity-40" viewBox="0 0 100 100" preserveAspectRatio="none">
+                        <line x1="0" y1="0" x2="100" y2="100" strokeWidth="1.5" />
+                        <line x1="100" y1="0" x2="0" y2="100" strokeWidth="1.5" />
+                      </svg>
+                    )}
+                  </button>
+                ))}
+              </motion.div>
+            </AnimatePresence>
           </div>
 
           <div className="flex justify-end pt-1">

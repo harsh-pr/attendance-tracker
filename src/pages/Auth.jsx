@@ -111,14 +111,15 @@ export default function Auth() {
   }
 
   return (
-    <div className="relative min-h-screen lg:h-screen lg:max-h-screen flex items-center justify-center px-4 py-4 sm:py-6 overflow-hidden transition-colors duration-300">
-      <div className="absolute inset-0 overflow-hidden pointer-events-none select-none">
-        <div className="absolute inset-0 bg-gradient-to-br from-zinc-50 via-zinc-100 to-zinc-50 dark:from-zinc-950 dark:via-zinc-900 dark:to-zinc-950 transition-colors duration-500" />
-
-        <div className="animate-bg-float-1 transform-gpu absolute -top-24 -left-20 w-[20rem] sm:w-[36rem] h-[20rem] sm:h-[36rem] bg-gradient-to-tr from-zinc-300/30 via-zinc-200/20 to-transparent dark:from-zinc-800/30 dark:via-zinc-850/20 dark:to-transparent rounded-full blur-3xl sm:blur-[120px]" />
-        <div className="animate-bg-float-2 transform-gpu absolute -bottom-28 -right-20 w-[20rem] sm:w-[38rem] h-[20rem] sm:h-[38rem] bg-gradient-to-tr from-zinc-400/25 via-slate-300/20 to-transparent dark:from-zinc-800/30 dark:via-slate-900/20 dark:to-transparent rounded-full blur-3xl sm:blur-[120px]" />
-
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px] sm:bg-[size:32px_32px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_50%,#000_70%,transparent_100%)] opacity-50 dark:opacity-25" />
+    <div className="relative min-h-screen lg:h-screen lg:max-h-screen flex items-center justify-center px-4 py-4 sm:py-6 overflow-hidden bg-black text-white">
+      {/* PURE BLACK RESPONSIVE AMBIENT BACKGROUND */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none select-none bg-black">
+        <div className="absolute inset-0 bg-[#000000]" />
+        {/* High-Performance Top Shader Spotlight */}
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1100px] h-[550px] bg-[radial-gradient(ellipse_at_top,rgba(99,102,241,0.18),transparent_70%)]" />
+        <div className="absolute bottom-0 right-0 w-[600px] h-[600px] bg-[radial-gradient(circle,rgba(139,92,246,0.07),transparent_70%)]" />
+        {/* Responsive Grid Overlay */}
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff08_1px,transparent_1px),linear-gradient(to_bottom,#ffffff08_1px,transparent_1px)] bg-[size:32px_32px] [mask-image:radial-gradient(ellipse_70%_50%_at_50%_30%,#000_65%,transparent_100%)] opacity-70" />
       </div>
 
       <div className="absolute top-4 sm:top-6 right-4 sm:right-6 z-30">
@@ -142,61 +143,64 @@ export default function Auth() {
         <motion.div
           initial={{ opacity: 0, x: -24 }}
           animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.4, ease: "easeOut" }}
+          transition={{ duration: 0.35, ease: "easeOut" }}
           className="lg:col-span-7 space-y-5 text-left hidden lg:block"
         >
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-blue-500/10 dark:bg-blue-500/15 border border-blue-500/20 text-blue-600 dark:text-blue-400 text-xs font-black tracking-wide shadow-xs">
-            <span>✨</span>
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-indigo-500/10 border border-indigo-500/25 text-indigo-400 text-xs font-black tracking-wide shadow-xs">
+            <span className="text-sm">✨</span>
             <span>Smart College Attendance Manager</span>
           </div>
 
           <div className="space-y-2.5">
-            <h1 className="text-4xl xl:text-5xl font-black tracking-tight text-zinc-900 dark:text-white font-[Poppins] leading-[1.15]">
+            <h1 className="text-4xl xl:text-5xl font-black tracking-tight text-white font-[Poppins] leading-[1.15]">
               Never drop below your{" "}
-              <span className="bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 dark:from-blue-400 dark:via-indigo-400 dark:to-purple-400 bg-clip-text text-transparent">
+              <span className="bg-gradient-to-r from-blue-400 via-indigo-300 to-purple-400 bg-clip-text text-transparent drop-shadow-sm">
                 75% criterion
               </span>{" "}
               again.
             </h1>
-            <p className="text-sm text-zinc-600 dark:text-zinc-300 font-medium max-w-xl leading-relaxed">
-              Track lecture logs, manage weekly timetables, and monitor real-time attendance analytics.
+            <p className="text-sm text-zinc-400 font-medium max-w-xl leading-relaxed">
+              Track lecture logs, manage weekly timetables, and monitor real-time attendance analytics with zero guesswork.
             </p>
           </div>
 
-          <div className="p-4 sm:p-5 rounded-3xl bg-white/70 dark:bg-zinc-900/70 border border-zinc-200/80 dark:border-zinc-800/80 shadow-xl backdrop-blur-xl space-y-3.5 max-w-lg">
+          <div className="p-5 rounded-3xl bg-[#09090d] border border-zinc-800 shadow-2xl space-y-4 max-w-lg transition-all duration-200 hover:border-indigo-500/30">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2.5">
-                <div className="w-9 h-9 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-600 text-white flex items-center justify-center font-bold text-sm shadow-md">
+                <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-blue-600 via-indigo-600 to-purple-600 text-white flex items-center justify-center font-bold text-sm shadow-md shadow-indigo-500/20">
                   🏫
                 </div>
                 <div>
-                  <h4 className="text-xs font-black text-zinc-900 dark:text-white">Semester III (SEIT Div-B)</h4>
-                  <p className="text-[11px] text-zinc-500 dark:text-zinc-400 font-semibold">Information Technology</p>
+                  <h4 className="text-xs font-black text-white">Semester III (SEIT Div-B)</h4>
+                  <p className="text-[11px] text-zinc-400 font-semibold">Information Technology</p>
                 </div>
               </div>
-              <span className="px-3 py-1 rounded-full text-xs font-black bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+              <span className="px-3 py-1 rounded-full text-xs font-black bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 shadow-[0_0_12px_rgba(16,185,129,0.2)]">
                 84.5% Safe Zone ✅
               </span>
             </div>
 
-            <div className="space-y-1">
-              <div className="flex justify-between text-[11px] font-bold text-zinc-600 dark:text-zinc-400">
+            <div className="space-y-1.5">
+              <div className="flex justify-between text-[11px] font-bold text-zinc-400">
                 <span>Overall Attendance Progress</span>
-                <span className="text-zinc-900 dark:text-white font-extrabold">84.5%</span>
+                <span className="text-white font-black">84.5%</span>
               </div>
-              <div className="w-full h-2 rounded-full bg-zinc-200 dark:bg-zinc-800 overflow-hidden p-0.5">
-                <div className="h-full rounded-full bg-gradient-to-r from-blue-500 to-emerald-500 w-[84.5%] shadow-xs" />
+              <div className="w-full h-2 rounded-full bg-zinc-900 border border-zinc-800 overflow-hidden p-0.5">
+                <div
+                  className="h-full rounded-full bg-gradient-to-r from-blue-500 via-indigo-500 to-emerald-500 shadow-xs transition-all duration-1000 ease-[cubic-bezier(0.16,1,0.3,1)]"
+                  style={{ width: "84.5%" }}
+                />
               </div>
             </div>
 
-            <div className="grid grid-cols-3 gap-2 pt-2 border-t border-zinc-200/60 dark:border-zinc-800/60 text-[11px] font-bold">
-              <div className="p-2 rounded-xl bg-zinc-100/80 dark:bg-zinc-800/50 text-zinc-700 dark:text-zinc-300 flex items-center gap-1.5">
+            <div className="grid grid-cols-3 gap-2 pt-2 border-t border-zinc-800/80 text-[11px] font-bold">
+              <div className="p-2 rounded-xl bg-zinc-900/80 text-zinc-300 flex items-center gap-1.5 border border-zinc-800/50">
                 <span>⚡</span> Auto Math
               </div>
-              <div className="p-2 rounded-xl bg-zinc-100/80 dark:bg-zinc-800/50 text-zinc-700 dark:text-zinc-300 flex items-center gap-1.5">
+              <div className="p-2 rounded-xl bg-zinc-900/80 text-zinc-300 flex items-center gap-1.5 border border-zinc-800/50">
                 <span>📅</span> Class Sync
               </div>
-              <div className="p-2 rounded-xl bg-zinc-100/80 dark:bg-zinc-800/50 text-zinc-700 dark:text-zinc-300 flex items-center gap-1.5">
+              <div className="p-2 rounded-xl bg-zinc-900/80 text-zinc-300 flex items-center gap-1.5 border border-zinc-800/50">
                 <span>🔒</span> Safe & Cloud
               </div>
             </div>
@@ -209,7 +213,7 @@ export default function Auth() {
           transition={{ duration: 0.35, ease: "easeOut" }}
           className="lg:col-span-5 w-full max-w-md mx-auto"
         >
-          <div className="bg-white/80 dark:bg-zinc-900/80 border border-zinc-200/80 dark:border-zinc-800/80 shadow-[0_20px_60px_rgba(0,0,0,0.08)] dark:shadow-[0_20px_60px_rgba(0,0,0,0.45)] backdrop-blur-xl rounded-3xl p-5 sm:p-6 space-y-4">
+          <div className="bg-[#09090d] border border-zinc-800 shadow-[0_24px_60px_rgba(0,0,0,0.8)] rounded-3xl p-5 sm:p-6 space-y-4 transition-all duration-200 hover:border-zinc-700">
             <div className="text-center space-y-1.5">
               <div className="relative inline-flex items-center justify-center w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-gradient-to-tr from-blue-600 via-indigo-600 to-purple-600 text-white font-black text-xl shadow-lg shadow-blue-500/30">
                 <span>A</span>

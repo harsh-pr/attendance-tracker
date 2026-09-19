@@ -85,15 +85,15 @@ export default function Modal({
             className={`
               relative z-10 w-full ${SIZE_CLASSES[size] || SIZE_CLASSES.md}
               rounded-t-3xl sm:rounded-3xl
-              bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100
-              border border-zinc-200 dark:border-zinc-800
+              bg-white dark:bg-[#0c0d12] text-zinc-900 dark:text-zinc-100
+              border border-zinc-200 dark:border-zinc-800/90
               p-4 sm:p-5 shadow-2xl
               max-h-[92vh] sm:max-h-[88vh] flex flex-col overflow-hidden
-              will-change-transform
+              will-change-transform transform-gpu
             `}
           >
             {/* Functional Kokonut UI Drag-to-Dismiss Handle Bar */}
-            <div className="w-12 h-1.5 bg-zinc-300 dark:bg-zinc-600 rounded-full mx-auto mb-3 shrink-0 cursor-grab active:cursor-grabbing hover:bg-zinc-400 dark:hover:bg-zinc-500 transition-colors shadow-inner" />
+            <div className="w-12 h-1.5 bg-zinc-300 dark:bg-zinc-700/80 rounded-full mx-auto mb-3 shrink-0 cursor-grab active:cursor-grabbing hover:bg-zinc-400 dark:hover:bg-zinc-600 transition-colors shadow-inner" />
 
             {/* Optional Header Title */}
             {title && (

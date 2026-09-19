@@ -83,15 +83,15 @@ export default function Home() {
   const visibleLogs = logs.slice(0, 7);
   const statusStyles = {
     present:
-      "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20",
+      "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 shadow-[0_0_8px_rgba(16,185,129,0.15)]",
     absent:
-      "bg-red-500/10 text-red-600 dark:text-red-400 border border-red-500/20",
+      "bg-rose-500/15 text-rose-600 dark:text-rose-400 border border-rose-500/30 shadow-[0_0_8px_rgba(244,63,94,0.15)]",
     free:
-      "bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20",
+      "bg-blue-500/15 text-blue-600 dark:text-blue-400 border border-blue-500/30 shadow-[0_0_8px_rgba(59,130,246,0.15)]",
     cancelled:
-      "bg-zinc-500/10 text-zinc-600 dark:text-zinc-400 border border-zinc-500/20",
+      "bg-zinc-500/15 text-zinc-600 dark:text-zinc-400 border border-zinc-500/30",
     pending:
-      "bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20",
+      "bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30 shadow-[0_0_8px_rgba(245,158,11,0.15)]",
   };
 
   return (
@@ -168,7 +168,7 @@ export default function Home() {
             className={`text-3xl font-black mt-1 ${
               theoryPercentage >= 75
                 ? "text-emerald-600 dark:text-emerald-400"
-                : "text-red-600 dark:text-red-400"
+                : "text-rose-600 dark:text-rose-400"
             }`}
           >
             {theoryPercentage}%
@@ -176,10 +176,12 @@ export default function Home() {
           <p className="text-xs font-medium text-zinc-600 dark:text-zinc-400 mt-1">
             Till today
           </p>
-          <div className="mt-3 h-1.5 w-full bg-zinc-200 dark:bg-zinc-800 rounded-full overflow-hidden">
+          <div className="mt-3 h-2 w-full bg-zinc-100 dark:bg-zinc-900 rounded-full overflow-hidden p-0.5 border border-zinc-200 dark:border-zinc-800/80">
             <div
-              className={`h-full rounded-full transition-all duration-500 ${
-                theoryPercentage >= 75 ? "bg-emerald-500" : "bg-red-500"
+              className={`h-full rounded-full transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+                theoryPercentage >= 75
+                  ? "bg-gradient-to-r from-emerald-500 to-teal-400 shadow-[0_0_10px_rgba(16,185,129,0.35)]"
+                  : "bg-gradient-to-r from-rose-500 to-red-500 shadow-[0_0_10px_rgba(244,63,94,0.35)]"
               }`}
               style={{ width: `${Math.min(100, Math.max(0, theoryPercentage))}%` }}
             />
@@ -195,7 +197,7 @@ export default function Home() {
             className={`text-3xl font-black mt-1 ${
               labPercentage >= 75
                 ? "text-emerald-600 dark:text-emerald-400"
-                : "text-red-600 dark:text-red-400"
+                : "text-rose-600 dark:text-rose-400"
             }`}
           >
             {labPercentage}%
@@ -203,10 +205,12 @@ export default function Home() {
           <p className="text-xs font-medium text-zinc-600 dark:text-zinc-400 mt-1">
             Till today
           </p>
-          <div className="mt-3 h-1.5 w-full bg-zinc-200 dark:bg-zinc-800 rounded-full overflow-hidden">
+          <div className="mt-3 h-2 w-full bg-zinc-100 dark:bg-zinc-900 rounded-full overflow-hidden p-0.5 border border-zinc-200 dark:border-zinc-800/80">
             <div
-              className={`h-full rounded-full transition-all duration-500 ${
-                labPercentage >= 75 ? "bg-emerald-500" : "bg-red-500"
+              className={`h-full rounded-full transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+                labPercentage >= 75
+                  ? "bg-gradient-to-r from-emerald-500 to-teal-400 shadow-[0_0_10px_rgba(16,185,129,0.35)]"
+                  : "bg-gradient-to-r from-rose-500 to-red-500 shadow-[0_0_10px_rgba(244,63,94,0.35)]"
               }`}
               style={{ width: `${Math.min(100, Math.max(0, labPercentage))}%` }}
             />
@@ -222,7 +226,7 @@ export default function Home() {
             className={`text-3xl font-black mt-1 ${
               overallPercentage >= 75
                 ? "text-emerald-600 dark:text-emerald-400"
-                : "text-red-600 dark:text-red-400"
+                : "text-rose-600 dark:text-rose-400"
             }`}
           >
             {overallPercentage}%
@@ -230,10 +234,12 @@ export default function Home() {
           <p className="text-xs font-medium text-zinc-600 dark:text-zinc-400 mt-1">
             Till today
           </p>
-          <div className="mt-3 h-1.5 w-full bg-zinc-200 dark:bg-zinc-800 rounded-full overflow-hidden">
+          <div className="mt-3 h-2 w-full bg-zinc-100 dark:bg-zinc-900 rounded-full overflow-hidden p-0.5 border border-zinc-200 dark:border-zinc-800/80">
             <div
-              className={`h-full rounded-full transition-all duration-500 ${
-                overallPercentage >= 75 ? "bg-emerald-500" : "bg-red-500"
+              className={`h-full rounded-full transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+                overallPercentage >= 75
+                  ? "bg-gradient-to-r from-emerald-500 to-teal-400 shadow-[0_0_10px_rgba(16,185,129,0.35)]"
+                  : "bg-gradient-to-r from-rose-500 to-red-500 shadow-[0_0_10px_rgba(244,63,94,0.35)]"
               }`}
               style={{ width: `${Math.min(100, Math.max(0, overallPercentage))}%` }}
             />
@@ -275,21 +281,26 @@ export default function Home() {
             visibleLogs.map((day) => (
               <div
                 key={day.date}
-                className="rounded-2xl bg-white dark:bg-zinc-900 p-4 border border-zinc-200 dark:border-zinc-800 shadow-sm transition-colors"
+                className="rounded-3xl bg-white dark:bg-[#09090d] sm:dark:bg-[#0c0d12] p-5 border border-zinc-200 dark:border-zinc-800/90 shadow-sm transition-all duration-200 hover:border-zinc-300 dark:hover:border-zinc-700/80"
               >
-                <p className="text-sm font-bold text-zinc-900 dark:text-zinc-100">
-                  {new Date(day.date).toLocaleDateString(
-                    "en-GB",
-                    {
-                      day: "2-digit",
-                      month: "short",
-                      year: "numeric",
-                    }
-                  )}
-                </p>
-                <div className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+                <div className="flex items-center justify-between">
+                  <p className="text-sm font-extrabold text-zinc-900 dark:text-white font-[Poppins] tracking-tight">
+                    {new Date(day.date).toLocaleDateString(
+                      "en-GB",
+                      {
+                        day: "2-digit",
+                        month: "short",
+                        year: "numeric",
+                      }
+                    )}
+                  </p>
+                  <span className="text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">
+                    {new Date(day.date).toLocaleDateString("en-GB", { weekday: "short" })}
+                  </span>
+                </div>
+                <div className="mt-3.5 grid gap-2.5 sm:grid-cols-2 lg:grid-cols-3">
                   {day.lectures.length === 0 ? (
-                    <span className="text-xs text-zinc-500 dark:text-zinc-400">
+                    <span className="text-xs text-zinc-400 dark:text-zinc-500 font-medium italic py-1">
                       Holiday / No lectures
                     </span>
                   ) : (
@@ -305,18 +316,18 @@ export default function Home() {
                       return (
                         <div
                           key={`${day.date}-${lecture.subjectId}-${index}`}
-                          className="flex items-center justify-between gap-2 rounded-xl border border-zinc-200/80 dark:border-zinc-800/80 bg-zinc-50/50 dark:bg-zinc-800/30 px-3 py-2 text-xs text-zinc-700 dark:text-zinc-200 min-w-0 overflow-hidden"
+                          className="flex items-center justify-between gap-2.5 rounded-2xl border border-zinc-200/80 dark:border-zinc-800/80 bg-zinc-50/80 dark:bg-[#12131a] px-3.5 py-2.5 text-xs text-zinc-700 dark:text-zinc-200 min-w-0 overflow-hidden transition-all duration-150 hover:border-zinc-300 dark:hover:border-zinc-700 hover:-translate-y-0.5"
                         >
                           <div className="min-w-0 flex-1">
-                            <p className="truncate font-semibold text-zinc-900 dark:text-zinc-100" title={label}>
+                            <p className="truncate font-bold text-zinc-900 dark:text-zinc-100" title={label}>
                               {label}
                             </p>
-                            <p className="text-[10px] text-zinc-500 dark:text-zinc-400 font-medium">
+                            <p className="text-[10px] text-zinc-400 dark:text-zinc-500 font-semibold uppercase tracking-wider mt-0.5">
                               {lecture.type}
                             </p>
                           </div>
                           <span
-                            className={`rounded-full px-2 py-0.5 text-[10px] font-bold capitalize shrink-0 ${
+                            className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold capitalize shrink-0 ${
                               statusStyles[statusLabel]
                             }`}
                           >
@@ -358,21 +369,26 @@ export default function Home() {
             logs.map((day) => (
               <div
                 key={`modal-${day.date}`}
-                className="rounded-2xl bg-zinc-50 dark:bg-zinc-800/40 p-4 border border-zinc-200 dark:border-zinc-800 overflow-hidden"
+                className="rounded-3xl bg-zinc-50 dark:bg-[#09090d] p-4 sm:p-5 border border-zinc-200 dark:border-zinc-800/90 overflow-hidden"
               >
-                <p className="text-sm font-bold text-zinc-900 dark:text-zinc-100">
-                  {new Date(day.date).toLocaleDateString(
-                    "en-GB",
-                    {
-                      day: "2-digit",
-                      month: "short",
-                      year: "numeric",
-                    }
-                  )}
-                </p>
-                <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                <div className="flex items-center justify-between">
+                  <p className="text-sm font-extrabold text-zinc-900 dark:text-zinc-100 font-[Poppins]">
+                    {new Date(day.date).toLocaleDateString(
+                      "en-GB",
+                      {
+                        day: "2-digit",
+                        month: "short",
+                        year: "numeric",
+                      }
+                    )}
+                  </p>
+                  <span className="text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">
+                    {new Date(day.date).toLocaleDateString("en-GB", { weekday: "short" })}
+                  </span>
+                </div>
+                <div className="mt-3.5 grid gap-2.5 sm:grid-cols-2 lg:grid-cols-3">
                   {day.lectures.length === 0 ? (
-                    <span className="text-xs text-zinc-500 dark:text-zinc-400">
+                    <span className="text-xs text-zinc-400 dark:text-zinc-500 font-medium italic py-1">
                       Holiday
                     </span>
                   ) : (
@@ -388,13 +404,13 @@ export default function Home() {
                       return (
                         <div
                           key={`modal-${day.date}-${lecture.subjectId}-${index}`}
-                          className="flex items-center justify-between gap-2.5 rounded-xl border border-zinc-200 dark:border-zinc-700/60 bg-white dark:bg-zinc-900 px-3 py-2 text-xs text-zinc-700 dark:text-zinc-200 min-w-0 overflow-hidden"
+                          className="flex items-center justify-between gap-2.5 rounded-2xl border border-zinc-200 dark:border-zinc-800/80 bg-white dark:bg-[#12131a] px-3.5 py-2.5 text-xs text-zinc-700 dark:text-zinc-200 min-w-0 overflow-hidden"
                         >
                           <div className="min-w-0 flex-1">
-                            <p className="truncate font-semibold text-zinc-900 dark:text-zinc-100" title={label}>
+                            <p className="truncate font-bold text-zinc-900 dark:text-zinc-100" title={label}>
                               {label}
                             </p>
-                            <p className="text-[10px] text-zinc-500 dark:text-zinc-400 font-medium">
+                            <p className="text-[10px] text-zinc-400 dark:text-zinc-500 font-semibold uppercase tracking-wider mt-0.5">
                               {lecture.type}
                             </p>
                           </div>
@@ -421,19 +437,19 @@ export default function Home() {
 
 function StatCard({ children, onClick }) {
   return (
-    <motion.div
+    <div
       onClick={onClick}
-      whileHover={{ y: -3, scale: 1.01 }}
-      whileTap={{ scale: 0.98 }}
-      transition={{ type: "spring", stiffness: 400, damping: 25 }}
       className="
-        rounded-3xl p-5 cursor-pointer
-        bg-white dark:bg-zinc-900
-        border border-zinc-200 dark:border-zinc-800
-        shadow-sm hover:shadow-lg transition-shadow duration-200
+        rounded-3xl p-5 cursor-pointer transform-gpu
+        bg-white dark:bg-[#09090d] sm:dark:bg-[#0c0d12]
+        border border-zinc-200 dark:border-zinc-800/90 hover:border-zinc-300 dark:hover:border-indigo-500/40
+        shadow-sm hover:shadow-lg dark:hover:shadow-[0_16px_36px_rgba(0,0,0,0.8),0_0_24px_rgba(99,102,241,0.15)]
+        transition-all duration-200 ease-[cubic-bezier(0.16,1,0.3,1)]
+        hover:-translate-y-1 hover:scale-[1.01] active:scale-[0.98]
+        will-change-transform
       "
     >
       {children}
-    </motion.div>
+    </div>
   );
 }

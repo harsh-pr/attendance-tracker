@@ -1,6 +1,6 @@
 import { useEffect, useLayoutEffect } from "react";
 import { BrowserRouter, Routes, Route, useLocation, Navigate } from "react-router-dom";
-import { AnimatePresence, motion } from "framer-motion";
+import { motion } from "framer-motion";
 
 import Home from "./pages/Home";
 import Today from "./pages/Today";
@@ -68,28 +68,40 @@ function AnimatedRoutes() {
   const location = useLocation();
 
   return (
-    <AnimatePresence mode="wait">
-      <motion.div
-        key={location.pathname}
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0, y: -10 }}
-        transition={{ duration: 0.2, ease: "easeOut" }}
-        onAnimationStart={() => {
-          window.scrollTo({ top: 0, left: 0, behavior: "instant" });
-          document.documentElement.scrollTop = 0;
-          document.body.scrollTop = 0;
-        }}
-      >
-        <Routes location={location}>
-          <Route path="/" element={<Home />} />
-          <Route path="/today" element={<Today />} />
-          <Route path="/calendar" element={<Calendar />} />
-          <Route path="/timetable" element={<AiTimetable />} />
-          <Route path="/ai-timetable" element={<Navigate to="/timetable" replace />} />
-        </Routes>
-      </motion.div>
-    </AnimatePresence>
+    <motion.div
+      key={location.pathname}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.15, ease: "easeOut" }}
+    >
+      <Routes location={location}>
+        <Route path="/" element={<Home />} />
+        <Route path="/today" element={<Today />} />
+        <Route path="/calendar" element={<Calendar />} />
+        <Route path="/timetable" element={<AiTimetable />} />
+        <Route path="/ai-timetable" element={<Navigate to="/timetable" replace />} />
+      </Routes>
+    </motion.div>
+  );
+}
+
+function AmbientBackground() {
+  return (
+    <div className="hidden lg:block pointer-events-none select-none fixed inset-0 z-0 overflow-hidden">
+      {/* ================= DARK THEME GRID BACKGROUND ================= */}
+      <div className="hidden dark:block absolute inset-0 bg-[#000000] transition-colors duration-300">
+        <div className="absolute inset-0 bg-[#000000]" />
+        {/* Subtle Tech Grid Overlay */}
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff07_1px,transparent_1px),linear-gradient(to_bottom,#ffffff07_1px,transparent_1px)] bg-[size:40px_40px] [mask-image:radial-gradient(ellipse_80%_70%_at_50%_30%,#000_70%,transparent_100%)] opacity-80" />
+      </div>
+
+      {/* ================= LIGHT THEME GRID BACKGROUND ================= */}
+      <div className="block dark:hidden absolute inset-0 bg-[#f8fafc] transition-colors duration-300">
+        <div className="absolute inset-0 bg-[#f8fafc]" />
+        {/* Clean Blueprint Tech Grid Overlay */}
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#00000008_1px,transparent_1px),linear-gradient(to_bottom,#00000008_1px,transparent_1px)] bg-[size:40px_40px] [mask-image:radial-gradient(ellipse_80%_70%_at_50%_30%,#000_70%,transparent_100%)] opacity-80" />
+      </div>
+    </div>
   );
 }
 
@@ -107,23 +119,13 @@ function AppContent() {
       {/* Runs on every page — schedules reminder notifications globally */}
       <ReminderScheduler />
 
-      {/* PC-ONLY ULTRA-LIGHTWEIGHT STATIC DARK AMBIENT BACKGROUND (0% animation overhead) */}
-      <div className="hidden lg:block pointer-events-none select-none fixed inset-0 z-0 overflow-hidden">
-        {/* Deep Dark Ambient Base Canvas */}
-        <div className="absolute inset-0 bg-gradient-to-br from-zinc-100 via-zinc-50 to-zinc-100 dark:from-zinc-950 dark:via-zinc-900/90 dark:to-zinc-950 transition-colors duration-500" />
-
-        {/* Static Ambient Dark Radial Glows */}
-        <div className="absolute -top-24 -left-20 w-[40rem] h-[40rem] bg-zinc-300/25 dark:bg-zinc-800/30 rounded-full blur-[100px]" />
-        <div className="absolute -bottom-32 -right-20 w-[42rem] h-[42rem] bg-zinc-400/20 dark:bg-zinc-800/30 rounded-full blur-[110px]" />
-
-        {/* Geometric Grid / Dot Overlay */}
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:32px_32px] [mask-image:radial-gradient(ellipse_80%_80%_at_50%_50%,#000_80%,transparent_100%)] opacity-40 dark:opacity-20" />
-      </div>
+      {/* Responsive Ambient Canvas Background */}
+      <AmbientBackground />
 
       <Navbar />
       <MobileNav />
 
-      <main className={`relative z-10 ${user?.isGuest ? "pt-24 sm:pt-28" : "pt-20"} pb-24 min-h-screen bg-zinc-50 dark:bg-zinc-950 lg:bg-transparent lg:dark:bg-transparent text-zinc-900 dark:text-zinc-100 transition-colors duration-300`}>
+      <main className={`relative z-10 ${user?.isGuest ? "pt-24 sm:pt-28" : "pt-20"} pb-24 min-h-screen bg-slate-50 dark:bg-black lg:bg-transparent text-zinc-900 dark:text-zinc-100 transition-colors duration-200`}>
         <AnimatedRoutes />
       </main>
     </BrowserRouter>

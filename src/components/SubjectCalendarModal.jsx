@@ -312,17 +312,6 @@ export default function SubjectCalendarModal({ open, onClose, data }) {
             </motion.div>
           </AnimatePresence>
         </div>
-
-        {/* Status Legend Pills */}
-        <div className="flex justify-end pt-1">
-          <div className="flex flex-wrap gap-1.5 sm:gap-2">
-            {Object.entries(statusConfig).filter(([key]) => key !== "none" && key !== "unscheduled").map(([key, cfg]) => (
-              <span key={key} className={`rounded-full px-2.5 py-0.5 text-[10px] sm:text-xs font-bold ${cfg.badge}`}>
-                {cfg.label}
-              </span>
-            ))}
-          </div>
-        </div>
       </div>
     </Modal>
   );

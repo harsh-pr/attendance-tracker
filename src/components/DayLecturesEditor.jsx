@@ -149,12 +149,15 @@ export default function DayLecturesEditor({
                   exit={{ opacity: 0, scale: 0.95 }}
                   className="rounded-2xl border border-zinc-200 dark:border-zinc-800/80 bg-zinc-50/70 dark:bg-zinc-900/60 p-3.5 space-y-3 shadow-xs"
                 >
-                  <div className="flex items-center justify-between gap-2">
-                    <div className="flex items-center gap-2 flex-wrap">
+                  <div className="flex items-center justify-between gap-2 min-w-0">
+                    <div className="flex items-center gap-2 min-w-0 flex-1">
                       <span className="flex items-center justify-center w-6 h-6 rounded-lg bg-zinc-200 dark:bg-zinc-800 text-[11px] font-black text-zinc-700 dark:text-zinc-300 shrink-0">
                         {index + 1}
                       </span>
-                      <span className="text-xs font-bold text-zinc-800 dark:text-zinc-200 truncate max-w-[180px] sm:max-w-xs">
+                      <span
+                        className="text-xs font-bold text-zinc-800 dark:text-zinc-200 truncate min-w-0 flex-1"
+                        title={sub ? sub.name : lecture.subjectId}
+                      >
                         {sub ? sub.name : lecture.subjectId}
                       </span>
                       {sub?.type && (
@@ -165,12 +168,12 @@ export default function DayLecturesEditor({
                     </div>
 
                     {/* Reorder and Delete Controls */}
-                    <div className="flex items-center gap-1 shrink-0">
+                    <div className="flex items-center gap-1 shrink-0 ml-1">
                       <button
                         type="button"
                         disabled={index === 0}
                         onClick={() => handleMove(index, -1)}
-                        className="p-1.5 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-500 hover:text-zinc-900 dark:hover:text-white disabled:opacity-30 disabled:pointer-events-none cursor-pointer"
+                        className="p-1.5 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-500 hover:text-zinc-900 dark:hover:text-white disabled:opacity-30 disabled:pointer-events-none cursor-pointer transition shrink-0"
                         title="Move Up"
                       >
                         <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
@@ -181,7 +184,7 @@ export default function DayLecturesEditor({
                         type="button"
                         disabled={index === lectures.length - 1}
                         onClick={() => handleMove(index, 1)}
-                        className="p-1.5 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-500 hover:text-zinc-900 dark:hover:text-white disabled:opacity-30 disabled:pointer-events-none cursor-pointer"
+                        className="p-1.5 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-500 hover:text-zinc-900 dark:hover:text-white disabled:opacity-30 disabled:pointer-events-none cursor-pointer transition shrink-0"
                         title="Move Down"
                       >
                         <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
@@ -191,7 +194,7 @@ export default function DayLecturesEditor({
                       <button
                         type="button"
                         onClick={() => handleRemoveLecture(index)}
-                        className="p-1.5 rounded-lg border border-rose-200 dark:border-rose-500/20 bg-rose-50 dark:bg-rose-500/10 text-rose-600 dark:text-rose-300 hover:bg-rose-100 dark:hover:bg-rose-500/20 cursor-pointer"
+                        className="p-1.5 rounded-lg border border-rose-200 dark:border-rose-500/20 bg-rose-50 dark:bg-rose-500/10 text-rose-600 dark:text-rose-300 hover:bg-rose-100 dark:hover:bg-rose-500/20 cursor-pointer transition shrink-0"
                         title="Delete Lecture"
                       >
                         <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">

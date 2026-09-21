@@ -49,11 +49,11 @@ export default function Modal({
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          transition={{ duration: 0.3, ease: "easeOut" }}
+          transition={{ duration: 0.25, ease: "easeInOut" }}
           onClick={onClose}
-          className="fixed inset-0 z-[9999] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/60 backdrop-blur-sm"
+          className="fixed inset-0 z-[9999] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/65 backdrop-blur-sm overflow-hidden"
         >
-          {/* Smooth Bottom Drawer / Drag-to-Dismiss Card */}
+          {/* Pop up from bottom when opened and go down to bottom when closed */}
           <motion.div
             key="modal-sheet-card"
             onClick={(e) => e.stopPropagation()}
@@ -66,16 +66,12 @@ export default function Modal({
                 onClose();
               }
             }}
-            initial={{ y: "100%", opacity: 0.9 }}
+            initial={{ y: "100%", opacity: 0.95 }}
             animate={{ y: 0, opacity: 1 }}
             exit={{
-              y: "100vh",
-              opacity: 0,
-              transition: {
-                type: "tween",
-                duration: 0.28,
-                ease: [0.32, 0.72, 0, 1]
-              }
+              y: "100%",
+              opacity: 0.95,
+              transition: { duration: 0.28, ease: [0.32, 0.72, 0, 1] },
             }}
             transition={{
               type: "spring",
@@ -88,7 +84,7 @@ export default function Modal({
               bg-white dark:bg-[#0c0d12] text-zinc-900 dark:text-zinc-100
               border border-zinc-200 dark:border-zinc-800/90
               p-4 sm:p-5 shadow-2xl
-              max-h-[92vh] sm:max-h-[88vh] flex flex-col overflow-hidden
+              max-h-[92vh] sm:max-h-[88vh] my-auto flex flex-col overflow-hidden
               will-change-transform transform-gpu
             `}
           >

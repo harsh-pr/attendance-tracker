@@ -1,4 +1,5 @@
 import { AnimatePresence, motion } from "framer-motion";
+import { createPortal } from "react-dom";
 import Modal from "../components/Modal";
 import NotificationPermissionModal from "../components/NotificationPermissionModal";
 import QuickBackfillModal from "../components/QuickBackfillModal";
@@ -169,21 +170,26 @@ export default function Calendar() {
     [currentSemester.reminders]
   );
 
-  const [selectedDay,       setSelectedDay]       = useState(null);
-  const [cachedSelectedDay, setCachedSelectedDay] = useState(null);
-  useEffect(() => {
-    if (selectedDay) setCachedSelectedDay(selectedDay);
-  }, [selectedDay]);
-  const activeSelectedDay = selectedDay || cachedSelectedDay;
+  const [selectedDay, setSelectedDay] = useState(null);
+  const activeSelectedDay = selectedDay;
 
   const [allRemindersOpen,  setAllRemindersOpen]  = useState(false);
   const [addReminderOpen,   setAddReminderOpen]   = useState(false);
   const [backfillModalOpen, setBackfillModalOpen] = useState(false);
   const [editingReminder,   setEditingReminder]   = useState(null);
-  const [editDayOpen,       setEditDayOpen]       = useState(false);
-  const [editTimetableOpen, setEditTimetableOpen] = useState(false);
-  const [partialMarkOpen,   setPartialMarkOpen]   = useState(false);
+  const [activeDrawer,      setActiveDrawer]      = useState(null); // null | 'partial' | 'edit'
+  const editTimetableOpen = activeDrawer === "edit";
+  const partialMarkOpen   = activeDrawer === "partial";
   const [partialSelection,  setPartialSelection]  = useState({});
+  const [isDesktop,         setIsDesktop]         = useState(() => (typeof window !== "undefined" ? window.innerWidth >= 1024 : true));
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const checkDesktop = () => setIsDesktop(window.innerWidth >= 1024);
+    checkDesktop();
+    window.addEventListener("resize", checkDesktop);
+    return () => window.removeEventListener("resize", checkDesktop);
+  }, []);
   const exportRef = useRef(null);
 
   const [reminderForm, setReminderForm] = useState({ title: "", date: "", time: "" });
@@ -599,8 +605,35 @@ export default function Calendar() {
     const date = formatDateKey(selectedDay.date);
     markDayStatus(date, status);
     setSelectedDay(prev => prev ? { ...prev, status: status === "present" ? "full" : status } : prev);
-    setEditDayOpen(false);
   };
+
+  // Lock background body scroll when selectedDay is open
+  useEffect(() => {
+    if (selectedDay) {
+      document.body.style.overflow = "hidden";
+      return () => {
+        document.body.style.overflow = "";
+      };
+    } else {
+      document.body.style.overflow = "";
+    }
+  }, [Boolean(selectedDay)]);
+
+  // Handle ESC key to dismiss day modal or its drawer
+  useEffect(() => {
+    if (!selectedDay) return;
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape") {
+        if (activeDrawer) {
+          setActiveDrawer(null);
+          return;
+        }
+        setSelectedDay(null);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [selectedDay, activeDrawer]);
 
   const handlePartialAttendanceSave = () => {
     if (!selectedDay?.date) return;
@@ -615,8 +648,7 @@ export default function Calendar() {
             : absentCount  === 0 && attendedCount > 0 ? "full"
             : "partial",
     } : prev);
-    setPartialMarkOpen(false);
-    setEditDayOpen(false);
+    setActiveDrawer(null);
   };
 
   const setPartialStatus = (key, status) => {
@@ -653,8 +685,12 @@ export default function Calendar() {
       dayType: liveEntry?.dayType,
       hasScheduledLectures,
     });
-    setSelectedDay(prev => prev ? { ...prev, dayEntry: liveEntry, status: liveStatus } : prev);
-  }, [attendanceData, selectedDay?.date, currentSemester]);
+    setSelectedDay(prev => {
+      if (!prev) return prev;
+      if (prev.dayEntry === liveEntry && prev.status === liveStatus) return prev;
+      return { ...prev, dayEntry: liveEntry, status: liveStatus };
+    });
+  }, [attendanceData, selectedDayDateKey, currentSemester]);
 
   return (
     <div className="max-w-6xl mx-auto px-4 pt-6 pb-10 space-y-6">
@@ -1136,302 +1172,492 @@ export default function Calendar() {
         </form>
       </Modal>
 
-      <Modal
-        open={Boolean(selectedDay)}
-        onClose={() => setSelectedDay(null)}
-        size="lg"
-        footer={
-          activeSelectedDay && (
-            <div className="flex flex-wrap items-center gap-2">
-              <button
-                type="button"
-                onClick={() => setEditTimetableOpen(true)}
-                className="rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 px-3 py-1.5 text-xs font-semibold text-zinc-700 dark:text-zinc-200 hover:bg-zinc-50 dark:hover:bg-zinc-700 cursor-pointer flex items-center gap-1.5 transition active:scale-95"
-              >
-                <span>✏️</span>
-                <span>Edit Day&apos;s Lectures</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => setEditDayOpen(true)}
-                className="rounded-xl bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 px-3.5 py-1.5 text-xs font-semibold hover:opacity-90 cursor-pointer transition active:scale-95"
-              >
-                Mark / Edit Day
-              </button>
-            </div>
-          )
-        }
-      >
-        {activeSelectedDay && (
-          <>
-            <div className="flex items-start justify-between gap-4 pb-2.5 border-b border-zinc-100 dark:border-zinc-800/80">
-              <div>
-                <h2 className="text-lg sm:text-xl font-bold text-zinc-900 dark:text-zinc-100">
-                  {activeSelectedDay.date.toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" })}
-                </h2>
-                <p className="text-xs text-zinc-500 dark:text-zinc-400">Attendance details for the day</p>
-              </div>
-              {activeSelectedDay.status && (
-                <span className={`rounded-full px-2.5 py-0.5 text-[11px] font-semibold ${statusConfig[activeSelectedDay.status]?.badge}`}>
-                  {statusConfig[activeSelectedDay.status]?.label}
-                </span>
-              )}
-            </div>
-            <div className="mt-3 space-y-2">
-              {selectedDayLectures?.length ? (
-                selectedDayLectures.map((lecture, index) => {
-                  const subject     = subjectsById.get(lecture.subjectId);
-                  const statusLabel = lecture.status || "pending";
-                  return (
-                    <div key={`${activeSelectedDay.day}-${lecture.subjectId}-${index}`}
-                      className="flex items-center justify-between gap-3 rounded-xl border border-zinc-200/90 dark:border-zinc-800/80 bg-zinc-50/80 dark:bg-zinc-900/70 px-3.5 py-2.5">
-                      <div className="min-w-0 flex-1">
-                        <p className="text-xs sm:text-sm font-semibold text-zinc-900 dark:text-white truncate">{subject?.name ?? lecture.subjectId}</p>
-                        <p className="text-[10px] text-zinc-400 dark:text-zinc-500 font-medium uppercase tracking-wider">{lecture.type ?? subject?.type ?? "lecture"}</p>
-                      </div>
-                      <span className={`rounded-full px-2.5 py-0.5 text-[11px] font-semibold capitalize shrink-0 ${lectureStatusStyles[statusLabel] || lectureStatusStyles.pending}`}>
-                        {statusLabel}
-                      </span>
-                    </div>
-                  );
-                })
-              ) : (
-                <div className="rounded-xl border border-dashed border-zinc-300 dark:border-zinc-800 p-4 text-sm text-zinc-500 dark:text-zinc-400 text-center">
-                  {activeSelectedDay.status === "holiday" ? "Holiday · No lectures" : "No lectures recorded for this day."}
-                </div>
-              )}
-            </div>
-          </>
-        )}
-      </Modal>
-
-      <Modal open={editDayOpen} onClose={() => setEditDayOpen(false)} size="md" noScroll={true}>
-        <div className="flex flex-col gap-0.5 pb-1 border-b border-zinc-100 dark:border-zinc-800/80">
-          <h3 className="text-base sm:text-lg font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
-            <span>Mark Attendance</span>
-          </h3>
-          <p className="text-[11px] sm:text-xs text-zinc-500 dark:text-zinc-400">Choose a quick status or update details below.</p>
-        </div>
-
-        <div className="mt-2.5 space-y-2.5">
-          {/* Full Day Options */}
-          <div>
-            <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-400 dark:text-zinc-500">Quick Full Day Status</span>
-            <div className="mt-1.5 grid grid-cols-2 gap-2">
-              {[
-                {
-                  label: "Full Present",
-                  status: "present",
-                  desc: "All classes attended",
-                  icon: (
-                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                    </svg>
-                  ),
-                  cls: "border-emerald-200/80 dark:border-emerald-500/20 bg-emerald-50/50 dark:bg-emerald-500/5 text-emerald-800 dark:text-emerald-300 hover:bg-emerald-100/60 dark:hover:bg-emerald-500/10"
-                },
-                {
-                  label: "Full Absent",
-                  status: "absent",
-                  desc: "Missed all classes",
-                  icon: (
-                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                  ),
-                  cls: "border-rose-200/80 dark:border-rose-500/20 bg-rose-50/50 dark:bg-rose-500/5 text-rose-800 dark:text-rose-300 hover:bg-rose-100/60 dark:hover:bg-rose-500/10"
-                },
-                {
-                  label: "Holiday",
-                  status: "holiday",
-                  desc: "No classes scheduled",
-                  icon: (
-                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                    </svg>
-                  ),
-                  cls: "border-sky-200/80 dark:border-sky-500/20 bg-sky-50/50 dark:bg-sky-500/5 text-sky-800 dark:text-sky-300 hover:bg-sky-100/60 dark:hover:bg-sky-500/10"
-                },
-                {
-                  label: "Exam Day",
-                  status: "exam",
-                  desc: "Exam conducted",
-                  icon: (
-                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-                    </svg>
-                  ),
-                  cls: "border-violet-200/80 dark:border-violet-500/20 bg-violet-50/50 dark:bg-violet-500/5 text-violet-800 dark:text-violet-300 hover:bg-violet-100/60 dark:hover:bg-violet-500/10"
-                },
-              ].map(btn => (
-                <button key={btn.status} type="button" onClick={() => handleDayStatusUpdate(btn.status)}
-                  className={`flex items-center gap-2 rounded-xl border p-2 text-left transition hover:-translate-y-0.5 hover:shadow-md cursor-pointer ${btn.cls}`}>
-                  <div className="rounded-lg p-1.5 bg-white/80 dark:bg-gray-800 shadow-sm flex items-center justify-center shrink-0">{btn.icon}</div>
-                  <div className="min-w-0">
-                    <div className="font-bold text-xs leading-tight truncate">{btn.label}</div>
-                    <div className="text-[10px] opacity-80 mt-0.5 leading-tight truncate">{btn.desc}</div>
-                  </div>
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Custom Day Changes (Always 2 Columns Side-by-Side) */}
-          <div>
-            <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-gray-500">Detailed & Timetable Options</span>
-            <div className="mt-1.5 grid grid-cols-2 gap-2">
-              <button
-                type="button"
-                onClick={() => {
-                  setPartialSelection(selectedDayLectures.reduce((acc, l) => { const key = l.slotIndex != null ? `${l.subjectId}::${l.slotIndex}` : l.subjectId; acc[key] = l.status ?? "absent"; return acc; }, {}));
-                  setPartialMarkOpen(true);
-                }}
-                className="flex items-center gap-2 rounded-xl border border-amber-200/80 dark:border-amber-500/20 bg-amber-50/50 dark:bg-amber-500/5 p-2 text-left text-amber-800 dark:text-amber-300 transition hover:-translate-y-0.5 hover:bg-amber-100/60 dark:hover:bg-amber-500/10 hover:shadow-md cursor-pointer"
-              >
-                <div className="rounded-lg p-1.5 bg-white/80 dark:bg-zinc-800 shadow-sm flex items-center justify-center shrink-0">
-                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
-                  </svg>
-                </div>
-                <div className="min-w-0">
-                  <div className="font-bold text-xs leading-tight truncate">Partial Marking</div>
-                  <div className="text-[10px] opacity-80 mt-0.5 leading-tight truncate">Mark individually</div>
-                </div>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => {
-                  setEditDayOpen(false);
-                  setEditTimetableOpen(true);
-                }}
-                className="flex items-center gap-2 rounded-xl border border-blue-200/80 dark:border-blue-500/20 bg-blue-50/50 dark:bg-blue-500/5 p-2 text-left text-blue-800 dark:text-blue-300 transition hover:-translate-y-0.5 hover:bg-blue-100/60 dark:hover:bg-blue-500/10 hover:shadow-md cursor-pointer"
-              >
-                <div className="rounded-lg p-1.5 bg-white/80 dark:bg-zinc-800 shadow-sm flex items-center justify-center shrink-0">
-                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                  </svg>
-                </div>
-                <div className="min-w-0">
-                  <div className="font-bold text-xs leading-tight truncate">Edit Day's Lectures</div>
-                  <div className="text-[10px] opacity-80 mt-0.5 leading-tight truncate">Change schedule</div>
-                </div>
-              </button>
-            </div>
-          </div>
-
-          {/* Destructive Action */}
-          <div className="pt-0.5">
-            <button
-              type="button"
-              onClick={() => { if (!selectedDay?.date) return; removeDayAttendance(formatDateKey(selectedDay.date)); setEditDayOpen(false); setSelectedDay(null); }}
-              className="w-full flex items-center justify-center gap-2 rounded-xl border border-rose-200/70 dark:border-rose-500/20 bg-rose-50/30 dark:bg-rose-500/5 py-1.5 px-3 text-center text-rose-600 dark:text-rose-400 transition hover:bg-rose-100/50 dark:hover:bg-rose-500/10 cursor-pointer active:scale-95"
+      {/* Unified Day Attendance & Marking Modal (with Expandable Partial Marking) */}
+      {createPortal(
+        <AnimatePresence>
+          {Boolean(selectedDay) && (
+            <motion.div
+              key="day-unified-modal-backdrop"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.25, ease: "easeInOut" }}
+              onClick={() => {
+                setSelectedDay(null);
+                setActiveDrawer(null);
+              }}
+              className="fixed inset-0 z-[9999] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/65 backdrop-blur-sm overflow-hidden"
             >
-              <svg className="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-              </svg>
-              <span className="font-bold text-xs uppercase tracking-wide">Remove Attendance Data For This Day</span>
-            </button>
-          </div>
-        </div>
-      </Modal>
+              <motion.div
+                key="day-unified-modal-card"
+                onClick={(e) => e.stopPropagation()}
+                drag={activeDrawer ? false : "y"}
+                dragConstraints={{ top: 0, bottom: 0 }}
+                dragElastic={{ top: 0, bottom: 0.8 }}
+                dragSnapToOrigin={true}
+                onDragEnd={(e, info) => {
+                  if (!activeDrawer && (info.offset.y > 100 || info.velocity.y > 250)) {
+                    setSelectedDay(null);
+                    setActiveDrawer(null);
+                  }
+                }}
+                initial={{ y: "100%", opacity: 0.95 }}
+                animate={{ y: 0, opacity: 1 }}
+                exit={{
+                  y: "100%",
+                  opacity: 0.95,
+                  transition: { duration: 0.28, ease: [0.32, 0.72, 0, 1] },
+                }}
+                transition={{ type: "spring", stiffness: 350, damping: 32 }}
+                className={`relative z-10 w-full ${
+                  partialMarkOpen || editTimetableOpen ? "max-w-[1280px]" : "max-w-4xl"
+                } rounded-t-3xl sm:rounded-3xl bg-white dark:bg-[#0c0d12] text-zinc-900 dark:text-zinc-100 border border-zinc-200 dark:border-zinc-800/90 shadow-2xl flex flex-col overflow-hidden my-auto max-h-[92vh] sm:max-h-[88vh] transition-[max-width] duration-400 ease-[cubic-bezier(0.16,1,0.3,1)]`}
+              >
+              {/* Kokonut-style drag handle bar */}
+              <div className="w-12 h-1.5 bg-zinc-300 dark:bg-zinc-700/80 rounded-full mx-auto mt-3 mb-1 shrink-0" />
 
-      <Modal open={partialMarkOpen} onClose={() => setPartialMarkOpen(false)} size="md">
-        <div className="flex flex-col gap-1 mb-4">
-          <h3 className="text-xl font-bold text-zinc-900 dark:text-zinc-100">Mark Subject-Wise Status</h3>
-          <p className="text-xs text-zinc-500 dark:text-zinc-400">Pick Present, Absent, Free, or Cancelled for each lecture.</p>
-        </div>
-        <div className="mt-4 space-y-4">
-          {selectedDayLectures.length === 0 ? (
-            <div className="rounded-xl border border-dashed border-zinc-300 dark:border-zinc-700 p-3 text-sm text-zinc-500 dark:text-zinc-400 text-center">No lectures found for this day.</div>
-          ) : (
-            selectedDayLectures.map((lecture) => {
-              const subject       = subjectsById.get(lecture.subjectId);
-              const key           = lecture.slotIndex != null ? `${lecture.subjectId}::${lecture.slotIndex}` : lecture.subjectId;
-              const currentStatus = partialSelection[key] ?? "absent";
-              return (
-                <div key={`partial-${key}`} className="rounded-2xl p-4 border border-zinc-200/80 dark:border-zinc-800/80 bg-zinc-50/70 dark:bg-zinc-950/40 space-y-3">
-                  <div className="flex items-start justify-between gap-2">
+              {/* Content sections with divider in between */}
+              <div className="flex flex-col lg:flex-row items-stretch flex-1 min-h-[420px] overflow-y-auto lg:overflow-hidden no-scrollbar">
+                
+                {/* SECTION 1: Day Details & Lectures */}
+                <div className="flex-1 min-w-0 p-5 sm:p-6 flex flex-col justify-between">
+                  {/* Header */}
+                  <div className="flex items-start justify-between gap-4 pb-3 border-b border-zinc-100 dark:border-zinc-800/80 shrink-0">
                     <div>
-                      <span className="font-bold text-sm text-zinc-900 dark:text-zinc-100">{subject?.name ?? lecture.subjectId}</span>
-                      <p className="text-[10px] text-zinc-400 dark:text-zinc-500 font-bold uppercase tracking-wider mt-0.5">
-                        {lecture.type || subject?.type || "lecture"}
-                      </p>
+                      <h2 className="text-lg sm:text-xl font-bold text-zinc-900 dark:text-zinc-100 font-[Poppins]">
+                        {activeSelectedDay?.date.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
+                      </h2>
+                      <p className="text-xs text-zinc-500 dark:text-zinc-400">Attendance details for the day</p>
                     </div>
-                    {currentStatus && (
-                      <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider border shadow-2xs ${lectureStatusStyles[String(currentStatus).toLowerCase()] || lectureStatusStyles.pending}`}>
-                        {currentStatus}
+                    {activeSelectedDay?.status && (
+                      <span className={`rounded-full px-2.5 py-0.5 text-[11px] font-semibold ${statusConfig[activeSelectedDay.status]?.badge}`}>
+                        {statusConfig[activeSelectedDay.status]?.label}
                       </span>
                     )}
                   </div>
-                  <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-                    {["present", "absent", "free", "cancelled"].map(val => {
-                      const style = optionStyles[val];
-                      const isSelected = currentStatus === val;
-                      return (
-                        <button key={`${key}-${val}`} type="button"
-                          onClick={() => setPartialStatus(key, val)}
-                          className={`rounded-lg border px-2 py-1.5 text-xs font-semibold capitalize transition duration-200 cursor-pointer text-center ${isSelected ? style.selected : style.unselected}`}>
-                          {style.label}
-                        </button>
-                      );
-                    })}
+
+                  {/* Middle: Centered if fewer lectures, scrollable if many */}
+                  <div className="my-auto py-3 flex flex-col justify-center">
+                    <div className="space-y-2 max-h-[44vh] overflow-y-auto pr-1 no-scrollbar">
+                      {selectedDayLectures?.length ? (
+                        selectedDayLectures.map((lecture, index) => {
+                          const subject     = subjectsById.get(lecture.subjectId);
+                          const statusLabel = lecture.status || "pending";
+                          return (
+                            <div
+                              key={`${activeSelectedDay.day}-${lecture.subjectId}-${index}`}
+                              className="flex items-center justify-between gap-3 rounded-2xl border border-zinc-200/90 dark:border-zinc-800/80 bg-zinc-50/80 dark:bg-zinc-900/70 px-3.5 py-2.5 transition-colors"
+                            >
+                              <div className="min-w-0 flex-1">
+                                <p className="text-xs sm:text-sm font-semibold text-zinc-900 dark:text-white truncate">
+                                  {subject?.name ?? lecture.subjectId}
+                                </p>
+                                <p className="text-[10px] text-zinc-400 dark:text-zinc-500 font-bold uppercase tracking-wider">
+                                  {lecture.type ?? subject?.type ?? "lecture"}
+                                </p>
+                              </div>
+                              <span
+                                className={`rounded-full px-2.5 py-0.5 text-[11px] font-semibold capitalize shrink-0 ${
+                                  lectureStatusStyles[statusLabel] || lectureStatusStyles.pending
+                                }`}
+                              >
+                                {statusLabel}
+                              </span>
+                            </div>
+                          );
+                        })
+                      ) : (
+                        <div className="rounded-2xl border border-dashed border-zinc-300 dark:border-zinc-800 p-6 text-sm text-zinc-500 dark:text-zinc-400 text-center">
+                          {activeSelectedDay?.status === "holiday" ? "Holiday · No lectures" : "No lectures recorded for this day."}
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
-              );
-            })
-          )}
-        </div>
-        <div className="mt-5 flex justify-end gap-3">
-          <button type="button" onClick={() => setPartialMarkOpen(false)}
-            className="rounded-full border border-zinc-200 dark:border-zinc-700 px-4 py-2 text-sm font-semibold text-zinc-700 dark:text-zinc-200 cursor-pointer hover:bg-zinc-50 dark:hover:bg-zinc-800 transition">Cancel</button>
-          <button type="button" onClick={handlePartialAttendanceSave}
-            className="rounded-full bg-zinc-900 px-4 py-2 text-sm font-semibold text-white dark:bg-white dark:text-zinc-900 cursor-pointer hover:scale-[1.02] transition">Save Partial Marking</button>
-        </div>
-      </Modal>
 
-      <Modal open={editTimetableOpen} onClose={() => setEditTimetableOpen(false)} size="md">
-        {selectedDay && (
-          <div className="space-y-4">
-            <div className="flex items-center justify-between pb-3 border-b border-zinc-200 dark:border-zinc-800">
-              <div>
-                <h3 className="text-xl font-bold text-zinc-900 dark:text-zinc-100">
-                  Edit Day&apos;s Lectures
-                </h3>
-                <p className="text-xs text-zinc-500 dark:text-zinc-400">
-                  Customize schedule for {selectedDay.date.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })} only
-                </p>
+                {/* SECTION 2: Mark Attendance */}
+                <div className="flex-1 min-w-0 p-5 sm:p-6 flex flex-col justify-between border-t lg:border-t-0 lg:border-l border-zinc-200 dark:border-zinc-800/80">
+                  {/* Header */}
+                  <div className="flex flex-col gap-0.5 pb-3 border-b border-zinc-100 dark:border-zinc-800/80 shrink-0">
+                    <h3 className="text-base sm:text-lg font-bold text-zinc-900 dark:text-zinc-100 font-[Poppins]">
+                      Mark Attendance
+                    </h3>
+                    <p className="text-[11px] sm:text-xs text-zinc-500 dark:text-zinc-400">
+                      Choose a quick status or update details below.
+                    </p>
+                  </div>
+
+                  {/* Middle: Centered */}
+                  <div className="my-auto py-3 flex flex-col justify-center space-y-3.5">
+                    {/* Quick Full Day Status */}
+                    <div>
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-400 dark:text-zinc-500">
+                        Quick Full Day Status
+                      </span>
+                      <div className="mt-1.5 grid grid-cols-2 gap-2">
+                        <button
+                          type="button"
+                          onClick={() => handleDayStatusUpdate("present")}
+                          className="flex items-center gap-2 rounded-xl border border-emerald-200/80 dark:border-emerald-500/20 bg-emerald-50/50 dark:bg-emerald-500/5 p-2 text-left text-emerald-800 dark:text-emerald-300 transition hover:-translate-y-0.5 hover:bg-emerald-100/60 dark:hover:bg-emerald-500/10 hover:shadow-md cursor-pointer active:scale-95"
+                        >
+                          <div className="rounded-lg p-1.5 bg-white/80 dark:bg-zinc-800 shadow-xs flex items-center justify-center shrink-0">
+                            <svg className="w-4 h-4 text-emerald-600 dark:text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                            </svg>
+                          </div>
+                          <div className="min-w-0">
+                            <div className="font-bold text-xs leading-tight truncate">Full Present</div>
+                            <div className="text-[10px] opacity-80 mt-0.5 leading-tight truncate">All classes attended</div>
+                          </div>
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => handleDayStatusUpdate("absent")}
+                          className="flex items-center gap-2 rounded-xl border border-rose-200/80 dark:border-rose-500/20 bg-rose-50/50 dark:bg-rose-500/5 p-2 text-left text-rose-800 dark:text-rose-300 transition hover:-translate-y-0.5 hover:bg-rose-100/60 dark:hover:bg-rose-500/10 hover:shadow-md cursor-pointer active:scale-95"
+                        >
+                          <div className="rounded-lg p-1.5 bg-white/80 dark:bg-zinc-800 shadow-xs flex items-center justify-center shrink-0">
+                            <svg className="w-4 h-4 text-rose-600 dark:text-rose-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                          </div>
+                          <div className="min-w-0">
+                            <div className="font-bold text-xs leading-tight truncate">Full Absent</div>
+                            <div className="text-[10px] opacity-80 mt-0.5 leading-tight truncate">Missed all classes</div>
+                          </div>
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => handleDayStatusUpdate("holiday")}
+                          className="flex items-center gap-2 rounded-xl border border-sky-200/80 dark:border-sky-500/20 bg-sky-50/50 dark:bg-sky-500/5 p-2 text-left text-sky-800 dark:text-sky-300 transition hover:-translate-y-0.5 hover:bg-sky-100/60 dark:hover:bg-sky-500/10 hover:shadow-md cursor-pointer active:scale-95"
+                        >
+                          <div className="rounded-lg p-1.5 bg-white/80 dark:bg-zinc-800 shadow-xs flex items-center justify-center shrink-0">
+                            <svg className="w-4 h-4 text-sky-600 dark:text-sky-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                            </svg>
+                          </div>
+                          <div className="min-w-0">
+                            <div className="font-bold text-xs leading-tight truncate">Holiday</div>
+                            <div className="text-[10px] opacity-80 mt-0.5 leading-tight truncate">No classes scheduled</div>
+                          </div>
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => handleDayStatusUpdate("exam")}
+                          className="flex items-center gap-2 rounded-xl border border-violet-200/80 dark:border-violet-500/20 bg-violet-50/50 dark:bg-violet-500/5 p-2 text-left text-violet-800 dark:text-violet-300 transition hover:-translate-y-0.5 hover:bg-violet-100/60 dark:hover:bg-violet-500/10 hover:shadow-md cursor-pointer active:scale-95"
+                        >
+                          <div className="rounded-lg p-1.5 bg-white/80 dark:bg-zinc-800 shadow-xs flex items-center justify-center shrink-0">
+                            <svg className="w-4 h-4 text-violet-600 dark:text-violet-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                            </svg>
+                          </div>
+                          <div className="min-w-0">
+                            <div className="font-bold text-xs leading-tight truncate">Exam Day</div>
+                            <div className="text-[10px] opacity-80 mt-0.5 leading-tight truncate">Exam conducted</div>
+                          </div>
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Detailed & Timetable Options */}
+                    <div>
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-400 dark:text-zinc-500">
+                        Detailed & Timetable Options
+                      </span>
+                      <div className="mt-1.5 grid grid-cols-2 gap-2">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (activeDrawer !== "partial") {
+                              setPartialSelection(selectedDayLectures.reduce((acc, l) => {
+                                const key = l.slotIndex != null ? `${l.subjectId}::${l.slotIndex}` : l.subjectId;
+                                acc[key] = l.status ?? "absent";
+                                return acc;
+                              }, {}));
+                              setActiveDrawer("partial");
+                            } else {
+                              setActiveDrawer(null);
+                            }
+                          }}
+                          className={`flex items-center gap-2 rounded-xl border p-2 text-left transition duration-200 hover:-translate-y-0.5 hover:shadow-md cursor-pointer active:scale-95 ${
+                            partialMarkOpen
+                              ? "border-amber-400 bg-amber-100/80 dark:bg-amber-500/20 text-amber-900 dark:text-amber-200 ring-2 ring-amber-400/40"
+                              : "border-amber-200/80 dark:border-amber-500/20 bg-amber-50/50 dark:bg-amber-500/5 text-amber-800 dark:text-amber-300 hover:bg-amber-100/60 dark:hover:bg-amber-500/10"
+                          }`}
+                        >
+                          <div className="rounded-lg p-1.5 bg-white/80 dark:bg-zinc-800 shadow-xs flex items-center justify-center shrink-0">
+                            <svg className="w-4 h-4 text-amber-600 dark:text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
+                            </svg>
+                          </div>
+                          <div className="min-w-0">
+                            <div className="font-bold text-xs leading-tight truncate">Partial Marking</div>
+                            <div className="text-[10px] opacity-80 mt-0.5 leading-tight truncate">
+                              {partialMarkOpen ? "Expanded →" : "Mark individually"}
+                            </div>
+                          </div>
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setActiveDrawer(prev => (prev === "edit" ? null : "edit"));
+                          }}
+                          className={`flex items-center gap-2 rounded-xl border p-2 text-left transition duration-200 hover:-translate-y-0.5 hover:shadow-md cursor-pointer active:scale-95 ${
+                            editTimetableOpen
+                              ? "border-blue-400 bg-blue-100/80 dark:bg-blue-500/20 text-blue-900 dark:text-blue-200 ring-2 ring-blue-400/40"
+                              : "border-blue-200/80 dark:border-blue-500/20 bg-blue-50/50 dark:bg-blue-500/5 text-blue-800 dark:text-blue-300 hover:bg-blue-100/60 dark:hover:bg-blue-500/10"
+                          }`}
+                        >
+                          <div className="rounded-lg p-1.5 bg-white/80 dark:bg-zinc-800 shadow-xs flex items-center justify-center shrink-0">
+                            <svg className="w-4 h-4 text-blue-600 dark:text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                            </svg>
+                          </div>
+                          <div className="min-w-0">
+                            <div className="font-bold text-xs leading-tight truncate">Edit Day's Lectures</div>
+                            <div className="text-[10px] opacity-80 mt-0.5 leading-tight truncate">
+                              {editTimetableOpen ? "Expanded →" : "Change schedule"}
+                            </div>
+                          </div>
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Destructive Action */}
+                    <div className="pt-0.5">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (!selectedDay?.date) return;
+                          removeDayAttendance(formatDateKey(selectedDay.date));
+                          setActiveDrawer(null);
+                        }}
+                        className="w-full flex items-center justify-center gap-2 rounded-xl border border-rose-200/70 dark:border-rose-500/20 bg-rose-50/30 dark:bg-rose-500/5 py-1.5 px-3 text-center text-rose-600 dark:text-rose-400 transition hover:bg-rose-100/50 dark:hover:bg-rose-500/10 cursor-pointer active:scale-95 font-bold text-xs uppercase tracking-wider"
+                      >
+                        <svg className="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                        <span>Remove Attendance Data For This Day</span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                {/* SECTION 3: Expandable Side Drawer (Partial Marking OR Edit Day's Lectures) */}
+                <AnimatePresence initial={false}>
+                  {(partialMarkOpen || editTimetableOpen) && (
+                    <motion.div
+                      key="modal-section-3-drawer"
+                      initial={isDesktop ? { width: 0, opacity: 0 } : { y: "100%", opacity: 0 }}
+                      animate={isDesktop ? { width: editTimetableOpen ? 480 : 390, opacity: 1 } : { y: 0, opacity: 1 }}
+                      exit={isDesktop ? { width: 0, opacity: 0 } : { y: "100%", opacity: 0 }}
+                      transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+                      className={
+                        isDesktop
+                          ? "overflow-hidden shrink-0 flex flex-col justify-between border-l border-zinc-200 dark:border-zinc-800/80"
+                          : "absolute inset-0 z-30 bg-white dark:bg-[#0c0d12] flex flex-col overflow-hidden"
+                      }
+                    >
+                      <motion.div
+                        key={editTimetableOpen ? "drawer-edit-timetable" : "drawer-partial-mark"}
+                        initial={isDesktop ? { x: 40, opacity: 0 } : { y: 20, opacity: 0 }}
+                        animate={isDesktop ? { x: 0, opacity: 1 } : { y: 0, opacity: 1 }}
+                        exit={isDesktop ? { x: 80, opacity: 0 } : { y: 20, opacity: 0 }}
+                        transition={{ duration: 0.32, ease: [0.16, 1, 0.3, 1] }}
+                        className={`w-full ${editTimetableOpen ? "lg:w-[480px]" : "lg:w-[390px]"} p-4 sm:p-5 flex flex-col justify-between h-full overflow-hidden`}
+                      >
+                        {editTimetableOpen ? (
+                          <>
+                            {/* Drag handle for mobile overlay view */}
+                            <div className="lg:hidden w-12 h-1.5 bg-zinc-300 dark:bg-zinc-700/80 rounded-full mx-auto mb-2 shrink-0" />
+
+                            {/* Header */}
+                            <div className="flex items-start justify-between gap-3 pb-3 border-b border-zinc-100 dark:border-zinc-800/80 shrink-0">
+                              <div>
+                                <h3 className="text-base sm:text-lg font-bold text-zinc-900 dark:text-zinc-100 font-[Poppins]">
+                                  Edit Day&apos;s Lectures
+                                </h3>
+                                <p className="text-[11px] sm:text-xs text-zinc-500 dark:text-zinc-400">
+                                  Customize schedule for {activeSelectedDay?.date.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })} only
+                                </p>
+                              </div>
+                              <button
+                                type="button"
+                                onClick={() => setActiveDrawer(null)}
+                                className="p-1.5 rounded-xl text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition cursor-pointer"
+                                title="Close Edit Schedule"
+                              >
+                                ✕
+                              </button>
+                            </div>
+
+                            {/* Middle: Day Lectures Editor */}
+                            <div className="flex-1 min-h-0 py-3 lg:my-auto lg:max-h-[56vh] overflow-y-auto pr-1.5 no-scrollbar">
+                              <DayLecturesEditor
+                                date={formatDateKey(activeSelectedDay.date)}
+                                initialLectures={selectedDayLectures}
+                                subjects={currentSemester.subjects}
+                                isCustom={Boolean(activeSelectedDay.dayEntry?.isCustomSchedule)}
+                                dateLabel={activeSelectedDay.date.toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short" })}
+                                onSave={(newLectures) => {
+                                  const dateKey = formatDateKey(activeSelectedDay.date);
+                                  updateDayLectures(dateKey, newLectures);
+                                  setActiveDrawer(null);
+                                }}
+                                onCancel={() => setActiveDrawer(null)}
+                                onResetToDefault={() => {
+                                  const dateKey = formatDateKey(activeSelectedDay.date);
+                                  resetDayLecturesToDefault(dateKey);
+                                  setActiveDrawer(null);
+                                }}
+                              />
+                            </div>
+                          </>
+                        ) : (
+                          <>
+                            {/* Drag handle for mobile overlay view */}
+                            <div className="lg:hidden w-12 h-1.5 bg-zinc-300 dark:bg-zinc-700/80 rounded-full mx-auto mb-2 shrink-0" />
+
+                            {/* Header */}
+                            <div className="flex items-start justify-between gap-3 pb-3 border-b border-zinc-100 dark:border-zinc-800/80 shrink-0">
+                              <div>
+                                <h3 className="text-base sm:text-lg font-bold text-zinc-900 dark:text-zinc-100 font-[Poppins]">
+                                  Mark Subject-Wise Status
+                                </h3>
+                                <p className="text-[11px] sm:text-xs text-zinc-500 dark:text-zinc-400">
+                                  Pick Present, Absent, Free, or Cancelled for each lecture.
+                                </p>
+                              </div>
+                              <button
+                                type="button"
+                                onClick={() => setActiveDrawer(null)}
+                                className="p-1.5 rounded-xl text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition cursor-pointer"
+                                title="Close Partial Marking"
+                              >
+                                ✕
+                              </button>
+                            </div>
+
+                            {/* Middle: Subject items */}
+                            <div className="flex-1 min-h-0 py-3 flex flex-col justify-between overflow-hidden">
+                              <div className="space-y-2.5 flex-1 min-h-0 lg:max-h-[44vh] overflow-y-auto pr-1 no-scrollbar">
+                                {selectedDayLectures.length === 0 ? (
+                                  <div className="rounded-2xl border border-dashed border-zinc-300 dark:border-zinc-700 p-6 text-sm text-zinc-500 dark:text-zinc-400 text-center">
+                                    No lectures found for this day.
+                                  </div>
+                                ) : (
+                                  selectedDayLectures.map((lecture, idx) => {
+                                    const subject = subjectsById.get(lecture.subjectId);
+                                    const key = lecture.slotIndex != null ? `${lecture.subjectId}::${lecture.slotIndex}` : lecture.subjectId;
+                                    const currentStatus = partialSelection[key] ?? "absent";
+                                    return (
+                                      <motion.div
+                                        key={`partial-${key}`}
+                                        initial={{ opacity: 0, y: 10 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        transition={{
+                                          duration: 0.25,
+                                          delay: 0.05 + idx * 0.03,
+                                          ease: [0.16, 1, 0.3, 1],
+                                        }}
+                                        className="rounded-2xl p-3 border border-zinc-200/90 dark:border-zinc-800/80 bg-zinc-50/70 dark:bg-[#07080c] space-y-2"
+                                      >
+                                        <div className="flex items-start justify-between gap-2">
+                                          <div className="min-w-0">
+                                            <span className="font-bold text-xs sm:text-sm text-zinc-900 dark:text-zinc-100 truncate block">
+                                              {subject?.name ?? lecture.subjectId}
+                                            </span>
+                                            <p className="text-[10px] text-zinc-400 dark:text-zinc-500 font-bold uppercase tracking-wider mt-0.5">
+                                              {lecture.type || subject?.type || "lecture"}
+                                            </p>
+                                          </div>
+                                          {currentStatus && (
+                                            <span className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider shrink-0 ${
+                                              lectureStatusStyles[String(currentStatus).toLowerCase()] || lectureStatusStyles.pending
+                                            }`}>
+                                              {currentStatus}
+                                            </span>
+                                          )}
+                                        </div>
+                                        <div className="grid grid-cols-4 gap-1.5">
+                                          {["present", "absent", "free", "cancelled"].map((val) => {
+                                            const style = optionStyles[val];
+                                            const isSelected = currentStatus === val;
+                                            return (
+                                              <button
+                                                key={`${key}-${val}`}
+                                                type="button"
+                                                onClick={() => setPartialStatus(key, val)}
+                                                className={`rounded-lg border px-1.5 py-1 text-[11px] font-semibold capitalize transition duration-150 cursor-pointer text-center ${
+                                                  isSelected ? style.selected : style.unselected
+                                                }`}
+                                              >
+                                                {style.label}
+                                              </button>
+                                            );
+                                          })}
+                                        </div>
+                                      </motion.div>
+                                    );
+                                  })
+                                )}
+                              </div>
+                            </div>
+
+                            {/* Bottom Actions for Section 3 */}
+                            <div className="pt-3 border-t border-zinc-100 dark:border-zinc-800/80 shrink-0 flex gap-2">
+                              <button
+                                type="button"
+                                onClick={() => setActiveDrawer(null)}
+                                className="px-3.5 py-2 rounded-xl border border-zinc-200 dark:border-zinc-700 text-xs font-semibold text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 cursor-pointer transition active:scale-95"
+                              >
+                                Cancel
+                              </button>
+                              <button
+                                type="button"
+                                onClick={handlePartialAttendanceSave}
+                                className="flex-1 py-2 px-3.5 rounded-xl bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 text-xs font-bold hover:opacity-90 shadow-sm cursor-pointer transition active:scale-95 text-center"
+                              >
+                                Save Partial Marking
+                              </button>
+                            </div>
+                          </>
+                        )}
+                      </motion.div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
-              <button
-                type="button"
-                onClick={() => setEditTimetableOpen(false)}
-                className="p-1.5 rounded-xl border border-zinc-200 dark:border-zinc-700 text-xs font-bold text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 cursor-pointer"
-              >
-                ✕
-              </button>
-            </div>
 
-            <DayLecturesEditor
-              date={formatDateKey(selectedDay.date)}
-              initialLectures={selectedDayLectures}
-              subjects={currentSemester.subjects}
-              isCustom={Boolean(selectedDay.dayEntry?.isCustomSchedule)}
-              dateLabel={selectedDay.date.toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short" })}
-              onSave={(newLectures) => {
-                const dateKey = formatDateKey(selectedDay.date);
-                updateDayLectures(dateKey, newLectures);
-                setEditTimetableOpen(false);
-              }}
-              onCancel={() => setEditTimetableOpen(false)}
-              onResetToDefault={() => {
-                const dateKey = formatDateKey(selectedDay.date);
-                resetDayLecturesToDefault(dateKey);
-                setEditTimetableOpen(false);
-              }}
-            />
-          </div>
+              {/* SINGLE COMMON MODAL FOOTER */}
+              <div className="border-t border-zinc-200 dark:border-zinc-800/80 px-6 py-3 flex items-center justify-between shrink-0 bg-zinc-50/70 dark:bg-[#0a0b0f]/70">
+                <div className="text-[11px] text-zinc-400 dark:text-zinc-500 font-medium">
+                  {partialMarkOpen
+                    ? "Mark each lecture status then click Save Partial Marking"
+                    : editTimetableOpen
+                    ? "Edit schedule for this date and click Save & Apply"
+                    : "Select a quick status or open partial marking to customize individual classes"}
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSelectedDay(null);
+                    setActiveDrawer(null);
+                  }}
+                  className="px-5 py-2 rounded-xl bg-zinc-900 text-white dark:bg-zinc-800 dark:hover:bg-zinc-700 dark:text-zinc-200 text-xs font-bold shadow-sm cursor-pointer transition-all duration-150 active:scale-95 shrink-0"
+                >
+                  Close
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
         )}
-      </Modal>
+      </AnimatePresence>,
+      document.body
+    )}
 
       <QuickBackfillModal
         isOpen={backfillModalOpen}

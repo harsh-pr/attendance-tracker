@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { useSemester } from "../context/SemesterContext";
 import { useAuth } from "../context/AuthContext";
@@ -122,7 +123,17 @@ export default function ShareTimetableModal({ isOpen, onClose }) {
   const [importError, setImportError] = useState("");
   const [importSuccess, setImportSuccess] = useState(false);
 
-  if (!isOpen) return null;
+  // Lock body scroll on open
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [isOpen]);
 
   const handleGenerateCode = async () => {
     setShareError("");
@@ -201,14 +212,46 @@ export default function ShareTimetableModal({ isOpen, onClose }) {
     }
   };
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
-      <motion.div
-        initial={{ opacity: 0, scale: 0.95, y: 15 }}
-        animate={{ opacity: 1, scale: 1, y: 0 }}
-        exit={{ opacity: 0, scale: 0.95, y: 15 }}
-        className="relative w-full max-w-lg overflow-hidden rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 shadow-2xl"
-      >
+  return createPortal(
+    <AnimatePresence>
+      {isOpen && (
+        <motion.div
+          key="share-timetable-modal-backdrop"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.25, ease: "easeInOut" }}
+          onClick={onClose}
+          className="fixed inset-0 z-[9999] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/65 backdrop-blur-sm overflow-hidden"
+        >
+          <motion.div
+            key="share-timetable-modal-card"
+            onClick={(e) => e.stopPropagation()}
+            drag="y"
+            dragConstraints={{ top: 0, bottom: 0 }}
+            dragElastic={{ top: 0, bottom: 0.8 }}
+            dragSnapToOrigin={true}
+            onDragEnd={(e, info) => {
+              if (info.offset.y > 100 || info.velocity.y > 250) {
+                onClose();
+              }
+            }}
+            initial={{ y: "100%", opacity: 0.95 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{
+              y: "100%",
+              opacity: 0.95,
+              transition: { duration: 0.28, ease: [0.32, 0.72, 0, 1] },
+            }}
+            transition={{
+              type: "spring",
+              stiffness: 350,
+              damping: 32,
+            }}
+            className="relative w-full max-w-lg overflow-hidden rounded-t-3xl sm:rounded-3xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 shadow-2xl my-auto will-change-transform transform-gpu max-h-[92vh] sm:max-h-[88vh] flex flex-col"
+          >
+            {/* Kokonut-style drag handle bar */}
+            <div className="w-12 h-1.5 bg-zinc-300 dark:bg-zinc-700/80 rounded-full mx-auto mt-3 mb-1 shrink-0 cursor-grab active:cursor-grabbing" />
         {/* Header Bar */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-100 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/50">
           <div className="flex items-center gap-2.5">
@@ -602,7 +645,10 @@ export default function ShareTimetableModal({ isOpen, onClose }) {
             )}
           </AnimatePresence>
         </div>
-      </motion.div>
-    </div>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>,
+    document.body
   );
 }

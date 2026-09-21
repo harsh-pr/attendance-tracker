@@ -1100,13 +1100,38 @@ export default function AiTimetable() {
       {/* STRUCTURE & HOURS CUSTOMIZATION MODAL */}
       <AnimatePresence>
         {isStructureModalOpen && (
-          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <motion.div
+            key="structure-modal-backdrop"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.25, ease: "easeInOut" }}
+            onClick={discardStructureModal}
+            className="fixed inset-0 bg-black/65 backdrop-blur-sm flex items-end sm:items-center justify-center z-50 p-0 sm:p-4 overflow-hidden"
+          >
             <motion.div
-              initial={{ scale: 0.95, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.95, opacity: 0 }}
-              className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 max-w-xl w-full rounded-3xl p-6 shadow-2xl space-y-5 text-zinc-900 dark:text-white text-left max-h-[85vh] overflow-y-auto"
+              key="structure-modal-card"
+              onClick={(e) => e.stopPropagation()}
+              drag="y"
+              dragConstraints={{ top: 0, bottom: 0 }}
+              dragElastic={{ top: 0, bottom: 0.8 }}
+              dragSnapToOrigin={true}
+              onDragEnd={(e, info) => {
+                if (info.offset.y > 100 || info.velocity.y > 250) {
+                  discardStructureModal();
+                }
+              }}
+              initial={{ y: "100%", opacity: 0.95 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{
+                y: "100%",
+                opacity: 0.95,
+                transition: { duration: 0.28, ease: [0.32, 0.72, 0, 1] },
+              }}
+              transition={{ type: "spring", stiffness: 350, damping: 32 }}
+              className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 max-w-xl w-full rounded-t-3xl sm:rounded-3xl p-6 shadow-2xl space-y-5 text-zinc-900 dark:text-white text-left max-h-[92vh] sm:max-h-[85vh] my-auto overflow-y-auto will-change-transform transform-gpu"
             >
+              <div className="w-12 h-1.5 bg-zinc-300 dark:bg-zinc-700/80 rounded-full mx-auto -mt-2 mb-2 shrink-0 cursor-grab active:cursor-grabbing" />
               <div className="flex items-center justify-between border-b border-zinc-200 dark:border-zinc-800 pb-3">
                 <div>
                   <h2 className="text-lg font-extrabold flex items-center gap-2">🛠️ Customize Hours, Days & Breaks</h2>
@@ -1320,20 +1345,45 @@ export default function AiTimetable() {
                 </button>
               </div>
             </motion.div>
-          </div>
+          </motion.div>
         )}
       </AnimatePresence>
 
       {/* METADATA MODAL (SETTINGS) */}
       <AnimatePresence>
         {isMetadataModalOpen && (
-          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <motion.div
+            key="metadata-modal-backdrop"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.25, ease: "easeInOut" }}
+            onClick={discardMetadataModal}
+            className="fixed inset-0 bg-black/65 backdrop-blur-sm flex items-end sm:items-center justify-center z-50 p-0 sm:p-4 overflow-hidden"
+          >
             <motion.div
-              initial={{ scale: 0.95, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.95, opacity: 0 }}
-              className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 max-w-md w-full rounded-3xl p-6 shadow-2xl space-y-4 text-zinc-900 dark:text-white text-left"
+              key="metadata-modal-card"
+              onClick={(e) => e.stopPropagation()}
+              drag="y"
+              dragConstraints={{ top: 0, bottom: 0 }}
+              dragElastic={{ top: 0, bottom: 0.8 }}
+              dragSnapToOrigin={true}
+              onDragEnd={(e, info) => {
+                if (info.offset.y > 100 || info.velocity.y > 250) {
+                  discardMetadataModal();
+                }
+              }}
+              initial={{ y: "100%", opacity: 0.95 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{
+                y: "100%",
+                opacity: 0.95,
+                transition: { duration: 0.28, ease: [0.32, 0.72, 0, 1] },
+              }}
+              transition={{ type: "spring", stiffness: 350, damping: 32 }}
+              className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 max-w-md w-full rounded-t-3xl sm:rounded-3xl p-6 shadow-2xl space-y-4 text-zinc-900 dark:text-white text-left my-auto will-change-transform transform-gpu"
             >
+              <div className="w-12 h-1.5 bg-zinc-300 dark:bg-zinc-700/80 rounded-full mx-auto -mt-2 mb-2 shrink-0 cursor-grab active:cursor-grabbing" />
               <h2 className="text-lg font-extrabold flex items-center gap-2">⚙️ Timetable Settings</h2>
               
               <div className="space-y-3 font-sans">
@@ -1395,20 +1445,45 @@ export default function AiTimetable() {
                 </button>
               </div>
             </motion.div>
-          </div>
+          </motion.div>
         )}
       </AnimatePresence>
 
       {/* CELL EDIT POPUP */}
       <AnimatePresence>
         {editingCell && (
-          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <motion.div
+            key="cell-edit-modal-backdrop"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.25, ease: "easeInOut" }}
+            onClick={discardCellEdit}
+            className="fixed inset-0 bg-black/65 backdrop-blur-sm flex items-end sm:items-center justify-center z-50 p-0 sm:p-4 overflow-hidden"
+          >
             <motion.div
-              initial={{ scale: 0.95, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.95, opacity: 0 }}
-              className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 max-w-sm w-full rounded-3xl p-6 shadow-2xl space-y-4 text-zinc-900 dark:text-white text-left"
+              key="cell-edit-modal-card"
+              onClick={(e) => e.stopPropagation()}
+              drag="y"
+              dragConstraints={{ top: 0, bottom: 0 }}
+              dragElastic={{ top: 0, bottom: 0.8 }}
+              dragSnapToOrigin={true}
+              onDragEnd={(e, info) => {
+                if (info.offset.y > 100 || info.velocity.y > 250) {
+                  discardCellEdit();
+                }
+              }}
+              initial={{ y: "100%", opacity: 0.95 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{
+                y: "100%",
+                opacity: 0.95,
+                transition: { duration: 0.28, ease: [0.32, 0.72, 0, 1] },
+              }}
+              transition={{ type: "spring", stiffness: 350, damping: 32 }}
+              className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 max-w-sm w-full rounded-t-3xl sm:rounded-3xl p-6 shadow-2xl space-y-4 text-zinc-900 dark:text-white text-left my-auto will-change-transform transform-gpu"
             >
+              <div className="w-12 h-1.5 bg-zinc-300 dark:bg-zinc-700/80 rounded-full mx-auto -mt-2 mb-2 shrink-0 cursor-grab active:cursor-grabbing" />
               <h2 className="text-base font-bold flex items-center gap-2">
                 ✏️ Edit Class slot ({editingCell.day.toUpperCase()}, slot {editingCell.index + 1})
               </h2>
@@ -1491,7 +1566,7 @@ export default function AiTimetable() {
                 </button>
               </div>
             </motion.div>
-          </div>
+          </motion.div>
         )}
       </AnimatePresence>
     </motion.div>

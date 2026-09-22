@@ -1451,10 +1451,14 @@ export default function Calendar() {
                   {(partialMarkOpen || editTimetableOpen) && (
                     <motion.div
                       key="modal-section-3-drawer"
-                      initial={isDesktop ? { width: 0, opacity: 0 } : { y: "100%", opacity: 0 }}
-                      animate={isDesktop ? { width: editTimetableOpen ? 480 : 390, opacity: 1 } : { y: 0, opacity: 1 }}
-                      exit={isDesktop ? { width: 0, opacity: 0 } : { y: "100%", opacity: 0 }}
-                      transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+                      initial={isDesktop ? { width: 0, opacity: 0 } : { y: "100%" }}
+                      animate={isDesktop ? { width: editTimetableOpen ? 480 : 390, opacity: 1 } : { y: 0 }}
+                      exit={isDesktop ? { width: 0, opacity: 0 } : { y: "100%" }}
+                      transition={
+                        isDesktop
+                          ? { duration: 0.38, ease: [0.16, 1, 0.3, 1] }
+                          : { duration: 0.38, ease: [0.32, 0.72, 0, 1] }
+                      }
                       className={
                         isDesktop
                           ? "overflow-hidden shrink-0 flex flex-col justify-between border-l border-zinc-200 dark:border-zinc-800/80"
@@ -1463,10 +1467,10 @@ export default function Calendar() {
                     >
                       <motion.div
                         key={editTimetableOpen ? "drawer-edit-timetable" : "drawer-partial-mark"}
-                        initial={isDesktop ? { x: 40, opacity: 0 } : { y: 20, opacity: 0 }}
-                        animate={isDesktop ? { x: 0, opacity: 1 } : { y: 0, opacity: 1 }}
-                        exit={isDesktop ? { x: 80, opacity: 0 } : { y: 20, opacity: 0 }}
-                        transition={{ duration: 0.32, ease: [0.16, 1, 0.3, 1] }}
+                        initial={isDesktop ? { x: 40, opacity: 0 } : { opacity: 0 }}
+                        animate={isDesktop ? { x: 0, opacity: 1 } : { opacity: 1 }}
+                        exit={isDesktop ? { x: 80, opacity: 0 } : { opacity: 1 }}
+                        transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
                         className={`w-full ${editTimetableOpen ? "lg:w-[480px]" : "lg:w-[390px]"} p-4 sm:p-5 flex flex-col justify-between h-full overflow-hidden`}
                       >
                         {editTimetableOpen ? (

@@ -292,6 +292,13 @@ export default function Navbar() {
     try {
       await connectGoogle();
     } catch (err) {
+      if (
+        err?.code === "auth/popup-closed-by-user" ||
+        err?.code === "auth/cancelled-popup-request" ||
+        err?.code === "auth/user-cancelled"
+      ) {
+        return;
+      }
       console.error(err);
       alert("Failed to connect Google account: " + err.message);
     }

@@ -162,7 +162,6 @@ export function AuthProvider({ children }) {
   async function login(email, password) {
     sessionStorage.removeItem("is_guest_session");
     clearGuestLocalStorage();
-    setLoading(true);
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       localStorage.setItem("last_active_heartbeat", Date.now().toString());
@@ -170,15 +169,12 @@ export function AuthProvider({ children }) {
     } catch (error) {
       console.error("[Auth] Login error", error);
       throw error;
-    } finally {
-      setLoading(false);
     }
   }
 
   async function register(email, password, displayName) {
     sessionStorage.removeItem("is_guest_session");
     clearGuestLocalStorage();
-    setLoading(true);
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const cleanName = displayName ? displayName.trim() : "";
@@ -202,8 +198,6 @@ export function AuthProvider({ children }) {
     } catch (error) {
       console.error("[Auth] Registration error", error);
       throw error;
-    } finally {
-      setLoading(false);
     }
   }
 
@@ -244,9 +238,9 @@ export function AuthProvider({ children }) {
   async function loginWithGoogle() {
     sessionStorage.removeItem("is_guest_session");
     clearGuestLocalStorage();
-    setLoading(true);
     try {
       const provider = new GoogleAuthProvider();
+      provider.setCustomParameters({ prompt: "select_account" });
       const userCredential = await signInWithPopup(auth, provider);
       localStorage.setItem("last_active_heartbeat", Date.now().toString());
       setUser(userCredential.user);
@@ -254,16 +248,14 @@ export function AuthProvider({ children }) {
     } catch (error) {
       console.error("[Auth] Google Sign-In error", error);
       throw error;
-    } finally {
-      setLoading(false);
     }
   }
 
   async function connectGoogle() {
     if (!auth.currentUser || user?.isGuest) throw new Error("Google connection requires a non-guest account.");
-    setLoading(true);
     try {
       const provider = new GoogleAuthProvider();
+      provider.setCustomParameters({ prompt: "select_account" });
       const userCredential = await linkWithPopup(auth.currentUser, provider);
       localStorage.setItem("last_active_heartbeat", Date.now().toString());
       setUser({ ...userCredential.user });
@@ -271,8 +263,6 @@ export function AuthProvider({ children }) {
     } catch (error) {
       console.error("[Auth] Connect Google error", error);
       throw error;
-    } finally {
-      setLoading(false);
     }
   }
 
